@@ -5,7 +5,9 @@ import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
-import static android.app.Notification.EXTRA_TITLE;
+import com.google.common.base.MoreObjects;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
@@ -31,7 +33,17 @@ public class NotificationListenerService
             return;
         }
 
-        Log.i(TAG, "Line notification: " + statusBarNotification.getNotification().extras.getString(EXTRA_TITLE));
+        final String stringifiedNotification = MoreObjects.toStringHelper(statusBarNotification)
+                .add("packageName", statusBarNotification.getPackageName())
+                .add("groupKey", statusBarNotification.getGroupKey())
+                .add("key", statusBarNotification.getKey())
+                .add("id", statusBarNotification.getId())
+                .add("tag", statusBarNotification.getTag())
+                .add("user", statusBarNotification.getUser().toString())
+                .add("overrideGroupKey", statusBarNotification.getOverrideGroupKey())
+                .add("notification", ToStringBuilder.reflectionToString(statusBarNotification.getNotification()))
+                .toString();
+        Log.i(TAG, "Line notification: " + stringifiedNotification);
     }
 
     @Override
