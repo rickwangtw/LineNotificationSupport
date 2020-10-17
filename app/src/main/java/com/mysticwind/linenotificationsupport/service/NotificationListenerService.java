@@ -21,7 +21,7 @@ public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
 
     private static final String TAG = "LINE_NOTIFICATION_SUPPORT";
-    private static final int NOTIFICATION_ID = 0x20;
+    private static int notificationId = 0x2000;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -75,7 +75,7 @@ public class NotificationListenerService
         final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
 
         final Notification notification = buildNotification(statusBarNotification);
-        notificationManager.notify(NOTIFICATION_ID, notification);
+        notificationManager.notify(notificationId++, notification);
     }
 
     private Notification buildNotification(final StatusBarNotification statusBarNotification) {
@@ -112,6 +112,7 @@ public class NotificationListenerService
                 .setContentTitle(title)
                 .setContentText(message)
                 .setGroup(chatId)
+                .setGroupSummary(true)
                 .build();
 
         return notification;
