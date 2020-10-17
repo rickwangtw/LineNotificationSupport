@@ -1,7 +1,10 @@
 package com.mysticwind.linenotificationsupport.service;
 
 import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
@@ -17,11 +20,23 @@ import com.mysticwind.linenotificationsupport.R;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static androidx.core.app.NotificationCompat.EXTRA_TEXT;
+
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
 
     private static final String TAG = "LINE_NOTIFICATION_SUPPORT";
-    private static int notificationId = 0x2000;
+    private static final int GROUP_ID_START = 0x4000;
+    private static final int MESSAGE_ID_START = 0x1000;
+
+    private static final Map<String, Integer> chatIdToGroupIdMap = new HashMap<>();
+    private static int lastGroupId = GROUP_ID_START;
+    private static int lastMessageId = MESSAGE_ID_START;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -62,7 +77,7 @@ public class NotificationListenerService
                 stringifiedNotification)
         );
 
-        resendNotification(statusBarNotification);
+        sendNotification(statusBarNotification);
     }
 
     private boolean isSummary(final StatusBarNotification statusBarNotification) {
@@ -71,51 +86,46 @@ public class NotificationListenerService
         return StringUtils.isNotBlank(summaryText);
     }
 
-    private void resendNotification(StatusBarNotification statusBarNotification) {
-        final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+    private void sendNotification(StatusBarNotification notificationFromLine) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
-        final Notification notification = buildNotification(statusBarNotification);
-        notificationManager.notify(notificationId++, notification);
-    }
+        final String chatId = getChatId(notificationFromLine);
+        boolean shouldShowGroupNotification = false;
+        List<CharSequence> currentNotificationMessages = new ArrayList<>();
+        currentNotificationMessages.add(notificationFromLine.getNotification().extras.getCharSequence(EXTRA_TEXT));
+        final int groupId = getGroupId(chatId);
 
-    private Notification buildNotification(final StatusBarNotification statusBarNotification) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            for (StatusBarNotification statusBarNotification : notificationManager.getActiveNotifications()) {
+                if (statusBarNotification.getId() != groupId && chatId.equalsIgnoreCase(statusBarNotification.getNotification().getGroup())) {
+                    CharSequence text = statusBarNotification.getNotification().extras.getCharSequence(EXTRA_TEXT);
+                    currentNotificationMessages.add(text);
+                    shouldShowGroupNotification = true;
+                    break;
+                }
+            }
+        }
+
         // individual: android.title is the sender
         // group chat: android.title is "group title：sender", android.conversationTitle is group title
         // chat with multi-folks: android.title is also the sender, no way to differentiate between individual and multi-folks :(
 
+        // TODO build a generic notification model class
         final String title;
         final String sender;
-        if (isChatGroup(statusBarNotification)) {
-            title = getGroupChatTitle(statusBarNotification);
-            final String androidTitle = getAndroidTitle(statusBarNotification);
+        if (isChatGroup(notificationFromLine)) {
+            title = getGroupChatTitle(notificationFromLine);
+            final String androidTitle = getAndroidTitle(notificationFromLine);
             sender = androidTitle.replace(title + "：", "");
         } else {
-            title = getAndroidTitle(statusBarNotification);
-            sender = getAndroidTitle(statusBarNotification);
+            title = getAndroidTitle(notificationFromLine);
+            sender = getAndroidTitle(notificationFromLine);
         }
 
-
-        final String chatId = getChatId(statusBarNotification);
-        final String message = statusBarNotification.getNotification().extras
-                .getString("android.text");
-        final String myName = statusBarNotification.getNotification().extras
-                .getString("android.selfDisplayName");
-        final long timestamp = statusBarNotification.getPostTime();
-
-        final NotificationCompat.MessagingStyle messageStyle = new NotificationCompat.MessagingStyle(new Person.Builder().setName(sender).build())
-                .setConversationTitle(title)
-                .addMessage(message, timestamp, sender);
-
-        final Notification notification = new NotificationCompat.Builder(getApplicationContext(), MainActivity.CHANNEL_ID)
-                .setStyle(messageStyle)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setGroup(chatId)
-                .setGroupSummary(true)
-                .build();
-
-        return notification;
+        showSingleNotification(chatId, title, sender, notificationFromLine);
+        if (shouldShowGroupNotification) {
+            showGroupNotification(chatId, title, sender, currentNotificationMessages);
+        }
     }
 
     private boolean isChatGroup(final StatusBarNotification statusBarNotification) {
@@ -132,9 +142,67 @@ public class NotificationListenerService
         return statusBarNotification.getNotification().extras.getString("android.title");
     }
 
-
     private String getChatId(final StatusBarNotification statusBarNotification) {
         return statusBarNotification.getNotification().extras.getString("line.chat.id");
+    }
+
+    private synchronized int getGroupId(final String chatId) {
+        return chatIdToGroupIdMap.computeIfAbsent(chatId, chatIdWithoutGroupId -> {
+            return lastGroupId++;
+        });
+    }
+
+    private void showSingleNotification(final String chatId, final String title, final String sender, final StatusBarNotification notificationFromLine) {
+        final String message = notificationFromLine.getNotification().extras
+                .getString("android.text");
+        final String myName = notificationFromLine.getNotification().extras
+                .getString("android.selfDisplayName");
+        final long timestamp = notificationFromLine.getPostTime();
+        // TODO this should be thread safe
+        int notificationId = ++lastMessageId;
+
+        Intent intent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        final Person senderPerson = new Person.Builder().setName(sender).build();
+
+        final NotificationCompat.MessagingStyle messageStyle = new NotificationCompat.MessagingStyle(sender)
+                .setConversationTitle(title)
+                .addMessage(message, timestamp, sender);
+
+        Notification singleNotification = new NotificationCompat.Builder(this, MainActivity.CHANNEL_ID)
+                .setStyle(messageStyle)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setGroup(chatId)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentIntent(pendingIntent)
+                .build();
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(notificationId, singleNotification);
+    }
+
+    private void showGroupNotification(String chatId, String title, String sender, List<CharSequence> previousNotificationsTexts) {
+        NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
+        for (CharSequence text: previousNotificationsTexts) {
+            style.addLine(text);
+        }
+        int groupCount = previousNotificationsTexts.size() + 1;
+        style.setSummaryText(groupCount + " new notifications");
+
+        Notification groupNotification = new NotificationCompat.Builder(this, MainActivity.CHANNEL_ID)
+                .setStyle(style)
+                .setContentTitle(title)
+                .setContentText(previousNotificationsTexts.get(0))
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setGroup(chatId)
+                .setGroupSummary(true)
+                .build();
+
+        final int groupId = getGroupId(chatId);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(groupId, groupNotification);
     }
 
     @Override
