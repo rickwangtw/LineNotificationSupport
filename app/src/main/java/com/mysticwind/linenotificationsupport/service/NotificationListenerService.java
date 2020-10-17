@@ -14,9 +14,11 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.Person;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.MainActivity;
 import com.mysticwind.linenotificationsupport.R;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
@@ -166,9 +168,9 @@ public class NotificationListenerService
 
         final Person senderPerson = new Person.Builder().setName(sender).build();
 
-        final NotificationCompat.MessagingStyle messageStyle = new NotificationCompat.MessagingStyle(sender)
+        final NotificationCompat.MessagingStyle messageStyle = new NotificationCompat.MessagingStyle(senderPerson)
                 .setConversationTitle(title)
-                .addMessage(message, timestamp, sender);
+                .addMessage(message, timestamp, senderPerson);
 
         Notification singleNotification = new NotificationCompat.Builder(this, MainActivity.CHANNEL_ID)
                 .setStyle(messageStyle)
@@ -179,8 +181,33 @@ public class NotificationListenerService
                 .setContentIntent(pendingIntent)
                 .build();
 
+        final Notification.Action replyAction = extractReplyAction(notificationFromLine);
+        addActionInNotification(singleNotification, replyAction);
+
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
         notificationManager.notify(notificationId, singleNotification);
+    }
+
+    private void addActionInNotification(Notification notification, Notification.Action action) {
+        if (ArrayUtils.isEmpty(notification.actions)) {
+            notification.actions = new Notification.Action[] { action };
+        } else {
+            List<Notification.Action> actions = Lists.newArrayList(notification.actions);
+            actions.add(action);
+            notification.actions = (Notification.Action[]) actions.toArray();
+        }
+    }
+
+    private Notification.Action extractReplyAction(StatusBarNotification notificationFromLine) {
+        if (notificationFromLine.getNotification().actions.length < 2) {
+            return null;
+        }
+        Notification.Action secondAction = notificationFromLine.getNotification().actions[1];
+        // TODO what about other languages? should extract from Line apk?
+        if ("回覆".equals(secondAction.title)) {
+            return secondAction;
+        }
+        return null;
     }
 
     private void showGroupNotification(String chatId, String title, String sender, List<CharSequence> previousNotificationsTexts) {
