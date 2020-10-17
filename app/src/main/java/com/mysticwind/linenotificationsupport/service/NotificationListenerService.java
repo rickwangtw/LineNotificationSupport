@@ -4,6 +4,11 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
@@ -12,6 +17,7 @@ import android.util.Log;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.Person;
+import androidx.core.graphics.drawable.IconCompat;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
@@ -124,9 +130,12 @@ public class NotificationListenerService
             sender = getAndroidTitle(notificationFromLine);
         }
 
-        showSingleNotification(chatId, title, sender, notificationFromLine);
+        final Icon largeIcon = notificationFromLine.getNotification().getLargeIcon();
+        final Bitmap largeIconBitmap = convertDrawableToBitmap(largeIcon.loadDrawable(this));
+
+        showSingleNotification(chatId, title, sender, largeIconBitmap, notificationFromLine);
         if (shouldShowGroupNotification) {
-            showGroupNotification(chatId, title, sender, currentNotificationMessages);
+            showGroupNotification(chatId, title, sender, largeIconBitmap, currentNotificationMessages);
         }
     }
 
@@ -154,7 +163,8 @@ public class NotificationListenerService
         });
     }
 
-    private void showSingleNotification(final String chatId, final String title, final String sender, final StatusBarNotification notificationFromLine) {
+    private void showSingleNotification(final String chatId, final String title, final String sender,
+                                        final Bitmap largeIcon, final StatusBarNotification notificationFromLine) {
         final String message = notificationFromLine.getNotification().extras
                 .getString("android.text");
         final String myName = notificationFromLine.getNotification().extras
@@ -166,7 +176,10 @@ public class NotificationListenerService
         Intent intent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        final Person senderPerson = new Person.Builder().setName(sender).build();
+        final Person senderPerson = new Person.Builder()
+                .setName(sender)
+                .setIcon(IconCompat.createWithBitmap(largeIcon))
+                .build();
 
         final NotificationCompat.MessagingStyle messageStyle = new NotificationCompat.MessagingStyle(senderPerson)
                 .setConversationTitle(title)
@@ -178,6 +191,7 @@ public class NotificationListenerService
                 .setContentText(message)
                 .setGroup(chatId)
                 .setSmallIcon(R.mipmap.ic_launcher)
+                .setLargeIcon(largeIcon)
                 .setContentIntent(pendingIntent)
                 .build();
 
@@ -186,6 +200,30 @@ public class NotificationListenerService
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
         notificationManager.notify(notificationId, singleNotification);
+    }
+
+    private Bitmap convertDrawableToBitmap(Drawable drawable) {
+        if (drawable == null) {
+            return null;
+        }
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            if (bitmapDrawable.getBitmap() != null) {
+                return bitmapDrawable.getBitmap();
+            }
+        }
+
+        final Bitmap bitmap;
+        if(drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
+        } else {
+            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        }
+
+        final Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
     }
 
     private void addActionInNotification(Notification notification, Notification.Action action) {
@@ -210,7 +248,7 @@ public class NotificationListenerService
         return null;
     }
 
-    private void showGroupNotification(String chatId, String title, String sender, List<CharSequence> previousNotificationsTexts) {
+    private void showGroupNotification(String chatId, String title, String sender, Bitmap largeIcon, List<CharSequence> previousNotificationsTexts) {
         NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
         for (CharSequence text: previousNotificationsTexts) {
             style.addLine(text);
@@ -223,6 +261,7 @@ public class NotificationListenerService
                 .setContentTitle(title)
                 .setContentText(previousNotificationsTexts.get(0))
                 .setSmallIcon(R.mipmap.ic_launcher)
+                .setLargeIcon(largeIcon)
                 .setGroup(chatId)
                 .setGroupSummary(true)
                 .build();
