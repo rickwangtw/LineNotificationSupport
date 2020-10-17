@@ -109,7 +109,9 @@ public class NotificationListenerService
         final Notification notification = new NotificationCompat.Builder(getApplicationContext(), MainActivity.CHANNEL_ID)
                 .setStyle(messageStyle)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setGroup(getChatId(statusBarNotification))
+                .setContentTitle(title)
+                .setContentText(message)
+                .setGroup(chatId)
                 .build();
 
         return notification;
