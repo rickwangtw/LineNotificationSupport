@@ -78,18 +78,32 @@ public class NotificationListenerService
         notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
-    private Notification buildNotification(StatusBarNotification statusBarNotification) {
-        final String chatId = buildChatId(statusBarNotification);
-        final String sender = statusBarNotification.getNotification().extras
-                .getString("android.title");
-        final String myName = statusBarNotification.getNotification().extras
-                .getString("android.selfDisplayName");
+    private Notification buildNotification(final StatusBarNotification statusBarNotification) {
+        // individual: android.title is the sender
+        // group chat: android.title is "group title：sender", android.conversationTitle is group title
+        // chat with multi-folks: android.title is also the sender, no way to differentiate between individual and multi-folks :(
+
+        final String title;
+        final String sender;
+        if (isChatGroup(statusBarNotification)) {
+            title = getGroupChatTitle(statusBarNotification);
+            final String androidTitle = getAndroidTitle(statusBarNotification);
+            sender = androidTitle.replace(title + "：", "");
+        } else {
+            title = getAndroidTitle(statusBarNotification);
+            sender = getAndroidTitle(statusBarNotification);
+        }
+
+
+        final String chatId = getChatId(statusBarNotification);
         final String message = statusBarNotification.getNotification().extras
                 .getString("android.text");
+        final String myName = statusBarNotification.getNotification().extras
+                .getString("android.selfDisplayName");
         final long timestamp = statusBarNotification.getPostTime();
 
-        final NotificationCompat.MessagingStyle messageStyle = new NotificationCompat.MessagingStyle(new Person.Builder().setName(myName).build())
-                .setConversationTitle(chatId)
+        final NotificationCompat.MessagingStyle messageStyle = new NotificationCompat.MessagingStyle(new Person.Builder().setName(sender).build())
+                .setConversationTitle(title)
                 .addMessage(message, timestamp, sender);
 
         final Notification notification = new NotificationCompat.Builder(getApplicationContext(), MainActivity.CHANNEL_ID)
@@ -101,19 +115,22 @@ public class NotificationListenerService
         return notification;
     }
 
-    private String buildChatId(StatusBarNotification statusBarNotification) {
-        // chat groups will have a conversationTitle (but not groups of people)
-        final String conversationTitle = statusBarNotification.getNotification().extras
-                .getString("android.conversationTitle");
-
-        if (StringUtils.isNotBlank(conversationTitle)) {
-            return conversationTitle;
-        } else {
-            return getChatId(statusBarNotification);
-        }
+    private boolean isChatGroup(final StatusBarNotification statusBarNotification) {
+        final String title = statusBarNotification.getNotification().extras.getString("android.conversationTitle");
+        return StringUtils.isNotBlank(title);
     }
 
-    private String getChatId(StatusBarNotification statusBarNotification) {
+    private String getGroupChatTitle(final StatusBarNotification statusBarNotification) {
+        // chat groups will have a conversationTitle (but not groups of people)
+        return statusBarNotification.getNotification().extras.getString("android.conversationTitle");
+    }
+
+    private String getAndroidTitle(final StatusBarNotification statusBarNotification) {
+        return statusBarNotification.getNotification().extras.getString("android.title");
+    }
+
+
+    private String getChatId(final StatusBarNotification statusBarNotification) {
         return statusBarNotification.getNotification().extras.getString("line.chat.id");
     }
 
