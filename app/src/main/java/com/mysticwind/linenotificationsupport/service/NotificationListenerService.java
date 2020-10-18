@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -23,11 +24,15 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.MainActivity;
 import com.mysticwind.linenotificationsupport.R;
+import com.mysticwind.linenotificationsupport.utils.ImageNotificationPublisherAsyncTask;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -133,9 +138,18 @@ public class NotificationListenerService
         final Icon largeIcon = notificationFromLine.getNotification().getLargeIcon();
         final Bitmap largeIconBitmap = convertDrawableToBitmap(largeIcon.loadDrawable(this));
 
-        showSingleNotification(chatId, title, sender, largeIconBitmap, notificationFromLine);
-        if (shouldShowGroupNotification) {
-            showGroupNotification(chatId, title, sender, largeIconBitmap, currentNotificationMessages);
+        final String message = notificationFromLine.getNotification().extras.getString("android.text");
+        final String lineStickerUrl = getLineStickerUrl(notificationFromLine);
+        // TODO fix this spaghetti code
+        if (StringUtils.isNotBlank(lineStickerUrl)) {
+            new ImageNotificationPublisherAsyncTask(this, title, message,
+                    lineStickerUrl, chatId, ++lastMessageId, shouldShowGroupNotification, currentNotificationMessages,
+                    getGroupId(chatId)).execute();
+        } else {
+            showSingleNotification(chatId, title, sender, largeIconBitmap, message, notificationFromLine);
+            if (shouldShowGroupNotification) {
+                showGroupNotification(chatId, title, sender, largeIconBitmap, currentNotificationMessages);
+            }
         }
     }
 
@@ -164,9 +178,7 @@ public class NotificationListenerService
     }
 
     private void showSingleNotification(final String chatId, final String title, final String sender,
-                                        final Bitmap largeIcon, final StatusBarNotification notificationFromLine) {
-        final String message = notificationFromLine.getNotification().extras
-                .getString("android.text");
+                                        final Bitmap largeIcon, final String message, final StatusBarNotification notificationFromLine) {
         final String myName = notificationFromLine.getNotification().extras
                 .getString("android.selfDisplayName");
         final long timestamp = notificationFromLine.getPostTime();
@@ -181,9 +193,7 @@ public class NotificationListenerService
                 .setIcon(IconCompat.createWithBitmap(largeIcon))
                 .build();
 
-        final NotificationCompat.MessagingStyle messageStyle = new NotificationCompat.MessagingStyle(senderPerson)
-                .setConversationTitle(title)
-                .addMessage(message, timestamp, senderPerson);
+        final NotificationCompat.Style messageStyle = buildMessageStyle(senderPerson, title, message, timestamp, notificationFromLine);
 
         Notification singleNotification = new NotificationCompat.Builder(this, MainActivity.CHANNEL_ID)
                 .setStyle(messageStyle)
@@ -224,6 +234,46 @@ public class NotificationListenerService
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         return bitmap;
+    }
+
+    private NotificationCompat.Style buildMessageStyle(Person senderPerson, String title, String message, long timestamp, StatusBarNotification notificationFromLine) {
+
+        final String lineStickerUrl = getLineStickerUrl(notificationFromLine);
+        final Bitmap lineStickerBitmap;
+        if (StringUtils.isNotBlank(lineStickerUrl)) {
+            lineStickerBitmap = downloadImage(lineStickerUrl);
+        } else {
+            lineStickerBitmap = null;
+        }
+
+        if (lineStickerBitmap != null) {
+            return new NotificationCompat.BigPictureStyle()
+                    .bigPicture(lineStickerBitmap)
+                    .setSummaryText(message);
+        } else {
+            return new NotificationCompat.MessagingStyle(senderPerson)
+                    .setConversationTitle(title)
+                    .addMessage(message, timestamp, senderPerson);
+        }
+    }
+
+    private String getLineStickerUrl(final StatusBarNotification statusBarNotification) {
+        return statusBarNotification.getNotification().extras.getString("line.sticker.url");
+    }
+
+    protected Bitmap downloadImage(String imageUrl) {
+        InputStream inputStream;
+        try {
+            final URL url = new URL(imageUrl);
+            final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            inputStream = connection.getInputStream();
+            return BitmapFactory.decodeStream(inputStream);
+        } catch (final Exception e) {
+            Log.e(TAG, String.format("Failed to download image %s: %s", imageUrl, e.getMessage()), e);
+            return null;
+        }
     }
 
     private void addActionInNotification(Notification notification, Notification.Action action) {
