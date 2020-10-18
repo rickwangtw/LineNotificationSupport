@@ -105,6 +105,9 @@ public class LineNotificationBuilder {
     }
 
     private Notification.Action extractReplyAction(StatusBarNotification notificationFromLine) {
+        if (notificationFromLine.getNotification().actions == null) {
+            return null;
+        }
         if (notificationFromLine.getNotification().actions.length < 2) {
             return null;
         }

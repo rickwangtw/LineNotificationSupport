@@ -114,6 +114,9 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
     }
 
     private void addActionInNotification(Notification notification) {
+        if (lineNotification.getReplyAction() == null) {
+            return;
+        }
         if (ArrayUtils.isEmpty(notification.actions)) {
             notification.actions = new Notification.Action[] { lineNotification.getReplyAction() };
         } else {
