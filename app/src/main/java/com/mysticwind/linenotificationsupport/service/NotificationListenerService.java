@@ -79,31 +79,40 @@ public class NotificationListenerService
     }
 
     private void sendNotification(StatusBarNotification notificationFromLine) {
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-        boolean shouldShowGroupNotification = false;
-        List<CharSequence> currentNotificationMessages = new ArrayList<>();
-        currentNotificationMessages.add(notificationFromLine.getNotification().extras.getCharSequence(EXTRA_TEXT));
-
         final LineNotification lineNotification = new LineNotificationBuilder(this).from(notificationFromLine);
         final int groupId = GROUP_ID_RESOLVER.resolveGroupId(lineNotification.getChatId());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            for (StatusBarNotification statusBarNotification : notificationManager.getActiveNotifications()) {
-                if (statusBarNotification.getId() != groupId &&
-                        lineNotification.getChatId().equalsIgnoreCase(statusBarNotification.getNotification().getGroup())) {
-                    CharSequence text = statusBarNotification.getNotification().extras.getCharSequence(EXTRA_TEXT);
-                    currentNotificationMessages.add(text);
-                    shouldShowGroupNotification = true;
-                    break;
-                }
-            }
-        }
+        List<CharSequence> currentNotificationMessages = new ArrayList<>();
+        currentNotificationMessages.add(notificationFromLine.getNotification().extras.getCharSequence(EXTRA_TEXT));
+        currentNotificationMessages.add(previousNotification(lineNotification));
+
+        boolean shouldShowGroupNotification = currentNotificationMessages.size() == 2 ? true : false;
 
         new ImageNotificationPublisherAsyncTask(this, lineNotification,
                 shouldShowGroupNotification, currentNotificationMessages,
                 NOTIFICATION_ID_GENERATOR.getNextNotificationId(),
                 groupId).execute();
+    }
+
+    private CharSequence previousNotification(LineNotification lineNotification) {
+        if (StringUtils.isBlank(lineNotification.getChatId())) {
+            return null;
+        }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return null;
+        }
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        final int groupId = GROUP_ID_RESOLVER.resolveGroupId(lineNotification.getChatId());
+        for (final StatusBarNotification statusBarNotification : notificationManager.getActiveNotifications()) {
+            if (statusBarNotification.getId() != groupId &&
+                    lineNotification.getChatId().equalsIgnoreCase(statusBarNotification.getNotification().getGroup())) {
+                return statusBarNotification.getNotification().extras.getCharSequence(EXTRA_TEXT);
+            }
+        }
+        return null;
     }
 
     @Override

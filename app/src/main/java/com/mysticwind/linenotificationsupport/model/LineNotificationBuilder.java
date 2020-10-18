@@ -38,18 +38,15 @@ public class LineNotificationBuilder {
             sender = getAndroidTitle(statusBarNotification);
         }
 
-        final Icon largeIcon = statusBarNotification.getNotification().getLargeIcon();
-        final Bitmap largeIconBitmap = convertDrawableToBitmap(largeIcon.loadDrawable(context));
+        final Bitmap largeIconBitmap = getLargeIconBitmap(statusBarNotification);
+        final Person senderPerson = buildPerson(sender, largeIconBitmap);
 
         final String message = statusBarNotification.getNotification().extras.getString("android.text");
         final String lineStickerUrl = getLineStickerUrl(statusBarNotification);
         return LineNotification.builder()
                 .title(title)
                 .message(message)
-                .sender(new Person.Builder()
-                        .setName(sender)
-                        .setIcon(IconCompat.createWithBitmap(largeIconBitmap))
-                        .build())
+                .sender(senderPerson)
                 .lineStickerUrl(lineStickerUrl)
                 .chatId(getChatId(statusBarNotification))
                 .timestamp(statusBarNotification.getPostTime())
@@ -80,6 +77,14 @@ public class LineNotificationBuilder {
         return statusBarNotification.getNotification().extras.getString("line.sticker.url");
     }
 
+    private Bitmap getLargeIconBitmap(StatusBarNotification statusBarNotification) {
+        final Icon largeIcon = statusBarNotification.getNotification().getLargeIcon();
+        if (largeIcon == null) {
+            return null;
+        }
+        return convertDrawableToBitmap(largeIcon.loadDrawable(context));
+    }
+
     private Bitmap convertDrawableToBitmap(Drawable drawable) {
         if (drawable == null) {
             return null;
@@ -102,6 +107,19 @@ public class LineNotificationBuilder {
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         return bitmap;
+    }
+
+    private Person buildPerson(String sender, Bitmap iconBitmap) {
+        final IconCompat icon;
+        if (iconBitmap == null) {
+            icon = null;
+        } else {
+            icon = IconCompat.createWithBitmap(iconBitmap);
+        }
+        return new Person.Builder()
+                .setName(sender)
+                .setIcon(icon)
+                .build();
     }
 
     private Notification.Action extractReplyAction(StatusBarNotification notificationFromLine) {
