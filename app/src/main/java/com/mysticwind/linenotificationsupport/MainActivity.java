@@ -21,6 +21,7 @@ import androidx.core.app.Person;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.common.collect.ImmutableMap;
+import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.utils.ImageNotificationPublisherAsyncTask;
 
 import java.time.Instant;
@@ -108,9 +109,16 @@ public class MainActivity extends AppCompatActivity {
 
         if (true) {
             final String url = "https://stickershop.line-scdn.net/products/0/0/9/1917/android/stickers/37789.png";
-            new ImageNotificationPublisherAsyncTask(this, "Title", message,
-                    url, groupKey, notificationId, shouldShowGroupNotification, currentNotificationMessages,
-                    groupKeyToGroupIdMap.get(groupKey)).execute();
+            LineNotification lineNotification = LineNotification.builder()
+                    .title("Title")
+                    .message(message)
+                    .lineStickerUrl(url)
+                    .chatId(groupKey)
+                    .sender(sender)
+                    .build();
+            new ImageNotificationPublisherAsyncTask(this, lineNotification,
+                    shouldShowGroupNotification, currentNotificationMessages,
+                    notificationId, groupKeyToGroupIdMap.get(groupKey)).execute();
         } else {
             Notification singleNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setContentTitle("Title")
