@@ -16,10 +16,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.Person;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.common.collect.ImmutableMap;
+import com.mysticwind.linenotificationsupport.utils.ImageNotificationPublisherAsyncTask;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -29,6 +31,8 @@ import java.util.Map;
 import static androidx.core.app.NotificationCompat.EXTRA_TEXT;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     private static final String CHANNEL_NAME = "LineNotificationSupport";
     private static final String CHANNEL_DESCRIPTION = "Republish Line notifications";
@@ -86,28 +90,39 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        showSingleNotification(groupKey, message);
+        showSingleNotification(groupKey, message, shouldShowGroupNotification, currentNotificationMessages);
         if (shouldShowGroupNotification) {
             showGroupNotification(groupKey, currentNotificationMessages);
         }
     }
 
-    private void showSingleNotification(String groupKey, String message) {
+    private void showSingleNotification(String groupKey,
+                                        String message,
+                                        boolean shouldShowGroupNotification,
+                                        List<CharSequence> currentNotificationMessages) {
         int notificationId = (int) (System.currentTimeMillis() / 1000);
 
         Intent intent = new Intent(this, MainActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        final Person sender = new Person.Builder().setName("sender").build();
 
-        Notification singleNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Title")
-                .setContentText(message)
-                .setGroup(groupKey)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentIntent(pendingIntent)
-                .build();
+        if (true) {
+            final String url = "https://stickershop.line-scdn.net/products/0/0/9/1917/android/stickers/37789.png";
+            new ImageNotificationPublisherAsyncTask(this, "Title", message,
+                    url, groupKey, notificationId, shouldShowGroupNotification, currentNotificationMessages,
+                    groupKeyToGroupIdMap.get(groupKey)).execute();
+        } else {
+            Notification singleNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setContentTitle("Title")
+                    .setContentText(message)
+                    .setGroup(groupKey)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentIntent(pendingIntent)
+                    .build();
 
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.notify(notificationId, singleNotification);
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+            notificationManager.notify(notificationId, singleNotification);
+        }
     }
 
     private void showGroupNotification(String groupKey, List<CharSequence> previousNotificationsTexts) {
