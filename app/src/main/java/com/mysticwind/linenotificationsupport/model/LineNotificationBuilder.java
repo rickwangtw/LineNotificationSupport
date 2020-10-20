@@ -16,6 +16,11 @@ import org.apache.commons.lang3.StringUtils;
 
 public class LineNotificationBuilder {
 
+    private static final String CALL_VIRTUAL_CHAT_ID = "call_virtual_chat_id";
+    private static final String CALL_CATEGORY = "call";
+    private static final String MISSED_CALL_TAG = "NOTIFICATION_TAG_MISSED_CALL";
+    private static final String CALLING_TEXT = "LINE通話中";
+
     private final Context context;
 
     public LineNotificationBuilder(Context context) {
@@ -41,14 +46,14 @@ public class LineNotificationBuilder {
         final Bitmap largeIconBitmap = getLargeIconBitmap(statusBarNotification);
         final Person senderPerson = buildPerson(sender, largeIconBitmap);
 
-        final String message = statusBarNotification.getNotification().extras.getString("android.text");
+        final String message = getMessage(statusBarNotification);
         final String lineStickerUrl = getLineStickerUrl(statusBarNotification);
         return LineNotification.builder()
                 .title(title)
                 .message(message)
                 .sender(senderPerson)
                 .lineStickerUrl(lineStickerUrl)
-                .chatId(getChatId(statusBarNotification))
+                .chatId(resolveChatId(statusBarNotification))
                 .timestamp(statusBarNotification.getPostTime())
                 .replyAction(extractReplyAction(statusBarNotification))
                 .icon(largeIconBitmap)
@@ -67,6 +72,22 @@ public class LineNotificationBuilder {
 
     private String getAndroidTitle(final StatusBarNotification statusBarNotification) {
         return statusBarNotification.getNotification().extras.getString("android.title");
+    }
+
+    private String resolveChatId(final StatusBarNotification statusBarNotification) {
+        if (isCall(statusBarNotification)) {
+            return CALL_VIRTUAL_CHAT_ID;
+        }
+        return getChatId(statusBarNotification);
+    }
+
+    private boolean isCall(final StatusBarNotification statusBarNotification) {
+        if (CALL_CATEGORY.equals(statusBarNotification.getNotification().category) ||
+                MISSED_CALL_TAG.equals(statusBarNotification.getTag()) ||
+                CALLING_TEXT.equals(getMessage(statusBarNotification))) {
+            return true;
+        }
+        return false;
     }
 
     private String getChatId(final StatusBarNotification statusBarNotification) {
@@ -120,6 +141,10 @@ public class LineNotificationBuilder {
                 .setName(sender)
                 .setIcon(icon)
                 .build();
+    }
+
+    private String getMessage(StatusBarNotification statusBarNotification) {
+        return statusBarNotification.getNotification().extras.getString("android.text");
     }
 
     private Notification.Action extractReplyAction(StatusBarNotification notificationFromLine) {
