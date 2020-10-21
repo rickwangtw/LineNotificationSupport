@@ -1,12 +1,15 @@
 package com.mysticwind.linenotificationsupport.utils;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -16,6 +19,7 @@ import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.MainActivity;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
+import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -80,7 +84,7 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
         final Intent intent = new Intent(context, MainActivity.class);
         final PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Notification singleNotification = new NotificationCompat.Builder(context, MainActivity.CHANNEL_ID)
+        Notification singleNotification = new NotificationCompat.Builder(context, lineNotification.getChatId())
                 .setStyle(style)
                 .setContentTitle(lineNotification.getTitle())
                 .setContentText(lineNotification.getMessage())
@@ -91,6 +95,8 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
                 .build();
 
         addActionInNotification(singleNotification);
+
+        createNotificationChannel();
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(notificationId, singleNotification);
@@ -126,6 +132,30 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
         }
     }
 
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            final String channelId = lineNotification.getChatId();
+            final String channelName = getChannelName();
+            final String description = "Notification channel for " + channelName;
+            NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    private String getChannelName() {
+        if (LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID.equals(lineNotification.getChatId())) {
+            return "Calls";
+        }
+        return lineNotification.getTitle();
+    }
+
     private void showGroupNotification() {
         NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
         for (CharSequence text: currentNotificationMessages) {
@@ -134,7 +164,7 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
         int groupCount = currentNotificationMessages.size() + 1;
         style.setSummaryText(groupCount + " new notifications");
 
-        Notification groupNotification = new NotificationCompat.Builder(context, MainActivity.CHANNEL_ID)
+        Notification groupNotification = new NotificationCompat.Builder(context, lineNotification.getChatId())
                 .setStyle(style)
                 .setContentTitle(lineNotification.getTitle())
                 .setContentText(currentNotificationMessages.get(0))

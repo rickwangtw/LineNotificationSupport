@@ -18,7 +18,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 public class LineNotificationBuilder {
 
-    private static final String CALL_VIRTUAL_CHAT_ID = "call_virtual_chat_id";
+    public static final String CALL_VIRTUAL_CHAT_ID = "call_virtual_chat_id";
+
     private static final String CALL_CATEGORY = "call";
     private static final String MISSED_CALL_TAG = "NOTIFICATION_TAG_MISSED_CALL";
     private static final String CALLING_TEXT = "LINE通話中";
