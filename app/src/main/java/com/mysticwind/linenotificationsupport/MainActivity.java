@@ -1,17 +1,22 @@
 package com.mysticwind.linenotificationsupport;
 
+import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.service.notification.StatusBarNotification;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.NotificationCompat;
@@ -44,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
             "MessageGroup2", GROUP_ID + 1
     );
 
+    private Dialog grantPermissionDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,6 +77,9 @@ public class MainActivity extends AppCompatActivity {
         });
 
         createNotificationChannel();
+        if (grantPermissionDialog == null) {
+            grantPermissionDialog = createGrantPermissionDialog();
+        }
     }
 
     private void sendNotification(String groupKey, String message) {
@@ -167,6 +177,45 @@ public class MainActivity extends AppCompatActivity {
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (hasNotificationAccess()) {
+            if (grantPermissionDialog.isShowing()) {
+                grantPermissionDialog.dismiss();
+            }
+        } else {
+            grantPermissionDialog.show();
+        }
+    }
+
+    private Dialog createGrantPermissionDialog() {
+        return new AlertDialog.Builder(this)
+                // TODO localization
+                .setMessage("You'll need to grant permissions for this app to access Line notifications.")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        redirectToNotificationSettingsPage();
+                    }
+                })
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setCancelable(false)
+                .create();
+    }
+
+    private boolean hasNotificationAccess() {
+        final ContentResolver contentResolver = getContentResolver();
+        String enabledNotificationListeners =
+                Settings.Secure.getString(contentResolver, "enabled_notification_listeners");
+        String packageName = getPackageName();
+        return enabledNotificationListeners != null && enabledNotificationListeners.contains(packageName);
+    }
+
+    private void redirectToNotificationSettingsPage() {
+        startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
     }
 
     @Override
