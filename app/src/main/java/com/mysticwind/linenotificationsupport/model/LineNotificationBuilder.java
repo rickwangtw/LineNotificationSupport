@@ -12,7 +12,9 @@ import android.service.notification.StatusBarNotification;
 import androidx.core.app.Person;
 import androidx.core.graphics.drawable.IconCompat;
 
-import org.apache.commons.lang3.StringUtils;
+import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 public class LineNotificationBuilder {
 
@@ -22,27 +24,17 @@ public class LineNotificationBuilder {
     private static final String CALLING_TEXT = "LINE通話中";
 
     private final Context context;
+    private final ChatTitleAndSenderResolver chatTitleAndSenderResolver;
 
-    public LineNotificationBuilder(Context context) {
+    public LineNotificationBuilder(Context context, ChatTitleAndSenderResolver chatTitleAndSenderResolver) {
         this.context = context;
+        this.chatTitleAndSenderResolver = chatTitleAndSenderResolver;
     }
 
     public LineNotification from(StatusBarNotification statusBarNotification) {
-        // individual: android.title is the sender
-        // group chat: android.title is "group title：sender", android.conversationTitle is group title
-        // chat with multi-folks: android.title is also the sender, no way to differentiate between individual and multi-folks :(
-
-        final String title;
-        final String sender;
-        if (isChatGroup(statusBarNotification)) {
-            title = getGroupChatTitle(statusBarNotification);
-            final String androidTitle = getAndroidTitle(statusBarNotification);
-            sender = androidTitle.replace(title + "：", "");
-        } else {
-            title = getAndroidTitle(statusBarNotification);
-            sender = getAndroidTitle(statusBarNotification);
-        }
-
+        final Pair<String, String> titleAndSender = chatTitleAndSenderResolver.resolveTitleAndSender(statusBarNotification);
+        final String title = titleAndSender.getLeft();
+        final String sender = titleAndSender.getRight();
         final Bitmap largeIconBitmap = getLargeIconBitmap(statusBarNotification);
         final Person senderPerson = buildPerson(sender, largeIconBitmap);
 
@@ -58,20 +50,6 @@ public class LineNotificationBuilder {
                 .replyAction(extractReplyAction(statusBarNotification))
                 .icon(largeIconBitmap)
                 .build();
-    }
-
-    private boolean isChatGroup(final StatusBarNotification statusBarNotification) {
-        final String title = statusBarNotification.getNotification().extras.getString("android.conversationTitle");
-        return StringUtils.isNotBlank(title);
-    }
-
-    private String getGroupChatTitle(final StatusBarNotification statusBarNotification) {
-        // chat groups will have a conversationTitle (but not groups of people)
-        return statusBarNotification.getNotification().extras.getString("android.conversationTitle");
-    }
-
-    private String getAndroidTitle(final StatusBarNotification statusBarNotification) {
-        return statusBarNotification.getNotification().extras.getString("android.title");
     }
 
     private String resolveChatId(final StatusBarNotification statusBarNotification) {

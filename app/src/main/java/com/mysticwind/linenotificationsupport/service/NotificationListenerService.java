@@ -8,6 +8,7 @@ import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import com.google.common.base.MoreObjects;
+import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
@@ -29,6 +30,7 @@ public class NotificationListenerService
 
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
+    private static final ChatTitleAndSenderResolver CHAT_TITLE_AND_SENDER_RESOLVER = new ChatTitleAndSenderResolver();
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -79,7 +81,8 @@ public class NotificationListenerService
     }
 
     private void sendNotification(StatusBarNotification notificationFromLine) {
-        final LineNotification lineNotification = new LineNotificationBuilder(this).from(notificationFromLine);
+        final LineNotification lineNotification = new LineNotificationBuilder(this,
+                CHAT_TITLE_AND_SENDER_RESOLVER).from(notificationFromLine);
         final int groupId = GROUP_ID_RESOLVER.resolveGroupId(lineNotification.getChatId());
 
         List<CharSequence> currentNotificationMessages = new ArrayList<>();
