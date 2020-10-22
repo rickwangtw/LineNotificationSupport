@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -27,7 +28,11 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
+
+import static android.content.Context.NOTIFICATION_SERVICE;
+import static androidx.core.app.NotificationCompat.EXTRA_TEXT;
 
 public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void, Bitmap> {
 
@@ -35,23 +40,19 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
 
     private Context context;
     private LineNotification lineNotification;
-    private boolean showGroupNotification;
-    private List<CharSequence> currentNotificationMessages;
+    private List<CharSequence> currentNotificationMessages = new ArrayList<>();
     private int notificationId;
-    private int groupId;
+    private GroupIdResolver groupIdResolver;
 
     public ImageNotificationPublisherAsyncTask(Context context,
                                                LineNotification lineNotification,
-                                               boolean shouldShowGroupNotification,
-                                               List<CharSequence> currentNotificationMessages,
-                                               int notificationId, int groupId) {
+                                               int notificationId,
+                                               GroupIdResolver groupIdResolver) {
         super();
         this.context = context;
         this.lineNotification = lineNotification;
-        this.showGroupNotification = shouldShowGroupNotification;
-        this.currentNotificationMessages = currentNotificationMessages;
         this.notificationId = notificationId;
-        this.groupId = groupId;
+        this.groupIdResolver = groupIdResolver;
     }
 
     @Override
@@ -72,6 +73,32 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
             Log.e(TAG, String.format("Failed to download image %s: %s",
                     lineNotification.getLineStickerUrl(), e.getMessage()), e);
             return null;
+        }
+    }
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+
+        if (StringUtils.isBlank(lineNotification.getChatId())) {
+            return;
+        }
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return;
+        }
+
+        currentNotificationMessages.add(lineNotification.getMessage());
+
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+
+        final int groupId = groupIdResolver.resolveGroupId(lineNotification.getChatId());
+        for (final StatusBarNotification statusBarNotification : notificationManager.getActiveNotifications()) {
+            if (statusBarNotification.getId() != groupId &&
+                    lineNotification.getChatId().equalsIgnoreCase(statusBarNotification.getNotification().getGroup())) {
+                currentNotificationMessages.add(statusBarNotification.getNotification().extras.getCharSequence(EXTRA_TEXT));
+                break;
+            }
         }
     }
 
@@ -101,7 +128,7 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(notificationId, singleNotification);
 
-        if (showGroupNotification) {
+        if (currentNotificationMessages.size() > 1) {
             showGroupNotification();
         }
     }
@@ -174,7 +201,10 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
                 .setGroupSummary(true)
                 .build();
 
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+
+        int groupId = groupIdResolver.resolveGroupId(lineNotification.getChatId());
+
+        final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(groupId, groupNotification);
     }
 

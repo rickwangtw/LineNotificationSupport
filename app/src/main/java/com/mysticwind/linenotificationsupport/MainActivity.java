@@ -2,7 +2,6 @@ package com.mysticwind.linenotificationsupport;
 
 import android.app.Dialog;
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
@@ -25,14 +24,13 @@ import androidx.core.app.Person;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.common.collect.ImmutableMap;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
+import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.ImageNotificationPublisherAsyncTask;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static androidx.core.app.NotificationCompat.EXTRA_TEXT;
 
@@ -40,14 +38,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private static final String CHANNEL_NAME = "LineNotificationSupport";
-    private static final String CHANNEL_DESCRIPTION = "Republish Line notifications";
     public static final String CHANNEL_ID = "converted-jp.naver.line.android.notification.NewMessages";
-    private static final int GROUP_ID = 0x80;
-    private static final Map<String, Integer> groupKeyToGroupIdMap = ImmutableMap.of(
-            "MessageGroup",GROUP_ID,
-            "MessageGroup2", GROUP_ID + 1
-    );
+    private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver(1);
 
     private Dialog grantPermissionDialog;
 
@@ -87,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         boolean shouldShowGroupNotification = false;
         List<CharSequence> currentNotificationMessages = new ArrayList<>();
         currentNotificationMessages.add(message);
-        final int groupId = groupKeyToGroupIdMap.get(groupKey);
+        final int groupId = GROUP_ID_RESOLVER.resolveGroupId(groupKey);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             for (StatusBarNotification sbn : notificationManager.getActiveNotifications()) {
@@ -126,8 +118,7 @@ public class MainActivity extends AppCompatActivity {
                     .sender(sender)
                     .build();
             new ImageNotificationPublisherAsyncTask(this, lineNotification,
-                    shouldShowGroupNotification, currentNotificationMessages,
-                    notificationId, groupKeyToGroupIdMap.get(groupKey)).execute();
+                    notificationId, GROUP_ID_RESOLVER).execute();
         } else {
             Notification singleNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setContentTitle("Title")
@@ -159,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
                 .setGroupSummary(true)
                 .build();
 
-        final int groupId = groupKeyToGroupIdMap.get(groupKey);
+        final int groupId = GROUP_ID_RESOLVER.resolveGroupId(groupKey);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
         notificationManager.notify(groupId, groupNotification);
     }

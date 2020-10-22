@@ -10,6 +10,13 @@ public class GroupIdResolver {
     private final Map<String, Integer> chatIdToGroupIdMap = new HashMap<>();
     private int lastGroupId = GROUP_ID_START;
 
+    public GroupIdResolver() {
+    }
+
+    public GroupIdResolver(final int lastGroupId) {
+        this.lastGroupId = lastGroupId;
+    }
+
     public int resolveGroupId(final String chatId) {
         return chatIdToGroupIdMap.computeIfAbsent(chatId, chatIdWithoutGroupId ->
             getNextLastGroupId()

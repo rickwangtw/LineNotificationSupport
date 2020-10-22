@@ -38,6 +38,7 @@ public class LineNotificationBuilder {
         final String sender = titleAndSender.getRight();
         final Bitmap largeIconBitmap = getLargeIconBitmap(statusBarNotification);
         final Person senderPerson = buildPerson(sender, largeIconBitmap);
+        final LineNotification.CallState callState = resolveCallState(statusBarNotification);
 
         final String message = getMessage(statusBarNotification);
         final String lineStickerUrl = getLineStickerUrl(statusBarNotification);
@@ -46,27 +47,30 @@ public class LineNotificationBuilder {
                 .message(message)
                 .sender(senderPerson)
                 .lineStickerUrl(lineStickerUrl)
-                .chatId(resolveChatId(statusBarNotification))
+                .chatId(resolveChatId(statusBarNotification, callState))
                 .timestamp(statusBarNotification.getPostTime())
                 .replyAction(extractReplyAction(statusBarNotification))
                 .icon(largeIconBitmap)
+                .callState(callState)
                 .build();
     }
 
-    private String resolveChatId(final StatusBarNotification statusBarNotification) {
-        if (isCall(statusBarNotification)) {
+    private LineNotification.CallState resolveCallState(final StatusBarNotification statusBarNotification) {
+        if (CALL_CATEGORY.equals(statusBarNotification.getNotification().category)) {
+            return LineNotification.CallState.INCOMING;
+        } else if (MISSED_CALL_TAG.equals(statusBarNotification.getTag())) {
+            return LineNotification.CallState.MISSED_CALL;
+        } else if (CALLING_TEXT.equals(getMessage(statusBarNotification))) {
+            return LineNotification.CallState.IN_A_CALL;
+        }
+        return null;
+    }
+
+    private String resolveChatId(final StatusBarNotification statusBarNotification, LineNotification.CallState callState) {
+        if (callState != null) {
             return CALL_VIRTUAL_CHAT_ID;
         }
         return getChatId(statusBarNotification);
-    }
-
-    private boolean isCall(final StatusBarNotification statusBarNotification) {
-        if (CALL_CATEGORY.equals(statusBarNotification.getNotification().category) ||
-                MISSED_CALL_TAG.equals(statusBarNotification.getTag()) ||
-                CALLING_TEXT.equals(getMessage(statusBarNotification))) {
-            return true;
-        }
-        return false;
     }
 
     private String getChatId(final StatusBarNotification statusBarNotification) {
