@@ -35,7 +35,7 @@ public class ChatTitleAndSenderResolver {
         }
 
         chatIdToSenderMultimap.put(chatId, sender);
-        return Pair.of(sender, sortAndMerge(chatIdToSenderMultimap.get(chatId)));
+        return Pair.of(sortAndMerge(chatIdToSenderMultimap.get(chatId)), sender);
     }
 
     private boolean isChatGroup(final StatusBarNotification statusBarNotification) {
