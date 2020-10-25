@@ -21,8 +21,7 @@ public class ChatTitleAndSenderResolver {
         // it is straightforward for chat groups
         if (isChatGroup(statusBarNotification)) {
             final String title = getGroupChatTitle(statusBarNotification);
-            final String androidTitle = getAndroidTitle(statusBarNotification);
-            final String sender = androidTitle.replace(title + "：", "");
+            final String sender = calculateGroupSender(statusBarNotification);
             return Pair.of(title, sender);
         }
         // for others, it can be an individual or multiple folks without a group name
@@ -46,6 +45,38 @@ public class ChatTitleAndSenderResolver {
     private String getGroupChatTitle(final StatusBarNotification statusBarNotification) {
         // chat groups will have a conversationTitle (but not groups of people)
         return statusBarNotification.getNotification().extras.getString("android.conversationTitle");
+    }
+
+    private String calculateGroupSender(StatusBarNotification statusBarNotification) {
+        final String groupName = getGroupChatTitle(statusBarNotification);
+        // group title will be something like GROUP_NAME: SENDER
+        final String androidTitle = getAndroidTitle(statusBarNotification);
+        // tickerText will be something like SENDER: message
+        final String tickerText = statusBarNotification.getNotification().tickerText.toString();
+        final String message = getMessage(statusBarNotification);
+
+        // step 1: remove GROUP_NAME from androidTitle (remainder: ": SENDER")
+        final String androidTitleWithoutGroupName = androidTitle.replace(groupName, "");
+        // step 2: remove message from tickerTest (remainder: "SENDER: ")
+        final String tickerTextWithoutMessage = tickerText.replace(message, "");
+        // step 3: find the common substring from the results in step 1 and 2
+        for (int index = 0 ; index < androidTitleWithoutGroupName.length() ; ++index) {
+            char character = androidTitleWithoutGroupName.charAt(index);
+            if (character == tickerTextWithoutMessage.charAt(0)) {
+                // we might have found a match - may not be a match if the sender starts with colon (is it possible?)
+                final String potentialMatch = androidTitleWithoutGroupName.substring(index);
+                if (tickerTextWithoutMessage.startsWith(potentialMatch)) {
+                    return potentialMatch;
+                }
+            }
+        }
+        // fallback if we can't find a common substring for whatever reason
+        return tickerTextWithoutMessage;
+    }
+
+    // TODO remove duplicate (also in LineNotificationBuilder
+    private String getMessage(StatusBarNotification statusBarNotification) {
+        return statusBarNotification.getNotification().extras.getString("android.text");
     }
 
     private String getAndroidTitle(final StatusBarNotification statusBarNotification) {

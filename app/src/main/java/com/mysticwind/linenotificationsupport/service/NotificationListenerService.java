@@ -1,5 +1,6 @@
 package com.mysticwind.linenotificationsupport.service;
 
+import android.app.Notification;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
@@ -16,9 +17,12 @@ import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.ImageNotificationPublisherAsyncTask;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.mutable.MutableInt;
+
+import java.util.Arrays;
 
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
@@ -67,6 +71,7 @@ public class NotificationListenerService
                 .add("user", statusBarNotification.getUser().toString())
                 .add("overrideGroupKey", statusBarNotification.getOverrideGroupKey())
                 .add("notification", ToStringBuilder.reflectionToString(statusBarNotification.getNotification()))
+                .add("actionLabels", extractActionLabels(statusBarNotification))
                 .toString();
         Log.i(TAG, String.format("Notification (%s): %s",
                 statusBarNotification.getPackageName(),
@@ -80,6 +85,18 @@ public class NotificationListenerService
         final String summaryText = statusBarNotification.getNotification().extras
                 .getString("android.summaryText");
         return StringUtils.isNotBlank(summaryText);
+    }
+
+    private String extractActionLabels(StatusBarNotification statusBarNotification) {
+        final Notification.Action[] actions = statusBarNotification.getNotification().actions;
+        if (ArrayUtils.isEmpty(actions)) {
+            return "N/A";
+        }
+        return Arrays.stream(actions)
+                .filter(action -> action.title != null)
+                .map(action -> action.title.toString())
+                .reduce((title1, title2) -> title1 + "," + title2)
+                .orElse("No title");
     }
 
     private void sendNotification(StatusBarNotification notificationFromLine) {
