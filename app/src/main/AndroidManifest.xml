@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LineNotificationSupport">
         <activity
-            android:name=".MainActivity"
+            android:name=".HelpActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.LineNotificationSupport.NoActionBar">
             <intent-filter>
