@@ -12,6 +12,7 @@ import android.service.notification.StatusBarNotification;
 import androidx.core.app.Person;
 import androidx.core.graphics.drawable.IconCompat;
 
+import com.mysticwind.linenotificationsupport.localization.LocalizationHelper;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -22,7 +23,6 @@ public class LineNotificationBuilder {
 
     private static final String CALL_CATEGORY = "call";
     private static final String MISSED_CALL_TAG = "NOTIFICATION_TAG_MISSED_CALL";
-    private static final String CALLING_TEXT = "LINE通話中";
 
     private final Context context;
     private final ChatTitleAndSenderResolver chatTitleAndSenderResolver;
@@ -60,7 +60,7 @@ public class LineNotificationBuilder {
             return LineNotification.CallState.INCOMING;
         } else if (MISSED_CALL_TAG.equals(statusBarNotification.getTag())) {
             return LineNotification.CallState.MISSED_CALL;
-        } else if (CALLING_TEXT.equals(getMessage(statusBarNotification))) {
+        } else if (LocalizationHelper.isCallInProgressText(getMessage(statusBarNotification))) {
             return LineNotification.CallState.IN_A_CALL;
         }
         return null;
@@ -138,8 +138,7 @@ public class LineNotificationBuilder {
             return null;
         }
         Notification.Action secondAction = notificationFromLine.getNotification().actions[1];
-        // TODO what about other languages? should extract from Line apk?
-        if ("回覆".equals(secondAction.title)) {
+        if (LocalizationHelper.isReplyActionText(secondAction.title.toString())) {
             return secondAction;
         }
         return null;
