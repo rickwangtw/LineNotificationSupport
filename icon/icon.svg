@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="48"
+   height="48"
+   viewBox="0 0 12.7 12.7"
+   version="1.1"
+   id="svg1011"
+   inkscape:version="1.0.1 (c497b03c, 2020-09-10)"
+   sodipodi:docname="icon.svg">
+  <defs
+     id="defs1005">
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter887"
+       x="-0.014001909"
+       width="1.0280038"
+       y="-0.036764035"
+       height="1.0735281">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.01638078"
+         id="feGaussianBlur889" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6177492"
+     inkscape:cx="43.108614"
+     inkscape:cy="17.547881"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1252"
+     inkscape:window-height="755"
+     inkscape:window-x="0"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata1008">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g130"
+       transform="matrix(0.26458333,0,0,0.26458333,1.1628147,3.2503868)">
+      <path
+         d="M 0,0 H 24 V 24 H 0 Z"
+         fill="none"
+         opacity="0.1"
+         id="path116" />
+      <path
+         d="M 20,12 C 20,9.46 18.81,7.19 16.96,5.73 L 16,0 H 8 L 7.05,5.73 C 5.19,7.19 4,9.45 4,12 c 0,2.55 1.19,4.81 3.05,6.27 L 8,24 h 8 l 0.96,-5.73 C 18.81,16.81 20,14.54 20,12 Z M 6,12 c 0,-3.31 2.69,-6 6,-6 3.31,0 6,2.69 6,6 0,3.31 -2.69,6 -6,6 -3.31,0 -6,-2.69 -6,-6 z"
+         id="path118" />
+    </g>
+    <g
+       style="fill:#000000"
+       id="g176"
+       transform="matrix(0.1984375,0,0,0.1984375,6.4253868,3.9166669)">
+      <path
+         d="M 0,0 H 24 V 24 H 0 Z"
+         fill="none"
+         id="path162" />
+      <path
+         d="M 22,2 H 2 V 22 L 6,18 H 22 Z M 20,16 H 6 L 4,18 V 4 h 16 z"
+         id="path164" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583;filter:url(#filter887)"
+       x="7.3001504"
+       y="6.4052939"
+       id="text848"><tspan
+         sodipodi:role="line"
+         id="tspan846"
+         x="7.3001504"
+         y="6.4052939"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:Geneva;-inkscape-font-specification:'Geneva, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">LINE</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583;filter:url(#filter887)"
+       x="7.3001504"
+       y="6.4052939"
+       id="text906"><tspan
+         sodipodi:role="line"
+         id="tspan904"
+         x="7.3001504"
+         y="6.4052939"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:Geneva;-inkscape-font-specification:'Geneva, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583">LINE</tspan></text>
+    <g
+       aria-label="LINE"
+       id="text929"
+       style="font-style:normal;font-weight:normal;font-size:10.5833px;line-height:1.25;font-family:sans-serif;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       transform="translate(-0.47097747,1.2716392)">
+      <path
+         d="M 7.8724134,5.1336546 V 4.0642978 h 0.1391818 v 0.9515346 h 0.5608611 v 0.1178222 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:Geneva;-inkscape-font-specification:'Geneva, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+         id="path908" />
+      <path
+         d="M 8.8356614,5.1336546 H 8.6964797 V 4.0642978 h 0.1391817 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:Geneva;-inkscape-font-specification:'Geneva, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+         id="path910" />
+      <path
+         d="M 9.1663903,5.1336546 H 9.0382328 V 4.0642978 h 0.1378038 l 0.4885141,0.7599875 0.044786,0.084749 -0.00276,-0.08406 V 4.0642978 H 9.8347383 V 5.1336546 H 9.6983126 L 9.2084204,4.370222 9.1636344,4.284095 l 0.00276,0.086127 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:Geneva;-inkscape-font-specification:'Geneva, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+         id="path912" />
+      <path
+         d="M 10.038688,5.1336546 V 4.0642978 h 0.604269 V 4.1821199 H 10.17787 V 4.51905 h 0.405832 V 4.6258479 H 10.17787 v 0.3899845 h 0.502294 v 0.1178222 z"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:Geneva;-inkscape-font-specification:'Geneva, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.264583"
+         id="path914" />
+    </g>
+  </g>
+</svg>
