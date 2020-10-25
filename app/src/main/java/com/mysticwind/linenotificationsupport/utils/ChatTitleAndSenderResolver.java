@@ -60,7 +60,7 @@ public class ChatTitleAndSenderResolver {
         return senders.stream()
                 .sorted()
                 .reduce((sender1, sender2) -> sender1 + "," + sender2)
-                .get(); // there should always be one senders
+                .get(); // there should always be at least one sender
     }
 
 }
