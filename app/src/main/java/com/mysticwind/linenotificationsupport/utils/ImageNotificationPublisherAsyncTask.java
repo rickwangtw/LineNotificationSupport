@@ -169,6 +169,7 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
             final String description = "Notification channel for " + channelName;
             NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
             channel.setDescription(description);
+            channel.enableVibration(true);
             // Register the channel with the system; you can't change the importance
             // or other notification behaviors after this
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
