@@ -1,6 +1,7 @@
 package com.mysticwind.linenotificationsupport.utils;
 
 import android.service.notification.StatusBarNotification;
+import android.util.Log;
 
 import com.google.common.collect.HashMultimap;
 
@@ -10,6 +11,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.Set;
 
 public class ChatTitleAndSenderResolver {
+
+    private static final String TAG = ChatTitleAndSenderResolver.class.getSimpleName();
 
     private final HashMultimap<String, String> chatIdToSenderMultimap = HashMultimap.create();
 
@@ -53,30 +56,24 @@ public class ChatTitleAndSenderResolver {
         final String androidTitle = getAndroidTitle(statusBarNotification);
         // tickerText will be something like SENDER: message
         final String tickerText = statusBarNotification.getNotification().tickerText.toString();
-        final String message = getMessage(statusBarNotification);
 
         // step 1: remove GROUP_NAME from androidTitle (remainder: ": SENDER")
         final String androidTitleWithoutGroupName = androidTitle.replace(groupName, "");
-        // step 2: remove message from tickerTest (remainder: "SENDER: ")
-        final String tickerTextWithoutMessage = tickerText.replace(message, "");
-        // step 3: find the common substring from the results in step 1 and 2
+        // step 2: find the common substring from the results in step 1 and 2
         for (int index = 0 ; index < androidTitleWithoutGroupName.length() ; ++index) {
             char character = androidTitleWithoutGroupName.charAt(index);
-            if (character == tickerTextWithoutMessage.charAt(0)) {
+            if (character == tickerText.charAt(0)) {
                 // we might have found a match - may not be a match if the sender starts with colon (is it possible?)
                 final String potentialMatch = androidTitleWithoutGroupName.substring(index);
-                if (tickerTextWithoutMessage.startsWith(potentialMatch)) {
+                if (tickerText.startsWith(potentialMatch)) {
                     return potentialMatch;
                 }
             }
         }
         // fallback if we can't find a common substring for whatever reason
-        return tickerTextWithoutMessage;
-    }
-
-    // TODO remove duplicate (also in LineNotificationBuilder
-    private String getMessage(StatusBarNotification statusBarNotification) {
-        return statusBarNotification.getNotification().extras.getString("android.text");
+        Log.w(TAG, String.format("Cannot find common substring with group:(%s) title:(%s) ticker(%s)",
+                groupName, androidTitle, tickerText));
+        return tickerText;
     }
 
     private String getAndroidTitle(final StatusBarNotification statusBarNotification) {
