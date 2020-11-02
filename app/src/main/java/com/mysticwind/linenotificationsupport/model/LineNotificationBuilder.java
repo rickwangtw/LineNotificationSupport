@@ -15,14 +15,16 @@ import androidx.core.graphics.drawable.IconCompat;
 import com.mysticwind.linenotificationsupport.localization.LocalizationHelper;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 public class LineNotificationBuilder {
 
     public static final String CALL_VIRTUAL_CHAT_ID = "call_virtual_chat_id";
+    public static final String DEFAULT_CHAT_ID = "default_chat_id";
 
-    private static final String CALL_CATEGORY = "call";
-    private static final String MISSED_CALL_TAG = "NOTIFICATION_TAG_MISSED_CALL";
+    protected static final String CALL_CATEGORY = "call";
+    protected static final String MISSED_CALL_TAG = "NOTIFICATION_TAG_MISSED_CALL";
 
     private final Context context;
     private final ChatTitleAndSenderResolver chatTitleAndSenderResolver;
@@ -70,7 +72,12 @@ public class LineNotificationBuilder {
         if (callState != null) {
             return CALL_VIRTUAL_CHAT_ID;
         }
-        return getChatId(statusBarNotification);
+        final String lineChatId = getChatId(statusBarNotification);
+        if (StringUtils.isNotBlank(lineChatId)) {
+            return lineChatId;
+        } else {
+            return DEFAULT_CHAT_ID;
+        }
     }
 
     private String getChatId(final StatusBarNotification statusBarNotification) {
