@@ -1,34 +1,22 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory app:title="@string/messages_header">
+    <PreferenceCategory app:title="@string/calls_header">
 
-        <EditTextPreference
-            app:key="signature"
-            app:title="@string/signature_title"
-            app:useSimpleSummaryProvider="true" />
+        <SwitchPreferenceCompat
+            app:key="auto_call_notifications"
+            app:title="@string/auto_call_notifications_title"
+            app:defaultValue="true"
+            app:summaryOff="@string/auto_call_notifications_summary_off"
+            app:summaryOn="@string/auto_call_notifications_summary_on" />
 
         <ListPreference
-            app:defaultValue="reply"
-            app:entries="@array/reply_entries"
-            app:entryValues="@array/reply_values"
-            app:key="reply"
-            app:title="@string/reply_title"
+            app:dependency="auto_call_notifications"
+            app:defaultValue="-1"
+            app:entries="@array/auto_call_timeout_entries"
+            app:entryValues="@array/auto_call_timeout_values"
+            app:key="auto_notifications_timeout"
+            app:title="@string/auto_call_notifications_timeout_title"
             app:useSimpleSummaryProvider="true" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory app:title="@string/sync_header">
-
-        <SwitchPreferenceCompat
-            app:key="sync"
-            app:title="@string/sync_title" />
-
-        <SwitchPreferenceCompat
-            app:dependency="sync"
-            app:key="attachment"
-            app:summaryOff="@string/attachment_summary_off"
-            app:summaryOn="@string/attachment_summary_on"
-            app:title="@string/attachment_title" />
 
     </PreferenceCategory>
 
