@@ -3,4 +3,15 @@
 
     <string name="app_name">LINE提示助手</string>
 
+    <string name="action_settings">设置</string>
+
+    <!-- Preference Titles -->
+    <string name="calls_header">LINE 来电</string>
+
+    <!-- Calls Preferences -->
+    <string name="auto_call_notifications_title">LINE 来电通知</string>
+    <string name="auto_call_notifications_summary_on">收到连续的 LINE 来电通知以避免遗漏。</string>
+    <string name="auto_call_notifications_summary_off">只收到一则 LINE 来电通知。</string>
+    <string name="auto_call_notifications_timeout_title">何时停止连续 LINE 来电通知？</string>
+
 </resources>

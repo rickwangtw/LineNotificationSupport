@@ -13,11 +13,9 @@
 
     <!-- Preference Titles -->
     <string name="calls_header">LINE Calls</string>
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
 
     <!-- Calls Preferences -->
-    <string name="auto_call_notifications_title">Auto notifications during incoming calls</string>
+    <string name="auto_call_notifications_title">Continuous call notifications</string>
     <string name="auto_call_notifications_summary_on">Receive multiple notifications during incoming calls to prevent missing notifications.</string>
     <string name="auto_call_notifications_summary_off">Receive one notification during incoming call.</string>
     <string name="auto_call_notifications_timeout_title">When to stop auto call notifications?</string>
