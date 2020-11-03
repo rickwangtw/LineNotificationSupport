@@ -2,14 +2,17 @@ package com.mysticwind.linenotificationsupport.service;
 
 import android.app.Notification;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import androidx.core.app.NotificationManagerCompat;
+import androidx.preference.PreferenceManager;
 
 import com.google.common.base.MoreObjects;
+import com.mysticwind.linenotificationsupport.model.AutoIncomingCallNotificationState;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
@@ -20,7 +23,6 @@ import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.mutable.MutableInt;
 
 import java.util.Arrays;
 
@@ -33,10 +35,9 @@ public class NotificationListenerService
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
     private static final ChatTitleAndSenderResolver CHAT_TITLE_AND_SENDER_RESOLVER = new ChatTitleAndSenderResolver();
 
-    private final MutableInt incomingCallNotificationId = new MutableInt(0);
     private final Handler handler = new Handler();
 
-    private LineNotification incomingCallLineNotification;
+    private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -107,51 +108,90 @@ public class NotificationListenerService
         new ImageNotificationPublisherAsyncTask(this, lineNotification,
                 notificationId, GROUP_ID_RESOLVER).execute();
 
+        if (lineNotification.getCallState() == null) {
+            return;
+        }
+
+        // deal with auto notifications for calls
         if (lineNotification.getCallState() == LineNotification.CallState.INCOMING) {
-            incomingCallLineNotification = lineNotification;
-            sendIncomingCallNotification();
-        } else if (lineNotification.getCallState() == LineNotification.CallState.MISSED_CALL ||
-                lineNotification.getCallState() == LineNotification.CallState.IN_A_CALL) {
-            // clear the incoming call notification so that we stop sending more messages
-            incomingCallLineNotification = null;
-            cancelIncomingCallNotification();
-            incomingCallNotificationId.setValue(0);
+            if (this.autoIncomingCallNotificationState != null) {
+                this.autoIncomingCallNotificationState.cancel();
+            }
+            this.autoIncomingCallNotificationState = AutoIncomingCallNotificationState.builder()
+                    .lineNotification(lineNotification)
+                    .timeoutInSeconds(getAutoSendTimeoutInSecondsFromPreferences())
+                    .build();
+            sendIncomingCallNotification(this.autoIncomingCallNotificationState);
+        }
+
+        final AutoIncomingCallNotificationState autoIncomingCallNotificationState = this.autoIncomingCallNotificationState;
+        if (autoIncomingCallNotificationState == null) {
+            return;
+        }
+
+        if (lineNotification.getCallState() == LineNotification.CallState.MISSED_CALL) {
+            autoIncomingCallNotificationState.setMissedCall();
+        } else if (lineNotification.getCallState() == LineNotification.CallState.IN_A_CALL) {
+            autoIncomingCallNotificationState.setAccepted();
         }
     }
 
-    private void sendIncomingCallNotification() {
-        try {
-            if (incomingCallLineNotification == null) {
-                return;
-            }
+    private long getAutoSendTimeoutInSecondsFromPreferences() {
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        final boolean shouldAutoNotify = preferences.getBoolean("auto_call_notifications", true);
+        if (!shouldAutoNotify) {
+            return 0;
+        }
+        final String timeoutString = preferences.getString("auto_notifications_timeout", "-1");
+        final int timeout = parseTimeout(timeoutString);
+        if (timeout < 0) {
+            // 15 min should be more than enough
+            return 15 * 60;
+        } else {
+            return timeout;
+        }
+    }
 
+    private int parseTimeout(String timeoutString) {
+        try {
+            return Integer.parseInt(timeoutString);
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    private void sendIncomingCallNotification(final AutoIncomingCallNotificationState autoIncomingCallNotificationState) {
+        if (!autoIncomingCallNotificationState.shouldNotify()) {
+            return;
+        }
+        try {
             // cancel the old one
-            cancelIncomingCallNotification();
+            cancelIncomingCallNotification(autoIncomingCallNotificationState.getLastIncomingCallNotificationId());
 
             // resend a new one
-            incomingCallNotificationId.setValue(NOTIFICATION_ID_GENERATOR.getNextNotificationId());
+            int nextNotificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
 
-            new ImageNotificationPublisherAsyncTask(NotificationListenerService.this, incomingCallLineNotification,
-                    incomingCallNotificationId.getValue(), GROUP_ID_RESOLVER).execute();
+            new ImageNotificationPublisherAsyncTask(NotificationListenerService.this,
+                    autoIncomingCallNotificationState.getLineNotification(), nextNotificationId,
+                    GROUP_ID_RESOLVER).execute();
+
+            autoIncomingCallNotificationState.notified(nextNotificationId);
         } catch (Exception e) {
             Log.e(TAG, "Failed to send incoming call notifications: " + e.getMessage(), e);
         }
-        if (incomingCallLineNotification != null) {
-            scheduleNextIncomingCallNotification();
-        }
+
+        scheduleNextIncomingCallNotification(autoIncomingCallNotificationState);
     }
 
-    private void cancelIncomingCallNotification() {
-        if (incomingCallNotificationId.getValue() != 0) {
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(NotificationListenerService.this);
-            notificationManager.cancel(incomingCallNotificationId.getValue().intValue());
-        }
+    private void cancelIncomingCallNotification(final int notificationId) {
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(NotificationListenerService.this);
+        notificationManager.cancel(notificationId);
     }
 
-    private void scheduleNextIncomingCallNotification() {
+    private void scheduleNextIncomingCallNotification(final AutoIncomingCallNotificationState autoIncomingCallNotificationState) {
         handler.postDelayed(new Runnable() {
             public void run() {
-                sendIncomingCallNotification();
+                sendIncomingCallNotification(autoIncomingCallNotificationState);
             }
         }, 1_500);
     }
