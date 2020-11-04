@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 
+import com.google.common.collect.ImmutableList;
+import com.mysticwind.linenotificationsupport.localization.LocalizationConstants;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -14,6 +16,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -46,6 +50,12 @@ public class LineNotificationBuilderTest {
     @Mock
     private Bundle mockedExtras;
 
+    @Mock
+    private Notification.Action action1;
+
+    @Mock
+    private Notification.Action action2;
+
     private LineNotificationBuilder classUnderTest;
 
     @Before
@@ -57,42 +67,84 @@ public class LineNotificationBuilderTest {
     }
 
     @Test
+    public void testIncomingCallWithTwoActions() {
+        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, LineNotificationBuilder.CALL_CATEGORY, null, null, false));
+
+        assertEquals(ImmutableList.of(action2, action1), lineNotification.getActions());
+    }
+
+    @Test
+    public void testIncomingCallWithOneActionBecauseOnlyOneActionFromLine() {
+        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, LineNotificationBuilder.CALL_CATEGORY, null, null, true));
+
+        assertEquals(ImmutableList.of(action1), lineNotification.getActions());
+    }
+
+    @Test
+    public void testMissedCallWithFirstAction() {
+        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, null, LineNotificationBuilder.MISSED_CALL_TAG, null, false));
+
+        assertEquals(ImmutableList.of(action2), lineNotification.getActions());
+    }
+
+    @Test
+    public void testMissedCallWithNoActionsBecauseOnlyOneActionFromLine() {
+        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, null, LineNotificationBuilder.MISSED_CALL_TAG, null, true));
+
+        assertEquals(Collections.EMPTY_LIST, lineNotification.getActions());
+    }
+
+    @Test
+    public void testInACallWithFirstAction() {
+        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, null, null, LocalizationConstants.CALL_IN_PROGRESS_TEXTS.iterator().next(), false));
+
+        assertEquals(ImmutableList.of(action1), lineNotification.getActions());
+    }
+
+    @Test
     public void testChatReturnsChatId() {
-        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, null, null));
+        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, null, null, null, false));
 
         assertEquals(CHAT_ID, lineNotification.getChatId());
     }
 
     @Test
     public void testCallCategoryReturnsCallChatId() {
-        LineNotification lineNotification = classUnderTest.from(buildNotification(null, LineNotificationBuilder.CALL_CATEGORY, null));
+        LineNotification lineNotification = classUnderTest.from(buildNotification(null, LineNotificationBuilder.CALL_CATEGORY, null, null, false));
 
         assertEquals(LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID, lineNotification.getChatId());
     }
 
     @Test
     public void testMissedCallTagReturnsCallChatId() {
-        LineNotification lineNotification = classUnderTest.from(buildNotification(null, null, LineNotificationBuilder.MISSED_CALL_TAG));
+        LineNotification lineNotification = classUnderTest.from(buildNotification(null, null, LineNotificationBuilder.MISSED_CALL_TAG, null, false));
 
         assertEquals(LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID, lineNotification.getChatId());
     }
 
     @Test
     public void testNoChatIdReturnsDefaultChatId() {
-        LineNotification lineNotification = classUnderTest.from(buildNotification(null, null, null));
+        LineNotification lineNotification = classUnderTest.from(buildNotification(null, null, null, null, false));
 
         assertEquals(LineNotificationBuilder.DEFAULT_CHAT_ID, lineNotification.getChatId());
     }
 
     // TODO add more helper methods
-    private StatusBarNotification buildNotification(final String lineChatId, final String category, final String tag) {
+    private StatusBarNotification buildNotification(final String lineChatId, final String category, final String tag, String message, boolean hasSingleAction) {
+        when(mockedExtras.getString("android.text")).thenReturn(message == null ? ANDROID_TEXT : message);
         when(mockedExtras.getString("android.conversationTitle")).thenReturn(CONVERSATION_TITLE);
-        when(mockedExtras.getString("android.text")).thenReturn(ANDROID_TEXT);
         when(mockedExtras.getString("android.title")).thenReturn(ANDROID_TITLE);
         when(mockedExtras.getString("line.chat.id")).thenReturn(lineChatId);
         when(mockedNotification.getLargeIcon()).thenReturn(null);
 
+
         mockedNotification.category = category;
+
+        if (hasSingleAction) {
+            mockedNotification.actions = new Notification.Action[] {action1};
+        } else {
+            mockedNotification.actions = new Notification.Action[] {action1, action2};
+        }
 
         when(mockedStatusBarNotification.getNotification()).thenReturn(mockedNotification);
         when(mockedStatusBarNotification.getTag()).thenReturn(tag);

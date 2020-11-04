@@ -12,13 +12,14 @@ import android.service.notification.StatusBarNotification;
 import androidx.core.app.Person;
 import androidx.core.graphics.drawable.IconCompat;
 
+import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.localization.LocalizationHelper;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -144,22 +145,42 @@ public class LineNotificationBuilder {
 
     private List<Notification.Action> extractActions(final StatusBarNotification statusBarNotification,
                                                      final LineNotification.CallState callState) {
-        // decline and accept call buttons
-        if (LineNotification.CallState.INCOMING == callState ||
+        if (callState == null) {
+            Notification.Action action = extractReplyAction(statusBarNotification);
+            if (action == null) {
+                return Collections.EMPTY_LIST;
+            }
+            return ImmutableList.of(action);
+        }
+        switch (callState) {
+            // decline and accept call buttons
+            case INCOMING:
+                // reverse the order - accepting a call seems to be more important
+                return extractActionsOfIndices(statusBarNotification, 1, 0);
+            case MISSED_CALL:
                 // reply and redial buttons
-                LineNotification.CallState.MISSED_CALL == callState ||
+                // the reply button opens something on phone, not really helpful
+                return extractActionsOfIndices(statusBarNotification, 1);
+            case IN_A_CALL:
                 // end call button
-                LineNotification.CallState.IN_A_CALL == callState) {
-            final Notification.Action[] actions = statusBarNotification.getNotification().actions;
-            if (actions != null && actions.length > 0) {
-                return Arrays.asList(actions);
+                return extractActionsOfIndices(statusBarNotification, 0);
+            default:
+                return Collections.EMPTY_LIST;
+        }
+    }
+
+    private List<Notification.Action> extractActionsOfIndices(final StatusBarNotification notificationFromLine,
+                                                              final int... indices) {
+        List<Notification.Action> extractedActions = new ArrayList<>();
+        if (notificationFromLine.getNotification().actions == null) {
+            return extractedActions;
+        }
+        for (final int index : indices) {
+            if (index < notificationFromLine.getNotification().actions.length) {
+                extractedActions.add(notificationFromLine.getNotification().actions[index]);
             }
         }
-        final Notification.Action action = extractReplyAction(statusBarNotification);
-        if (action == null) {
-            return Collections.EMPTY_LIST;
-        }
-        return Arrays.asList(action);
+        return extractedActions;
     }
 
     private Notification.Action extractReplyAction(StatusBarNotification notificationFromLine) {
@@ -170,6 +191,9 @@ public class LineNotificationBuilder {
             return null;
         }
         Notification.Action secondAction = notificationFromLine.getNotification().actions[1];
+        if (StringUtils.isBlank(secondAction.title)) {
+            return null;
+        }
         if (LocalizationHelper.isReplyActionText(secondAction.title.toString())) {
             return secondAction;
         }

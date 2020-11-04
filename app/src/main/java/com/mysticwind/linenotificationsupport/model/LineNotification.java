@@ -27,7 +27,7 @@ public class LineNotification {
     private final String chatId;
     private final CallState callState;
     private final long timestamp;
-    // Actions ordered the same as the original LINE notifications
+    // Actions ordered as defined during build time
     private final List<Notification.Action> actions;
     private final Bitmap icon;
 
