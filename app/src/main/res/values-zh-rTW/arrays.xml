@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Auto Call Timeout Preference -->
+    <string-array name="auto_call_timeout_entries">
+        <item>15秒鐘</item>
+        <item>30秒鐘</item>
+        <item>1分鐘</item>
+        <item>2分鐘</item>
+        <item>直到接通或取消</item>
+    </string-array>
+
+</resources>
