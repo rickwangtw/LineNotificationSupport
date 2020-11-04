@@ -31,6 +31,8 @@ public class NotificationListenerService
 
     private static final String TAG = "LINE_NOTIFICATION_SUPPORT";
 
+    private static final String LINE_PACKAGE_NAME = "jp.naver.line.android";
+
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
     private static final ChatTitleAndSenderResolver CHAT_TITLE_AND_SENDER_RESOLVER = new ChatTitleAndSenderResolver();
@@ -51,17 +53,10 @@ public class NotificationListenerService
             return;
         }
 
-        final String packageName = statusBarNotification.getPackageName();
-
-        // let's just focus on Line notifications for now
-        if (!packageName.equals("jp.naver.line.android")) {
+        if (shouldIgnoreNotification(statusBarNotification)) {
             return;
         }
 
-        // ignore summaries
-        if (isSummary(statusBarNotification)) {
-            return;
-        }
 
         final String stringifiedNotification = MoreObjects.toStringHelper(statusBarNotification)
                 .add("packageName", statusBarNotification.getPackageName())
@@ -80,6 +75,21 @@ public class NotificationListenerService
         );
 
         sendNotification(statusBarNotification);
+    }
+
+    private boolean shouldIgnoreNotification(final StatusBarNotification statusBarNotification) {
+        final String packageName = statusBarNotification.getPackageName();
+
+        // let's just focus on Line notifications for now
+        if (!LINE_PACKAGE_NAME.equals(packageName)) {
+            return true;
+        }
+
+        // ignore summaries
+        if (isSummary(statusBarNotification)) {
+            return true;
+        }
+        return false;
     }
 
     private boolean isSummary(final StatusBarNotification statusBarNotification) {
@@ -197,7 +207,20 @@ public class NotificationListenerService
     }
 
     @Override
-    public void onNotificationRemoved(StatusBarNotification sbn) {
-        super.onNotificationRemoved(sbn);
+    public void onNotificationRemoved(StatusBarNotification statusBarNotification) {
+        super.onNotificationRemoved(statusBarNotification);
+
+        if (shouldIgnoreNotification(statusBarNotification)) {
+            return;
+        }
+
+        final LineNotification lineNotification = new LineNotificationBuilder(this,
+                CHAT_TITLE_AND_SENDER_RESOLVER).from(statusBarNotification);
+
+        if (LineNotification.CallState.INCOMING == lineNotification.getCallState() &&
+                this.autoIncomingCallNotificationState != null) {
+            this.autoIncomingCallNotificationState.cancel();
+        }
     }
+
 }
