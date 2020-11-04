@@ -18,6 +18,10 @@ import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public class LineNotificationBuilder {
 
     public static final String CALL_VIRTUAL_CHAT_ID = "call_virtual_chat_id";
@@ -41,6 +45,7 @@ public class LineNotificationBuilder {
         final Bitmap largeIconBitmap = getLargeIconBitmap(statusBarNotification);
         final Person senderPerson = buildPerson(sender, largeIconBitmap);
         final LineNotification.CallState callState = resolveCallState(statusBarNotification);
+        final List<Notification.Action> actions = extractActions(statusBarNotification, callState);
 
         final String message = getMessage(statusBarNotification);
         final String lineStickerUrl = getLineStickerUrl(statusBarNotification);
@@ -51,7 +56,7 @@ public class LineNotificationBuilder {
                 .lineStickerUrl(lineStickerUrl)
                 .chatId(resolveChatId(statusBarNotification, callState))
                 .timestamp(statusBarNotification.getPostTime())
-                .replyAction(extractReplyAction(statusBarNotification))
+                .actions(actions)
                 .icon(largeIconBitmap)
                 .callState(callState)
                 .build();
@@ -135,6 +140,22 @@ public class LineNotificationBuilder {
 
     private String getMessage(StatusBarNotification statusBarNotification) {
         return statusBarNotification.getNotification().extras.getString("android.text");
+    }
+
+    private List<Notification.Action> extractActions(final StatusBarNotification statusBarNotification,
+                                                     final LineNotification.CallState callState) {
+        if (LineNotification.CallState.INCOMING == callState ||
+                LineNotification.CallState.MISSED_CALL == callState) {
+            final Notification.Action[] actions = statusBarNotification.getNotification().actions;
+            if (actions != null && actions.length > 0) {
+                return Arrays.asList(actions);
+            }
+        }
+        final Notification.Action action = extractReplyAction(statusBarNotification);
+        if (action == null) {
+            return Collections.EMPTY_LIST;
+        }
+        return Arrays.asList(action);
     }
 
     private Notification.Action extractReplyAction(StatusBarNotification notificationFromLine) {

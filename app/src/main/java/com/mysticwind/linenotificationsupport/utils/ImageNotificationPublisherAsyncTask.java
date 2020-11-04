@@ -147,14 +147,14 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
     }
 
     private void addActionInNotification(Notification notification) {
-        if (lineNotification.getReplyAction() == null) {
+        if (lineNotification.getActions().isEmpty()) {
             return;
         }
         if (ArrayUtils.isEmpty(notification.actions)) {
-            notification.actions = new Notification.Action[] { lineNotification.getReplyAction() };
+            notification.actions = (Notification.Action[]) lineNotification.getActions().toArray();
         } else {
             List<Notification.Action> actions = Lists.newArrayList(notification.actions);
-            actions.add(lineNotification.getReplyAction());
+            actions.addAll(lineNotification.getActions());
             notification.actions = (Notification.Action[]) actions.toArray();
         }
     }

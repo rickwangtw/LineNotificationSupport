@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 
 import androidx.core.app.Person;
 
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -25,7 +27,8 @@ public class LineNotification {
     private final String chatId;
     private final CallState callState;
     private final long timestamp;
-    private final Notification.Action replyAction;
+    // Actions ordered the same as the original LINE notifications
+    private final List<Notification.Action> actions;
     private final Bitmap icon;
 
 }
