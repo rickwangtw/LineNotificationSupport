@@ -172,6 +172,7 @@ public class NotificationListenerService
 
     private void sendIncomingCallNotification(final AutoIncomingCallNotificationState autoIncomingCallNotificationState) {
         if (!autoIncomingCallNotificationState.shouldNotify()) {
+            cancelIncomingCallNotification(autoIncomingCallNotificationState.getLastIncomingCallNotificationId());
             return;
         }
         try {
