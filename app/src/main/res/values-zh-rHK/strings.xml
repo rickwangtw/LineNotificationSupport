@@ -13,5 +13,6 @@
     <string name="auto_call_notifications_summary_on">收到連續的 LINE 通話通知以避免遺漏。</string>
     <string name="auto_call_notifications_summary_off">只收到一則 LINE 通話通知。</string>
     <string name="auto_call_notifications_timeout_title">何時停止連續 LINE 通話通知？</string>
+    <string name="auto_call_notifications_wait_title">連續 LINE 通話通知的間隔</string>
 
 </resources>

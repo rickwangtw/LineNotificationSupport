@@ -10,4 +10,13 @@
         <item>直到接通或取消</item>
     </string-array>
 
+    <!-- Auto Call Wait Preference -->
+    <string-array name="auto_call_wait_entries">
+        <item>1.5秒钟</item>
+        <item>2秒钟</item>
+        <item>2.5秒钟</item>
+        <item>3秒钟</item>
+        <item>3.5秒钟</item>
+    </string-array>
+
 </resources>

@@ -18,6 +18,15 @@
             app:title="@string/auto_call_notifications_timeout_title"
             app:useSimpleSummaryProvider="true" />
 
+        <ListPreference
+            app:dependency="auto_call_notifications"
+            app:defaultValue="3"
+            app:entries="@array/auto_call_wait_entries"
+            app:entryValues="@array/auto_call_wait_values"
+            app:key="auto_notifications_wait"
+            app:title="@string/auto_call_notifications_wait_title"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
