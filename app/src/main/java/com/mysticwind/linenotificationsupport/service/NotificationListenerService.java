@@ -129,6 +129,7 @@ public class NotificationListenerService
             }
             this.autoIncomingCallNotificationState = AutoIncomingCallNotificationState.builder()
                     .lineNotification(lineNotification)
+                    .waitDurationInSeconds(getWaitDurationInSeconds())
                     .timeoutInSeconds(getAutoSendTimeoutInSecondsFromPreferences())
                     .build();
             sendIncomingCallNotification(this.autoIncomingCallNotificationState);
@@ -144,6 +145,16 @@ public class NotificationListenerService
         } else if (lineNotification.getCallState() == LineNotification.CallState.IN_A_CALL) {
             autoIncomingCallNotificationState.setAccepted();
         }
+    }
+
+    private double getWaitDurationInSeconds() {
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        final boolean shouldAutoNotify = preferences.getBoolean("auto_call_notifications", true);
+        if (!shouldAutoNotify) {
+            return 1000; // a random big value
+        }
+        final String waitTimeString = preferences.getString("auto_notifications_wait", "3.0");
+        return Double.parseDouble(waitTimeString);
     }
 
     private long getAutoSendTimeoutInSecondsFromPreferences() {
@@ -200,11 +211,13 @@ public class NotificationListenerService
     }
 
     private void scheduleNextIncomingCallNotification(final AutoIncomingCallNotificationState autoIncomingCallNotificationState) {
+        final long delayInMillis = (long) (autoIncomingCallNotificationState.getWaitDurationInSeconds() * 1000);
+
         handler.postDelayed(new Runnable() {
             public void run() {
                 sendIncomingCallNotification(autoIncomingCallNotificationState);
             }
-        }, 1_500);
+        }, delayInMillis);
     }
 
     @Override

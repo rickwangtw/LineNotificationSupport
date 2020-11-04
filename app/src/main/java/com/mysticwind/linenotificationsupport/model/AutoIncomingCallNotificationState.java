@@ -7,18 +7,26 @@ import lombok.Builder;
 public class AutoIncomingCallNotificationState {
 
     private final LineNotification lineNotification;
+    private final double waitDurationInSeconds;
 
     private long autoNotifyCallUntilTimestampSecond;
     private int incomingCallNotificationId = 0;
 
     @Builder
-    AutoIncomingCallNotificationState(final LineNotification lineNotification, final long timeoutInSeconds) {
+    AutoIncomingCallNotificationState(final LineNotification lineNotification,
+                                      final double waitDurationInSeconds,
+                                      final long timeoutInSeconds) {
         this.lineNotification = lineNotification;
+        this.waitDurationInSeconds = waitDurationInSeconds;
         this.autoNotifyCallUntilTimestampSecond = Instant.now().getEpochSecond() + timeoutInSeconds;
     }
 
     public LineNotification getLineNotification() {
         return this.lineNotification;
+    }
+
+    public double getWaitDurationInSeconds() {
+        return this.waitDurationInSeconds;
     }
 
     public boolean shouldNotify() {
