@@ -144,8 +144,12 @@ public class LineNotificationBuilder {
 
     private List<Notification.Action> extractActions(final StatusBarNotification statusBarNotification,
                                                      final LineNotification.CallState callState) {
+        // decline and accept call buttons
         if (LineNotification.CallState.INCOMING == callState ||
-                LineNotification.CallState.MISSED_CALL == callState) {
+                // reply and redial buttons
+                LineNotification.CallState.MISSED_CALL == callState ||
+                // end call button
+                LineNotification.CallState.IN_A_CALL == callState) {
             final Notification.Action[] actions = statusBarNotification.getNotification().actions;
             if (actions != null && actions.length > 0) {
                 return Arrays.asList(actions);
