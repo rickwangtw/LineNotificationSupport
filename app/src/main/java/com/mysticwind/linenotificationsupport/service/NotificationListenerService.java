@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Arrays;
+import java.util.Set;
 
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
@@ -183,13 +184,10 @@ public class NotificationListenerService
 
     private void sendIncomingCallNotification(final AutoIncomingCallNotificationState autoIncomingCallNotificationState) {
         if (!autoIncomingCallNotificationState.shouldNotify()) {
-            cancelIncomingCallNotification(autoIncomingCallNotificationState.getLastIncomingCallNotificationId());
+            cancelIncomingCallNotification(autoIncomingCallNotificationState.getIncomingCallNotificationIds());
             return;
         }
         try {
-            // cancel the old one
-            cancelIncomingCallNotification(autoIncomingCallNotificationState.getLastIncomingCallNotificationId());
-
             // resend a new one
             int nextNotificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
 
@@ -205,9 +203,15 @@ public class NotificationListenerService
         scheduleNextIncomingCallNotification(autoIncomingCallNotificationState);
     }
 
-    private void cancelIncomingCallNotification(final int notificationId) {
+    private void cancelIncomingCallNotification(final Set<Integer> notificationIdsToCancel) {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(NotificationListenerService.this);
-        notificationManager.cancel(notificationId);
+        for (final int notificationId : notificationIdsToCancel) {
+            try {
+                notificationManager.cancel(notificationId);
+            } catch (final Exception e) {
+                Log.w(TAG, String.format("Failed to cancel notification %d: %s", notificationId, e.getMessage(), e));
+            }
+        }
     }
 
     private void scheduleNextIncomingCallNotification(final AutoIncomingCallNotificationState autoIncomingCallNotificationState) {

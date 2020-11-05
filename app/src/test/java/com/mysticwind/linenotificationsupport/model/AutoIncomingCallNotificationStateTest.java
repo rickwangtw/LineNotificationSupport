@@ -1,8 +1,12 @@
 package com.mysticwind.linenotificationsupport.model;
 
+import com.google.common.collect.ImmutableSet;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -22,7 +26,7 @@ public class AutoIncomingCallNotificationStateTest {
                 .lineNotification(lineNotification)
                 .timeoutInSeconds(1)
                 .build();
-        assertEquals(0, classUnderTest.getLastIncomingCallNotificationId());
+        assertEquals(Collections.EMPTY_SET, classUnderTest.getIncomingCallNotificationIds());
 
         assertTrue(classUnderTest.shouldNotify());
 
@@ -30,7 +34,7 @@ public class AutoIncomingCallNotificationStateTest {
         sleepInSeconds(1);
 
         assertFalse(classUnderTest.shouldNotify());
-        assertEquals(NOTIFICATION_ID, classUnderTest.getLastIncomingCallNotificationId());
+        assertEquals(ImmutableSet.of(NOTIFICATION_ID), classUnderTest.getIncomingCallNotificationIds());
         assertEquals(lineNotification, classUnderTest.getLineNotification());
     }
 

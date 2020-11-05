@@ -1,6 +1,10 @@
 package com.mysticwind.linenotificationsupport.model;
 
+import com.google.common.collect.ImmutableSet;
+
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 import lombok.Builder;
 
@@ -10,7 +14,7 @@ public class AutoIncomingCallNotificationState {
     private final double waitDurationInSeconds;
 
     private long autoNotifyCallUntilTimestampSecond;
-    private int incomingCallNotificationId = 0;
+    private Set<Integer> incomingCallNotificationIds = new HashSet<>();
 
     @Builder
     AutoIncomingCallNotificationState(final LineNotification lineNotification,
@@ -34,11 +38,11 @@ public class AutoIncomingCallNotificationState {
     }
 
     public void notified(int incomingCallNotificationId) {
-        this.incomingCallNotificationId = incomingCallNotificationId;
+        this.incomingCallNotificationIds.add(incomingCallNotificationId);
     }
 
-    public int getLastIncomingCallNotificationId() {
-        return this.incomingCallNotificationId;
+    public Set<Integer> getIncomingCallNotificationIds() {
+        return ImmutableSet.copyOf(this.incomingCallNotificationIds);
     }
 
     public void setMissedCall() {
