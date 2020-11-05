@@ -38,21 +38,24 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
 
     private static final String TAG = ImageNotificationPublisherAsyncTask.class.getSimpleName();
 
-    private Context context;
-    private LineNotification lineNotification;
-    private List<CharSequence> currentNotificationMessages = new ArrayList<>();
-    private int notificationId;
-    private GroupIdResolver groupIdResolver;
+    private final Context context;
+    private final LineNotification lineNotification;
+    private final List<CharSequence> currentNotificationMessages = new ArrayList<>();
+    private final int notificationId;
+    private final GroupIdResolver groupIdResolver;
+    private final boolean shouldReverseActionOrder;
 
-    public ImageNotificationPublisherAsyncTask(Context context,
-                                               LineNotification lineNotification,
-                                               int notificationId,
-                                               GroupIdResolver groupIdResolver) {
+    public ImageNotificationPublisherAsyncTask(final Context context,
+                                               final LineNotification lineNotification,
+                                               final int notificationId,
+                                               final GroupIdResolver groupIdResolver,
+                                               final boolean shouldReverseActionOrder) {
         super();
         this.context = context;
         this.lineNotification = lineNotification;
         this.notificationId = notificationId;
         this.groupIdResolver = groupIdResolver;
+        this.shouldReverseActionOrder = shouldReverseActionOrder;
     }
 
     @Override
@@ -150,12 +153,18 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
         if (lineNotification.getActions().isEmpty()) {
             return;
         }
+        final List<Notification.Action> actionsToAdd = lineNotification.getActions();
+        if (shouldReverseActionOrder && actionsToAdd.size() >= 2) {
+            Notification.Action firstAction = actionsToAdd.get(0);
+            actionsToAdd.add(0, actionsToAdd.get(1));
+            actionsToAdd.add(1, firstAction);
+        }
         if (ArrayUtils.isEmpty(notification.actions)) {
-            notification.actions = lineNotification.getActions().toArray(new Notification.Action[lineNotification.getActions().size()]);
+            notification.actions = actionsToAdd.toArray(new Notification.Action[actionsToAdd.size()]);
         } else {
             List<Notification.Action> actions = Lists.newArrayList(notification.actions);
-            actions.addAll(lineNotification.getActions());
-            notification.actions = actions.toArray(new Notification.Action[lineNotification.getActions().size()]);
+            actions.addAll(actionsToAdd);
+            notification.actions = actions.toArray(new Notification.Action[actions.size()]);
         }
     }
 

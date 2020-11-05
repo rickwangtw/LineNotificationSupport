@@ -117,7 +117,7 @@ public class NotificationListenerService
 
         int notificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
         new ImageNotificationPublisherAsyncTask(this, lineNotification,
-                notificationId, GROUP_ID_RESOLVER).execute();
+                notificationId, GROUP_ID_RESOLVER, false).execute();
 
         if (lineNotification.getCallState() == null) {
             return;
@@ -132,6 +132,7 @@ public class NotificationListenerService
                     .lineNotification(lineNotification)
                     .waitDurationInSeconds(getWaitDurationInSeconds())
                     .timeoutInSeconds(getAutoSendTimeoutInSecondsFromPreferences())
+                    .reverseActionOrder(resolveShouldReverseActionOrder(lineNotification))
                     .build();
             sendIncomingCallNotification(this.autoIncomingCallNotificationState);
         }
@@ -182,6 +183,14 @@ public class NotificationListenerService
         }
     }
 
+    private boolean resolveShouldReverseActionOrder(LineNotification lineNotification) {
+        if (LineNotification.CallState.INCOMING != lineNotification.getCallState()) {
+            return false;
+        }
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return preferences.getBoolean("call_notifications_reverse_action", false);
+    }
+
     private void sendIncomingCallNotification(final AutoIncomingCallNotificationState autoIncomingCallNotificationState) {
         if (!autoIncomingCallNotificationState.shouldNotify()) {
             cancelIncomingCallNotification(autoIncomingCallNotificationState.getIncomingCallNotificationIds());
@@ -193,7 +202,8 @@ public class NotificationListenerService
 
             new ImageNotificationPublisherAsyncTask(NotificationListenerService.this,
                     autoIncomingCallNotificationState.getLineNotification(), nextNotificationId,
-                    GROUP_ID_RESOLVER).execute();
+                    GROUP_ID_RESOLVER, autoIncomingCallNotificationState.shouldReverseActionOrder())
+                    .execute();
 
             autoIncomingCallNotificationState.notified(nextNotificationId);
         } catch (Exception e) {
