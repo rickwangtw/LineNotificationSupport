@@ -20,5 +20,8 @@
     <string name="auto_call_notifications_summary_off">Receive one notification during incoming call.</string>
     <string name="auto_call_notifications_timeout_title">When to stop auto call notifications?</string>
     <string name="auto_call_notifications_wait_title">Duration in between continuous call notifications</string>
+    <string name="call_notification_action_reverse_order_title">Order of incoming call actions</string>
+    <string name="call_notification_action_reverse_summary_on">Show "Decline" then "Answer". Use this option when you tend to decline calls more often.</string>
+    <string name="call_notification_action_reverse_summary_off">Show "Answer" then "Decline". Use this option when you tend to answer calls more often.</string>
 
 </resources>
