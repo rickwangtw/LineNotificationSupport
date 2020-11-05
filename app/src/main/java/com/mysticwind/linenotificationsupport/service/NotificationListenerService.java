@@ -18,6 +18,7 @@ import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.ImageNotificationPublisherAsyncTask;
+import com.mysticwind.linenotificationsupport.utils.MessageDeduper;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -25,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
 
 public class NotificationListenerService
@@ -37,6 +39,7 @@ public class NotificationListenerService
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
     private static final ChatTitleAndSenderResolver CHAT_TITLE_AND_SENDER_RESOLVER = new ChatTitleAndSenderResolver();
+    private static final MessageDeduper MESSAGE_DEDUPER = new MessageDeduper();
 
     private final Handler handler = new Handler();
 
@@ -116,7 +119,21 @@ public class NotificationListenerService
                 CHAT_TITLE_AND_SENDER_RESOLVER).from(notificationFromLine);
 
         int notificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
-        new ImageNotificationPublisherAsyncTask(this, lineNotification,
+
+        final Optional<MessageDeduper.DedupeResult> dedupeResult =
+                MESSAGE_DEDUPER.evaluate(lineNotification, notificationId);
+
+        final LineNotification notificationToSend;
+        if (dedupeResult.isPresent()) {
+            notificationId = dedupeResult.get().getNotificationId();
+            notificationToSend = dedupeResult.get().getLineNotification().toBuilder()
+                    .message(dedupeResult.get().getReplacedMessage())
+                    .build();
+        } else {
+            notificationToSend = lineNotification;
+        }
+
+        new ImageNotificationPublisherAsyncTask(this, notificationToSend,
                 notificationId, GROUP_ID_RESOLVER, false).execute();
 
         if (lineNotification.getCallState() == null) {
