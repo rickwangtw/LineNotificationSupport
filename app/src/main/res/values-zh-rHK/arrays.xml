@@ -3,6 +3,8 @@
 
     <!-- Auto Call Timeout Preference -->
     <string-array name="auto_call_timeout_entries">
+        <item>5秒鐘</item>
+        <item>10秒鐘</item>
         <item>15秒鐘</item>
         <item>30秒鐘</item>
         <item>1分鐘</item>

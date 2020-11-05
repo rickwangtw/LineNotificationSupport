@@ -2,6 +2,8 @@
 
     <!-- Auto Call Timeout Preference -->
     <string-array name="auto_call_timeout_entries">
+        <item>5 seconds</item>
+        <item>10 seconds</item>
         <item>15 seconds</item>
         <item>30 seconds</item>
         <item>1 minute</item>
@@ -10,6 +12,8 @@
     </string-array>
 
     <string-array name="auto_call_timeout_values">
+        <item>5</item>
+        <item>10</item>
         <item>15</item>
         <item>30</item>
         <item>60</item>
