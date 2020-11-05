@@ -12,7 +12,13 @@
     <string name="title_activity_settings">SettingsActivity</string>
 
     <!-- Preference Titles -->
+    <string name="messages_header">LINE Messages</string>
     <string name="calls_header">LINE Calls</string>
+
+    <!-- Messages Preferences -->
+    <string name="merge_same_messages_title">Merge identical messages</string>
+    <string name="merge_same_messages_summary_on">Merge the messages if the contents are identical. Can be useful in situations where someone sends 10 images.</string>
+    <string name="merge_same_messages_summary_off">Always show messages separately.</string>
 
     <!-- Calls Preferences -->
     <string name="auto_call_notifications_title">Continuous call notifications</string>
