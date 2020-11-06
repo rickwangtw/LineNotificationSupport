@@ -1,9 +1,8 @@
 <resources>
 
-
     <!-- Identical Message Preference -->
     <string-array name="identical_message_handling_strategy_entries">
-        <item>Ignore the new identical message. You will not get notifications for it.</item>
+        <item>Ignore the new identical message. You will not be notified.</item>
         <item>Merge the messages if the contents are identical. You will receive an update of \"Same message (2)\"</item>
         <item>Always show messages separately.</item>
     </string-array>

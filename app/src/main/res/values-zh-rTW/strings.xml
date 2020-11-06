@@ -6,7 +6,11 @@
     <string name="action_settings">設定</string>
 
     <!-- Preference Titles -->
+    <string name="messages_header">LINE 訊息</string>
     <string name="calls_header">LINE 通話</string>
+
+    <!-- Messages Preferences -->
+    <string name="identical_messages_title">重複的訊息</string>
 
     <!-- Calls Preferences -->
     <string name="auto_call_notifications_title">LINE 通話通知</string>

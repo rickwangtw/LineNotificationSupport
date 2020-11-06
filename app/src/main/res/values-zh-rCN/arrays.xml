@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Identical Message Preference -->
+    <string-array name="identical_message_handling_strategy_entries">
+        <item>忽略重複的新信息。您将不会收到新信息。</item>
+        <item>合併重複的信息。您将会收到一则合并的信息，例如『新信息 (2)』</item>
+        <item>直接显示新的信息。</item>
+    </string-array>
+
     <!-- Auto Call Timeout Preference -->
     <string-array name="auto_call_timeout_entries">
         <item>5秒钟</item>
