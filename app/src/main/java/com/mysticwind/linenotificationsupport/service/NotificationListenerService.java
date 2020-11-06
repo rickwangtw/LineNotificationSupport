@@ -12,20 +12,28 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import com.mysticwind.linenotificationsupport.identicalmessage.AsIsIdenticalMessageHandler;
+import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageEvaluator;
+import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageHandler;
+import com.mysticwind.linenotificationsupport.identicalmessage.IgnoreIdenticalMessageHandler;
+import com.mysticwind.linenotificationsupport.identicalmessage.MergeIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.model.AutoIncomingCallNotificationState;
+import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStrategy;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.ImageNotificationPublisherAsyncTask;
-import com.mysticwind.linenotificationsupport.utils.MessageDeduper;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,7 +47,17 @@ public class NotificationListenerService
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
     private static final ChatTitleAndSenderResolver CHAT_TITLE_AND_SENDER_RESOLVER = new ChatTitleAndSenderResolver();
-    private static final MessageDeduper MESSAGE_DEDUPER = new MessageDeduper();
+
+    private static final IdenticalMessageEvaluator IDENTICAL_MESSAGE_EVALUATOR = new IdenticalMessageEvaluator();
+    private static final MergeIdenticalMessageHandler MERGE_IDENTICAL_MESSAGE_HANDLER = new MergeIdenticalMessageHandler(IDENTICAL_MESSAGE_EVALUATOR);
+    private static final IgnoreIdenticalMessageHandler IGNORE_IDENTICAL_MESSAGE_HANDLER = new IgnoreIdenticalMessageHandler(IDENTICAL_MESSAGE_EVALUATOR);
+    private static final AsIsIdenticalMessageHandler AS_IS_IDENTICAL_MESSAGE_HANDLER = new AsIsIdenticalMessageHandler();
+
+    private static final Map<IdenticalMessageHandlingStrategy, IdenticalMessageHandler> STRATEGY_TO_HANDLER_MAP = ImmutableMap.of(
+            IdenticalMessageHandlingStrategy.IGNORE, IGNORE_IDENTICAL_MESSAGE_HANDLER,
+            IdenticalMessageHandlingStrategy.MERGE, MERGE_IDENTICAL_MESSAGE_HANDLER,
+            IdenticalMessageHandlingStrategy.SEND_AS_IS, AS_IS_IDENTICAL_MESSAGE_HANDLER
+    );
 
     private final Handler handler = new Handler();
 
@@ -120,21 +138,17 @@ public class NotificationListenerService
 
         int notificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
 
-        final Optional<MessageDeduper.DedupeResult> dedupeResult =
-                MESSAGE_DEDUPER.evaluate(lineNotification, notificationId);
+        Optional<Pair<LineNotification, Integer>> notificationAndId =
+                handleDuplicate(lineNotification, notificationId);
 
-        final LineNotification notificationToSend;
-        if (dedupeResult.isPresent()) {
-            notificationId = dedupeResult.get().getNotificationId();
-            notificationToSend = dedupeResult.get().getLineNotification().toBuilder()
-                    .message(dedupeResult.get().getReplacedMessage())
-                    .build();
-        } else {
-            notificationToSend = lineNotification;
+        if (!notificationAndId.isPresent()) {
+            // skip duplicated message
+            return;
         }
 
-        new ImageNotificationPublisherAsyncTask(this, notificationToSend,
-                notificationId, GROUP_ID_RESOLVER, false).execute();
+        new ImageNotificationPublisherAsyncTask(this, notificationAndId.get().getLeft(),
+                notificationAndId.get().getRight(), GROUP_ID_RESOLVER, false)
+                .execute();
 
         if (lineNotification.getCallState() == null) {
             return;
@@ -164,6 +178,22 @@ public class NotificationListenerService
         } else if (lineNotification.getCallState() == LineNotification.CallState.IN_A_CALL) {
             autoIncomingCallNotificationState.setAccepted();
         }
+    }
+
+    private Optional<Pair<LineNotification, Integer>> handleDuplicate(LineNotification lineNotification, int notificationId) {
+        final IdenticalMessageHandler handler = selectIdenticalMessageHandler();
+        return handler.handle(lineNotification, notificationId);
+    }
+
+    private IdenticalMessageHandler selectIdenticalMessageHandler() {
+        final IdenticalMessageHandlingStrategy strategy = getIdenticalMessageHandlingStrategyFromPreference();
+        return STRATEGY_TO_HANDLER_MAP.getOrDefault(strategy, IGNORE_IDENTICAL_MESSAGE_HANDLER);
+    }
+
+    private IdenticalMessageHandlingStrategy getIdenticalMessageHandlingStrategyFromPreference() {
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        final String stringStrategy = preferences.getString("identical_message_handling_strategy", "IGNORE");
+        return IdenticalMessageHandlingStrategy.valueOf(stringStrategy);
     }
 
     private double getWaitDurationInSeconds() {

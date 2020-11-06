@@ -1,5 +1,19 @@
 <resources>
 
+
+    <!-- Identical Message Preference -->
+    <string-array name="identical_message_handling_strategy_entries">
+        <item>Ignore the new identical message. You will not get notifications for it.</item>
+        <item>Merge the messages if the contents are identical. You will receive an update of \"Same message (2)\"</item>
+        <item>Always show messages separately.</item>
+    </string-array>
+
+    <string-array name="identical_message_handling_strategy_values">
+        <item>IGNORE</item>
+        <item>MERGE</item>
+        <item>SEND_AS_IS</item>
+    </string-array>
+
     <!-- Auto Call Timeout Preference -->
     <string-array name="auto_call_timeout_entries">
         <item>5 seconds</item>

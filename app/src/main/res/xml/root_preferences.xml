@@ -2,12 +2,13 @@
 
     <PreferenceCategory app:title="@string/messages_header">
 
-        <SwitchPreferenceCompat
-            app:key="merge_same_messages"
-            app:title="@string/merge_same_messages_title"
-            app:defaultValue="true"
-            app:summaryOff="@string/merge_same_messages_summary_off"
-            app:summaryOn="@string/merge_same_messages_summary_on" />
+        <ListPreference
+            app:defaultValue="IGNORE"
+            app:entries="@array/identical_message_handling_strategy_entries"
+            app:entryValues="@array/identical_message_handling_strategy_values"
+            app:key="identical_message_handling_strategy"
+            app:title="@string/identical_messages_title"
+            app:useSimpleSummaryProvider="true" />
 
     </PreferenceCategory>
 
