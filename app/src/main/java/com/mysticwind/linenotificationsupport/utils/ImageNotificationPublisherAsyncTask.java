@@ -43,19 +43,16 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
     private final List<CharSequence> currentNotificationMessages = new ArrayList<>();
     private final int notificationId;
     private final GroupIdResolver groupIdResolver;
-    private final boolean shouldReverseActionOrder;
 
     public ImageNotificationPublisherAsyncTask(final Context context,
                                                final LineNotification lineNotification,
                                                final int notificationId,
-                                               final GroupIdResolver groupIdResolver,
-                                               final boolean shouldReverseActionOrder) {
+                                               final GroupIdResolver groupIdResolver) {
         super();
         this.context = context;
         this.lineNotification = lineNotification;
         this.notificationId = notificationId;
         this.groupIdResolver = groupIdResolver;
-        this.shouldReverseActionOrder = shouldReverseActionOrder;
     }
 
     @Override
@@ -154,11 +151,6 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
             return;
         }
         final List<Notification.Action> actionsToAdd = lineNotification.getActions();
-        if (shouldReverseActionOrder && actionsToAdd.size() >= 2) {
-            Notification.Action firstAction = actionsToAdd.get(0);
-            actionsToAdd.add(0, actionsToAdd.get(1));
-            actionsToAdd.add(1, firstAction);
-        }
         if (ArrayUtils.isEmpty(notification.actions)) {
             notification.actions = actionsToAdd.toArray(new Notification.Action[actionsToAdd.size()]);
         } else {

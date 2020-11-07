@@ -23,9 +23,11 @@ import com.mysticwind.linenotificationsupport.model.AutoIncomingCallNotification
 import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStrategy;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
+import com.mysticwind.linenotificationsupport.notification.DefaultNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
-import com.mysticwind.linenotificationsupport.utils.ImageNotificationPublisherAsyncTask;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -34,6 +36,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -64,10 +67,20 @@ public class NotificationListenerService
     private final Handler handler = new Handler();
 
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
+    private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
 
     @Override
     public IBinder onBind(Intent intent) {
+        this.notificationPublisher = new DefaultNotificationPublisher(this, GROUP_ID_RESOLVER);
+
         return super.onBind(intent);
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        this.notificationPublisher = NullNotificationPublisher.INSTANCE;
+
+        return super.onUnbind(intent);
     }
 
     @Override
@@ -80,7 +93,6 @@ public class NotificationListenerService
         if (shouldIgnoreNotification(statusBarNotification)) {
             return;
         }
-
 
         final String stringifiedNotification = MoreObjects.toStringHelper(statusBarNotification)
                 .add("packageName", statusBarNotification.getPackageName())
@@ -148,9 +160,7 @@ public class NotificationListenerService
             return;
         }
 
-        new ImageNotificationPublisherAsyncTask(this, notificationAndId.get().getLeft(),
-                notificationAndId.get().getRight(), GROUP_ID_RESOLVER, false)
-                .execute();
+        notificationPublisher.publishNotification(notificationAndId.get().getLeft(), notificationAndId.get().getRight());
 
         if (lineNotification.getCallState() == null) {
             return;
@@ -249,10 +259,9 @@ public class NotificationListenerService
             // resend a new one
             int nextNotificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
 
-            new ImageNotificationPublisherAsyncTask(NotificationListenerService.this,
-                    autoIncomingCallNotificationState.getLineNotification(), nextNotificationId,
-                    GROUP_ID_RESOLVER, autoIncomingCallNotificationState.shouldReverseActionOrder())
-                    .execute();
+            final LineNotification notificationToPublish = buildNotificationWithOrderedAction(autoIncomingCallNotificationState);
+
+            notificationPublisher.publishNotification(notificationToPublish, nextNotificationId);
 
             autoIncomingCallNotificationState.notified(nextNotificationId);
         } catch (Exception e) {
@@ -260,6 +269,21 @@ public class NotificationListenerService
         }
 
         scheduleNextIncomingCallNotification(autoIncomingCallNotificationState);
+    }
+
+    private LineNotification buildNotificationWithOrderedAction(AutoIncomingCallNotificationState autoIncomingCallNotificationState) {
+        if (!autoIncomingCallNotificationState.shouldReverseActionOrder()) {
+            return autoIncomingCallNotificationState.getLineNotification();
+        }
+        final List<Notification.Action> actions = autoIncomingCallNotificationState.getLineNotification().getActions();
+        if (actions.size() >= 2) {
+            final Notification.Action firstAction = actions.get(0);
+            actions.add(0, actions.get(1));
+            actions.add(1, firstAction);
+        }
+        return autoIncomingCallNotificationState.getLineNotification().toBuilder()
+                .actions(actions)
+                .build();
     }
 
     private void cancelIncomingCallNotification(final Set<Integer> notificationIdsToCancel) {

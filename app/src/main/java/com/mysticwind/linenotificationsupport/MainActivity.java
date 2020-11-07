@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                     .sender(sender)
                     .build();
             new ImageNotificationPublisherAsyncTask(this, lineNotification,
-                    notificationId, GROUP_ID_RESOLVER, false).execute();
+                    notificationId, GROUP_ID_RESOLVER).execute();
         } else {
             Notification singleNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setContentTitle("Title")
