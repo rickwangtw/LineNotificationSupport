@@ -48,4 +48,15 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/notifications_header">
+
+        <SwitchPreferenceCompat
+            app:key="auto_dismiss_line_notification_support_messages"
+            app:title="@string/auto_dismiss_line_notification_support_messages_title"
+            app:defaultValue="true"
+            app:summaryOff="@string/auto_dismiss_line_notification_support_messages_summary_off"
+            app:summaryOn="@string/auto_dismiss_line_notification_support_messages_summary_on" />
+
+    </PreferenceCategory>
+
 </PreferenceScreen>

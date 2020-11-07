@@ -14,6 +14,7 @@
     <!-- Preference Titles -->
     <string name="messages_header">LINE Messages</string>
     <string name="calls_header">LINE Calls</string>
+    <string name="notifications_header">Notifications</string>
 
     <!-- Messages Preferences -->
     <string name="identical_messages_title">Identical messages</string>
@@ -27,5 +28,8 @@
     <string name="call_notification_action_reverse_order_title">Order of incoming call actions</string>
     <string name="call_notification_action_reverse_summary_on">Show "Decline" then "Answer". Use this option when you tend to decline calls more often.</string>
     <string name="call_notification_action_reverse_summary_off">Show "Answer" then "Decline". Use this option when you tend to answer calls more often.</string>
+    <string name="auto_dismiss_line_notification_support_messages_title">Auto dismiss notifications</string>
+    <string name="auto_dismiss_line_notification_support_messages_summary_on">Dismiss notifications from LINE Notification Support when LINE notifications are dismissed</string>
+    <string name="auto_dismiss_line_notification_support_messages_summary_off">Do not dismiss notifications from LINE Notification Support when LINE notifications are dismissed</string>
 
 </resources>

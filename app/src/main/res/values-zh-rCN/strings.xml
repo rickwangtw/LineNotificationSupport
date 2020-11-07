@@ -8,6 +8,7 @@
     <!-- Preference Titles -->
     <string name="messages_header">LINE 信息</string>
     <string name="calls_header">LINE 来电</string>
+    <string name="notifications_header">提示</string>
 
     <!-- Messages Preferences -->
     <string name="identical_messages_title">重复的信息</string>
@@ -21,5 +22,8 @@
     <string name="call_notification_action_reverse_order_title">LINE来电按钮顺序</string>
     <string name="call_notification_action_reverse_summary_on">先『拒绝』再『应答』。使用这个选项如果您较常选择拒绝来电。</string>
     <string name="call_notification_action_reverse_summary_off">先『应答』再『拒绝』。使用这个选项如果您较常选择应答来电。</string>
+    <string name="auto_dismiss_line_notification_support_messages_title">通知连动</string>
+    <string name="auto_dismiss_line_notification_support_messages_summary_on">取消 LINE 提示时，自动取消 LINE提示助手 的提示。</string>
+    <string name="auto_dismiss_line_notification_support_messages_summary_off">取消 LINE 提示时，依然保留 LINE提示助手 的提示。</string>
 
 </resources>
