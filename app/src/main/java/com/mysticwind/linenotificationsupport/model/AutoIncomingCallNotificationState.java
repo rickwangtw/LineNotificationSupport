@@ -12,7 +12,6 @@ public class AutoIncomingCallNotificationState {
 
     private final LineNotification lineNotification;
     private final double waitDurationInSeconds;
-    private final boolean reverseActionOrder;
 
     private long autoNotifyCallUntilTimestampSecond;
     private Set<Integer> incomingCallNotificationIds = new HashSet<>();
@@ -20,12 +19,10 @@ public class AutoIncomingCallNotificationState {
     @Builder
     AutoIncomingCallNotificationState(final LineNotification lineNotification,
                                       final double waitDurationInSeconds,
-                                      final long timeoutInSeconds,
-                                      final boolean reverseActionOrder) {
+                                      final long timeoutInSeconds) {
         this.lineNotification = lineNotification;
         this.waitDurationInSeconds = waitDurationInSeconds;
         this.autoNotifyCallUntilTimestampSecond = Instant.now().getEpochSecond() + timeoutInSeconds;
-        this.reverseActionOrder = reverseActionOrder;
     }
 
     public LineNotification getLineNotification() {
@@ -34,10 +31,6 @@ public class AutoIncomingCallNotificationState {
 
     public double getWaitDurationInSeconds() {
         return this.waitDurationInSeconds;
-    }
-
-    public boolean shouldReverseActionOrder() {
-        return reverseActionOrder;
     }
 
     public boolean shouldNotify() {

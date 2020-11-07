@@ -133,7 +133,9 @@ public class NotificationListenerService
             return;
         }
 
-        notificationPublisher.publishNotification(notificationAndId.get().getLeft(), notificationAndId.get().getRight());
+        LineNotification actionAdjustedLineNotification = adjustActionOrder(notificationAndId.get().getLeft());
+
+        notificationPublisher.publishNotification(actionAdjustedLineNotification, notificationAndId.get().getRight());
 
         if (lineNotification.getCallState() == null) {
             return;
@@ -148,7 +150,6 @@ public class NotificationListenerService
                     .lineNotification(lineNotification)
                     .waitDurationInSeconds(getWaitDurationInSeconds())
                     .timeoutInSeconds(getAutoSendTimeoutInSecondsFromPreferences())
-                    .reverseActionOrder(resolveShouldReverseActionOrder(lineNotification))
                     .build();
             sendIncomingCallNotification(this.autoIncomingCallNotificationState);
         }
@@ -163,6 +164,21 @@ public class NotificationListenerService
         } else if (lineNotification.getCallState() == LineNotification.CallState.IN_A_CALL) {
             autoIncomingCallNotificationState.setAccepted();
         }
+    }
+
+    private LineNotification adjustActionOrder(LineNotification lineNotification) {
+        if (!shouldReverseActionOrder(lineNotification)) {
+            return lineNotification;
+        }
+        final List<Notification.Action> actions = lineNotification.getActions();
+        if (actions.size() >= 2) {
+            final Notification.Action firstAction = actions.get(0);
+            actions.add(0, actions.get(1));
+            actions.add(1, firstAction);
+        }
+        return lineNotification.toBuilder()
+                .actions(actions)
+                .build();
     }
 
     private Optional<Pair<LineNotification, Integer>> handleDuplicate(LineNotification lineNotification, int notificationId) {
@@ -215,7 +231,7 @@ public class NotificationListenerService
         }
     }
 
-    private boolean resolveShouldReverseActionOrder(LineNotification lineNotification) {
+    private boolean shouldReverseActionOrder(LineNotification lineNotification) {
         if (LineNotification.CallState.INCOMING != lineNotification.getCallState()) {
             return false;
         }
@@ -232,9 +248,7 @@ public class NotificationListenerService
             // resend a new one
             int nextNotificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
 
-            final LineNotification notificationToPublish = buildNotificationWithOrderedAction(autoIncomingCallNotificationState);
-
-            notificationPublisher.publishNotification(notificationToPublish, nextNotificationId);
+            notificationPublisher.publishNotification(autoIncomingCallNotificationState.getLineNotification(), nextNotificationId);
 
             autoIncomingCallNotificationState.notified(nextNotificationId);
         } catch (Exception e) {
@@ -242,21 +256,6 @@ public class NotificationListenerService
         }
 
         scheduleNextIncomingCallNotification(autoIncomingCallNotificationState);
-    }
-
-    private LineNotification buildNotificationWithOrderedAction(AutoIncomingCallNotificationState autoIncomingCallNotificationState) {
-        if (!autoIncomingCallNotificationState.shouldReverseActionOrder()) {
-            return autoIncomingCallNotificationState.getLineNotification();
-        }
-        final List<Notification.Action> actions = autoIncomingCallNotificationState.getLineNotification().getActions();
-        if (actions.size() >= 2) {
-            final Notification.Action firstAction = actions.get(0);
-            actions.add(0, actions.get(1));
-            actions.add(1, firstAction);
-        }
-        return autoIncomingCallNotificationState.getLineNotification().toBuilder()
-                .actions(actions)
-                .build();
     }
 
     private void cancelIncomingCallNotification(final Set<Integer> notificationIdsToCancel) {
