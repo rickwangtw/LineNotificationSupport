@@ -12,7 +12,6 @@ import android.service.notification.StatusBarNotification;
 import androidx.core.app.Person;
 import androidx.core.graphics.drawable.IconCompat;
 
-import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.localization.LocalizationHelper;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 
@@ -29,6 +28,7 @@ public class LineNotificationBuilder {
     public static final String DEFAULT_CHAT_ID = "default_chat_id";
 
     protected static final String CALL_CATEGORY = "call";
+    protected static final String MESSAGE_CATEGORY = "msg";
     protected static final String MISSED_CALL_TAG = "NOTIFICATION_TAG_MISSED_CALL";
 
     private final Context context;
@@ -139,19 +139,26 @@ public class LineNotificationBuilder {
                 .build();
     }
 
+    private boolean isMessage(StatusBarNotification statusBarNotification) {
+        return MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category);
+    }
+
     private String getMessage(StatusBarNotification statusBarNotification) {
         return statusBarNotification.getNotification().extras.getString("android.text");
     }
 
     private List<Notification.Action> extractActions(final StatusBarNotification statusBarNotification,
                                                      final LineNotification.CallState callState) {
-        if (callState == null) {
-            Notification.Action action = extractReplyAction(statusBarNotification);
-            if (action == null) {
-                return Collections.EMPTY_LIST;
-            }
-            return ImmutableList.of(action);
+        if(isMessage(statusBarNotification)) {
+            // mute and reply buttons
+            // the mute button doesn't seem very useful
+            return extractActionsOfIndices(statusBarNotification, 1);
         }
+
+        if (callState == null) {
+            return Collections.EMPTY_LIST;
+        }
+
         switch (callState) {
             // decline and accept call buttons
             case INCOMING:
@@ -181,23 +188,6 @@ public class LineNotificationBuilder {
             }
         }
         return extractedActions;
-    }
-
-    private Notification.Action extractReplyAction(StatusBarNotification notificationFromLine) {
-        if (notificationFromLine.getNotification().actions == null) {
-            return null;
-        }
-        if (notificationFromLine.getNotification().actions.length < 2) {
-            return null;
-        }
-        Notification.Action secondAction = notificationFromLine.getNotification().actions[1];
-        if (StringUtils.isBlank(secondAction.title)) {
-            return null;
-        }
-        if (LocalizationHelper.isReplyActionText(secondAction.title.toString())) {
-            return secondAction;
-        }
-        return null;
     }
 
 }

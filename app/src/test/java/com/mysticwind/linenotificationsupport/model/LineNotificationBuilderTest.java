@@ -67,6 +67,13 @@ public class LineNotificationBuilderTest {
     }
 
     @Test
+    public void testMessageWithSecondAction() {
+        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, LineNotificationBuilder.MESSAGE_CATEGORY, null, null, false));
+
+        assertEquals(ImmutableList.of(action2), lineNotification.getActions());
+    }
+
+    @Test
     public void testIncomingCallWithTwoActions() {
         LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, LineNotificationBuilder.CALL_CATEGORY, null, null, false));
 
