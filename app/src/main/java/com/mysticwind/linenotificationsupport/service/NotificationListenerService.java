@@ -1,6 +1,7 @@
 package com.mysticwind.linenotificationsupport.service;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
@@ -36,6 +37,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
@@ -289,13 +291,30 @@ public class NotificationListenerService
             return;
         }
 
-        final LineNotification lineNotification = new LineNotificationBuilder(this,
+        final LineNotification dismissedLineNotification = new LineNotificationBuilder(this,
                 CHAT_TITLE_AND_SENDER_RESOLVER).from(statusBarNotification);
 
-        if (LineNotification.CallState.INCOMING == lineNotification.getCallState() &&
+        if (LineNotification.CallState.INCOMING == dismissedLineNotification.getCallState() &&
                 this.autoIncomingCallNotificationState != null) {
             this.autoIncomingCallNotificationState.cancel();
         }
+
+        // TODO create a preference for auto clearing messages
+        NotificationManager notificationManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
+
+        final Set<Integer> notificationIdsToCancel = Arrays.stream(notificationManager.getActiveNotifications())
+                // we're only clearing notifications from our package
+                .filter(notification -> notification.getPackageName().equals(this.getPackageName()))
+                // LINE only shows the last message for a chat, we'll dismiss all of the messages in the same chat ID
+                .filter(notification -> dismissedLineNotification.getChatId().equals(notification.getNotification().getGroup()))
+                .map(notification -> notification.getId())
+                .collect(Collectors.toSet());
+
+        for (Integer notificationId : notificationIdsToCancel) {
+            Log.d(TAG, "Cancelling notification: " + notificationId);
+            notificationManager.cancel(notificationId.intValue());
+        }
+
     }
 
 }
