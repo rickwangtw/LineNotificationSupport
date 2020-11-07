@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 
 import com.google.common.collect.ImmutableList;
-import com.mysticwind.linenotificationsupport.localization.LocalizationConstants;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -103,7 +102,7 @@ public class LineNotificationBuilderTest {
 
     @Test
     public void testInACallWithFirstAction() {
-        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, null, null, LocalizationConstants.CALL_IN_PROGRESS_TEXTS.iterator().next(), false));
+        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, null, null, LineNotificationBuilder.GENERAL_NOTIFICATION_CHANNEL, false));
 
         assertEquals(ImmutableList.of(action1), lineNotification.getActions());
     }
@@ -137,13 +136,13 @@ public class LineNotificationBuilderTest {
     }
 
     // TODO add more helper methods
-    private StatusBarNotification buildNotification(final String lineChatId, final String category, final String tag, String message, boolean hasSingleAction) {
-        when(mockedExtras.getString("android.text")).thenReturn(message == null ? ANDROID_TEXT : message);
+    private StatusBarNotification buildNotification(final String lineChatId, final String category, final String tag, String notificationChannel, boolean hasSingleAction) {
+        when(mockedExtras.getString("android.text")).thenReturn(ANDROID_TEXT);
         when(mockedExtras.getString("android.conversationTitle")).thenReturn(CONVERSATION_TITLE);
         when(mockedExtras.getString("android.title")).thenReturn(ANDROID_TITLE);
         when(mockedExtras.getString("line.chat.id")).thenReturn(lineChatId);
         when(mockedNotification.getLargeIcon()).thenReturn(null);
-
+        when(mockedNotification.getChannelId()).thenReturn(notificationChannel);
 
         mockedNotification.category = category;
 
