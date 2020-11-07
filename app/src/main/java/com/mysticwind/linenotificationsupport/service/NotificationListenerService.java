@@ -12,7 +12,6 @@ import android.util.Log;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.mysticwind.linenotificationsupport.identicalmessage.AsIsIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageEvaluator;
@@ -29,10 +28,9 @@ import com.mysticwind.linenotificationsupport.notification.NullNotificationPubli
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
+import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Arrays;
@@ -52,6 +50,7 @@ public class NotificationListenerService
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
     private static final ChatTitleAndSenderResolver CHAT_TITLE_AND_SENDER_RESOLVER = new ChatTitleAndSenderResolver();
+    private static final StatusBarNotificationPrinter NOTIFICATION_PRINTER = new StatusBarNotificationPrinter();
 
     private static final IdenticalMessageEvaluator IDENTICAL_MESSAGE_EVALUATOR = new IdenticalMessageEvaluator();
     private static final MergeIdenticalMessageHandler MERGE_IDENTICAL_MESSAGE_HANDLER = new MergeIdenticalMessageHandler(IDENTICAL_MESSAGE_EVALUATOR);
@@ -94,21 +93,7 @@ public class NotificationListenerService
             return;
         }
 
-        final String stringifiedNotification = MoreObjects.toStringHelper(statusBarNotification)
-                .add("packageName", statusBarNotification.getPackageName())
-                .add("groupKey", statusBarNotification.getGroupKey())
-                .add("key", statusBarNotification.getKey())
-                .add("id", statusBarNotification.getId())
-                .add("tag", statusBarNotification.getTag())
-                .add("user", statusBarNotification.getUser().toString())
-                .add("overrideGroupKey", statusBarNotification.getOverrideGroupKey())
-                .add("notification", ToStringBuilder.reflectionToString(statusBarNotification.getNotification()))
-                .add("actionLabels", extractActionLabels(statusBarNotification))
-                .toString();
-        Log.i(TAG, String.format("Notification (%s): %s",
-                statusBarNotification.getPackageName(),
-                stringifiedNotification)
-        );
+        NOTIFICATION_PRINTER.print("Received", statusBarNotification);
 
         sendNotification(statusBarNotification);
     }
@@ -132,18 +117,6 @@ public class NotificationListenerService
         final String summaryText = statusBarNotification.getNotification().extras
                 .getString("android.summaryText");
         return StringUtils.isNotBlank(summaryText);
-    }
-
-    private String extractActionLabels(StatusBarNotification statusBarNotification) {
-        final Notification.Action[] actions = statusBarNotification.getNotification().actions;
-        if (ArrayUtils.isEmpty(actions)) {
-            return "N/A";
-        }
-        return Arrays.stream(actions)
-                .filter(action -> action.title != null)
-                .map(action -> action.title.toString())
-                .reduce((title1, title2) -> title1 + "," + title2)
-                .orElse("No title");
     }
 
     private void sendNotification(StatusBarNotification notificationFromLine) {
