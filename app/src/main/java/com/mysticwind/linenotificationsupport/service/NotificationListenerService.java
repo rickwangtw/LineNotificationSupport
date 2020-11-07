@@ -299,14 +299,24 @@ public class NotificationListenerService
             this.autoIncomingCallNotificationState.cancel();
         }
 
-        // TODO create a preference for auto clearing messages
-        NotificationManager notificationManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
+        if (shouldAutoDismissLineNotificationSupportNotifications()) {
+            dismissLineNotificationSupportNotifications(dismissedLineNotification.getChatId());
+        }
+    }
+
+    private boolean shouldAutoDismissLineNotificationSupportNotifications() {
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        return preferences.getBoolean("auto_dismiss_line_notification_support_messages", true);
+    }
+
+    private void dismissLineNotificationSupportNotifications(final String groupId) {
+        final NotificationManager notificationManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
 
         final Set<Integer> notificationIdsToCancel = Arrays.stream(notificationManager.getActiveNotifications())
                 // we're only clearing notifications from our package
                 .filter(notification -> notification.getPackageName().equals(this.getPackageName()))
                 // LINE only shows the last message for a chat, we'll dismiss all of the messages in the same chat ID
-                .filter(notification -> dismissedLineNotification.getChatId().equals(notification.getNotification().getGroup()))
+                .filter(notification -> groupId.equals(notification.getNotification().getGroup()))
                 .map(notification -> notification.getId())
                 .collect(Collectors.toSet());
 
