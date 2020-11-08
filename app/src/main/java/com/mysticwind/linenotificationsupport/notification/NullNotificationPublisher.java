@@ -1,5 +1,7 @@
 package com.mysticwind.linenotificationsupport.notification;
 
+import android.service.notification.StatusBarNotification;
+
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 
 public enum NullNotificationPublisher implements NotificationPublisher {
@@ -12,7 +14,7 @@ public enum NullNotificationPublisher implements NotificationPublisher {
     }
 
     @Override
-    public void updateNotificationDismissed() {
+    public void updateNotificationDismissed(StatusBarNotification statusBarNotification) {
         // do nothing
     }
 

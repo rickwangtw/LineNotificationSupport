@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
@@ -22,9 +23,10 @@ import com.mysticwind.linenotificationsupport.model.AutoIncomingCallNotification
 import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStrategy;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
-import com.mysticwind.linenotificationsupport.notification.DefaultNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
@@ -70,9 +72,24 @@ public class NotificationListenerService
 
     @Override
     public IBinder onBind(Intent intent) {
-        this.notificationPublisher = new DefaultNotificationPublisher(this, GROUP_ID_RESOLVER);
+        this.notificationPublisher =
+                new MaxNotificationHandlingNotificationPublisherDecorator(
+                        getMaxNotificationsPerApp(),
+                        (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE),
+                        handler,
+                        new SimpleNotificationPublisher(this, GROUP_ID_RESOLVER),
+                        getPackageName()
+                );
 
         return super.onBind(intent);
+    }
+
+    private long getMaxNotificationsPerApp() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return 25;
+        } else {
+            return 50;
+        }
     }
 
     @Override
@@ -282,6 +299,8 @@ public class NotificationListenerService
     @Override
     public void onNotificationRemoved(StatusBarNotification statusBarNotification) {
         super.onNotificationRemoved(statusBarNotification);
+
+        notificationPublisher.updateNotificationDismissed(statusBarNotification);
 
         if (shouldIgnoreNotification(statusBarNotification)) {
             return;
