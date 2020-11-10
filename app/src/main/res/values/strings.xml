@@ -33,6 +33,6 @@
     <string name="auto_dismiss_line_notification_support_messages_summary_off">Do not dismiss notifications from LINE Notification Support when LINE notifications are dismissed</string>
 
     <!-- LINE version warnings -->
-    <string name="line_version_warning_10_19_1">This LINE version (10.19.1) you are using does not provide the title of the chat group. Instead of showing the title of the chat group, this app will list out the users who previously responded as a mitigation. If not showing the title is a problem, please downgrade your LINE version to 10.18.2.</string>
+    <string name="line_version_warning_10_19_1">This LINE version (10.19.1) you are using does not provide the title of the chat group. Instead of showing the title of the chat group, this app will list out the users who previously responded as a mitigation. If not showing the title is a problem, please downgrade your LINE version to 10.18.2 or 10.19.2 and above.</string>
 
 </resources>
