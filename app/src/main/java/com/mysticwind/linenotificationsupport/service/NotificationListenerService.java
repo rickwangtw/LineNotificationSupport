@@ -42,12 +42,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
+
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
 
     private static final String TAG = "LINE_NOTIFICATION_SUPPORT";
-
-    private static final String LINE_PACKAGE_NAME = "jp.naver.line.android";
 
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
