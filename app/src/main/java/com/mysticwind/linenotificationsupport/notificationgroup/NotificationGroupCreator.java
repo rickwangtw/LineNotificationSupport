@@ -107,11 +107,16 @@ public class NotificationGroupCreator {
     }
 
     // TODO missing unit tests
+    /**
+     * Creates the notification channel. This assumes the notification groups have been created.
+     * @param channelId
+     * @param channelName
+     */
     public void createNotificationChannel(final String channelId, String channelName) {
         if (!androidFeatureProvider.hasNotificationChannelSupport()) {
             return;
         }
-        final String group = getOrCreateNotificationGroup(channelId);
+        final String group = resolveNotificationChannelGroup(channelId);
         int importance = NotificationManager.IMPORTANCE_DEFAULT;
         final String description = "Notification channel for " + channelName;
         NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
@@ -121,21 +126,6 @@ public class NotificationGroupCreator {
         // Register the channel with the system; you can't change the importance
         // or other notification behaviors after this
         notificationManager.createNotificationChannel(channel);
-    }
-
-    @SuppressLint("NewApi")
-    private String getOrCreateNotificationGroup(final String notificationChannelId) {
-        final String notificationChannelGroupId = resolveNotificationChannelGroup(notificationChannelId);
-        final boolean hasNotificationChannelGroup = notificationManager.getNotificationChannelGroups().stream()
-                .filter(notificationChannelGroup -> notificationChannelGroup.getId().equals(notificationChannelGroupId))
-                .findAny()
-                .isPresent();
-
-        if (!hasNotificationChannelGroup) {
-            final String notificationGroupName = NOTIFICATION_GROUP_ID_TO_NAME_MAP.get(notificationChannelGroupId);
-            notificationManager.createNotificationChannelGroup(new NotificationChannelGroup(notificationChannelGroupId, notificationGroupName));
-        }
-        return notificationChannelGroupId;
     }
 
 }

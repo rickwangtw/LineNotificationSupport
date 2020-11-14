@@ -2,6 +2,7 @@ package com.mysticwind.linenotificationsupport.service;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -14,6 +15,7 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
 
 import com.google.common.collect.ImmutableMap;
+import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.identicalmessage.AsIsIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageEvaluator;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageHandler;
@@ -27,6 +29,7 @@ import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandli
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
@@ -80,6 +83,11 @@ public class NotificationListenerService
                         new SimpleNotificationPublisher(this, GROUP_ID_RESOLVER),
                         getPackageName()
                 );
+
+        new NotificationGroupCreator(
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
+                new AndroidFeatureProvider())
+                .createNotificationGroups();
 
         return super.onBind(intent);
     }
