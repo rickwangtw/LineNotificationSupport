@@ -57,6 +57,13 @@
             app:summaryOff="@string/auto_dismiss_line_notification_support_messages_summary_off"
             app:summaryOn="@string/auto_dismiss_line_notification_support_messages_summary_on" />
 
+        <SwitchPreferenceCompat
+            app:key="merge_message_notification_channels"
+            app:title="@string/merge_message_notification_channel_title"
+            app:defaultValue="false"
+            app:summaryOff="@string/merge_message_notification_channel_summary_off"
+            app:summaryOn="@string/merge_message_notification_channel_summary_on" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
