@@ -1,7 +1,6 @@
 package com.mysticwind.linenotificationsupport.utils;
 
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -19,8 +18,10 @@ import androidx.core.app.NotificationManagerCompat;
 import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.MainActivity;
 import com.mysticwind.linenotificationsupport.R;
+import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
+import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -161,21 +162,9 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
     }
 
     private void createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            final String channelId = lineNotification.getChatId();
-            final String channelName = getChannelName();
-            final String description = "Notification channel for " + channelName;
-            NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
-            channel.setDescription(description);
-            channel.enableVibration(true);
-            // Register the channel with the system; you can't change the importance
-            // or other notification behaviors after this
-            NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
+        final NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+        new NotificationGroupCreator(notificationManager, new AndroidFeatureProvider())
+                .createNotificationChannel(lineNotification.getChatId(), getChannelName());
     }
 
     private String getChannelName() {

@@ -1,7 +1,9 @@
 package com.mysticwind.linenotificationsupport;
 
 import android.app.Dialog;
+import android.app.NotificationManager;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -18,6 +20,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.common.collect.ImmutableMap;
+import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
+import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 
 import java.util.Map;
 
@@ -81,6 +85,8 @@ public class HelpActivity extends AppCompatActivity {
         } else {
             grantPermissionDialog.show();
         }
+
+        migrateNotificationChannelsToAddGroups();
     }
 
     private Dialog createGrantPermissionDialog() {
@@ -107,6 +113,11 @@ public class HelpActivity extends AppCompatActivity {
 
     private void redirectToNotificationSettingsPage() {
         startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
+    }
+
+    private void migrateNotificationChannelsToAddGroups() {
+        new NotificationGroupCreator((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE), new AndroidFeatureProvider())
+                .createNotificationGroups();
     }
 
     @Override
