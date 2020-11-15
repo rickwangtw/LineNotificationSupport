@@ -37,4 +37,6 @@
     <!-- LINE version warnings -->
     <string name="line_version_warning_10_19_1">您使用的这个 LINE 版本 (10.19.1) 在信息中不显示群组名称。应对这个问题，这个应用会显示之前在群中传过信息的朋友列表。如果不显示群名称对您造成困扰，请降版本至 10.18.2 或 10.19.2 以上。</string>
 
+    <string name="thanks_for_donate">感谢您的贊助！</string>
+
 </resources>
