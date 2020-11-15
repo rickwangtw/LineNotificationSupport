@@ -14,14 +14,15 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.preference.PreferenceManager;
 
 import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.MainActivity;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
-import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
+import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +32,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 import static androidx.core.app.NotificationCompat.EXTRA_TEXT;
@@ -112,6 +114,8 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
         final Intent intent = new Intent(context, MainActivity.class);
         final PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        final Optional<String> channelId = createNotificationChannel();
+
         Notification singleNotification = new NotificationCompat.Builder(context, lineNotification.getChatId())
                 .setStyle(style)
                 .setContentTitle(lineNotification.getTitle())
@@ -120,17 +124,16 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(lineNotification.getIcon())
                 .setContentIntent(pendingIntent)
+                .setChannelId(channelId.orElse(null))
                 .build();
 
         addActionInNotification(singleNotification);
-
-        createNotificationChannel();
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(notificationId, singleNotification);
 
         if (currentNotificationMessages.size() > 1) {
-            showGroupNotification();
+            showGroupNotification(channelId.orElse(null));
         }
     }
 
@@ -161,20 +164,14 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
         }
     }
 
-    private void createNotificationChannel() {
+    private Optional<String> createNotificationChannel() {
         final NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-        new NotificationGroupCreator(notificationManager, new AndroidFeatureProvider())
-                .createNotificationChannel(lineNotification.getChatId(), getChannelName());
+        return new NotificationGroupCreator(notificationManager, new AndroidFeatureProvider(),
+                new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(context)))
+                .createNotificationChannel(lineNotification.getChatId(), lineNotification.getTitle());
     }
 
-    private String getChannelName() {
-        if (LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID.equals(lineNotification.getChatId())) {
-            return "Calls";
-        }
-        return lineNotification.getTitle();
-    }
-
-    private void showGroupNotification() {
+    private void showGroupNotification(String channelId) {
         NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
         for (CharSequence text: currentNotificationMessages) {
             style.addLine(text);
@@ -190,6 +187,7 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
                 .setLargeIcon(lineNotification.getIcon())
                 .setGroup(lineNotification.getChatId())
                 .setGroupSummary(true)
+                .setChannelId(channelId)
                 .build();
 
 

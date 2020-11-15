@@ -4,15 +4,20 @@ import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
+import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,6 +30,10 @@ public class NotificationGroupCreator {
     protected static final String OTHERS_NOTIFICATION_GROUP_ID = "others_notification_group";
     protected static final String OTHERS_NOTIFICATION_GROUP_NAME = "Others";
 
+    protected static final String CALL_CHANNEL_NAME = "Calls";
+    protected static final String MERGED_MESSAGE_CHANNEL_ID = "merged_message_channel_id";
+    protected static final String MERGED_MESSAGE_CHANNEL_NAME = "All Messages";
+
     private static final Map<String, String> NOTIFICATION_GROUP_ID_TO_NAME_MAP = ImmutableMap.of(
             MESSAGE_NOTIFICATION_GROUP_ID, MESSAGE_NOTIFICATION_GROUP_NAME,
             CALL_NOTIFICATION_GROUP_ID, CALL_NOTIFICATION_GROUP_NAME,
@@ -36,10 +45,14 @@ public class NotificationGroupCreator {
 
     private final NotificationManager notificationManager;
     private final AndroidFeatureProvider androidFeatureProvider;
+    private final PreferenceProvider preferenceProvider;
 
-    public NotificationGroupCreator(final NotificationManager notificationManager, final AndroidFeatureProvider androidFeatureProvider) {
+    public NotificationGroupCreator(final NotificationManager notificationManager,
+                                    final AndroidFeatureProvider androidFeatureProvider,
+                                    final PreferenceProvider preferenceProvider) {
         this.notificationManager = notificationManager;
         this.androidFeatureProvider = androidFeatureProvider;
+        this.preferenceProvider = preferenceProvider;
     }
 
     public void createNotificationGroups() {
@@ -109,13 +122,30 @@ public class NotificationGroupCreator {
     // TODO missing unit tests
     /**
      * Creates the notification channel. This assumes the notification groups have been created.
-     * @param channelId
-     * @param channelName
+     * @param chatId
+     * @param messageTitle
      */
-    public void createNotificationChannel(final String channelId, String channelName) {
+    public Optional<String> createNotificationChannel(final String chatId, final String messageTitle) {
         if (!androidFeatureProvider.hasNotificationChannelSupport()) {
-            return;
+            return Optional.empty();
         }
+        final String channelId = getChannelId(chatId);
+        final String channelName = getChannelName(channelId, messageTitle);
+
+        createNotificationChannelWithChannelIdAndName(channelId, channelName);
+
+        return Optional.of(channelId);
+    }
+
+    private String getChannelId(String chatId) {
+        if (preferenceProvider.shouldUseMergeMessageChatId()) {
+            return MERGED_MESSAGE_CHANNEL_ID;
+        }
+        return chatId;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void createNotificationChannelWithChannelIdAndName(final String channelId, final String channelName) {
         final String group = resolveNotificationChannelGroup(channelId);
         int importance = NotificationManager.IMPORTANCE_DEFAULT;
         final String description = "Notification channel for " + channelName;
@@ -126,6 +156,45 @@ public class NotificationGroupCreator {
         // Register the channel with the system; you can't change the importance
         // or other notification behaviors after this
         notificationManager.createNotificationChannel(channel);
+    }
+
+    private String getChannelName(String channelId, String defaultChannelName) {
+        if (LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID.equals(channelId)) {
+            return CALL_CHANNEL_NAME;
+        } else if (MERGED_MESSAGE_CHANNEL_ID.equals(channelId)) {
+            return MERGED_MESSAGE_CHANNEL_NAME;
+        }
+        return defaultChannelName;
+    }
+
+    public void migrateToSingleNotificationChannelForMessages() {
+        if (!androidFeatureProvider.hasNotificationChannelSupport()) {
+            return;
+        }
+
+        final Set<String> messageNotificationChannelIds = notificationManager.getNotificationChannels().stream()
+                .map(notificationChannel -> notificationChannel.getId())
+                .filter(notificationChannelId -> isMessageNotificationChannel(notificationChannelId))
+                .collect(Collectors.toSet());
+
+        if (!messageNotificationChannelIds.contains(MERGED_MESSAGE_CHANNEL_ID)) {
+            createNotificationChannelWithChannelIdAndName(MERGED_MESSAGE_CHANNEL_ID, MERGED_MESSAGE_CHANNEL_NAME);
+        }
+
+        // delete all other notification channels
+        messageNotificationChannelIds.stream()
+                .filter(notificationChannelId -> !MERGED_MESSAGE_CHANNEL_ID.equals(notificationChannelId))
+                .forEach(notificationChannelId ->
+                        notificationManager.deleteNotificationChannel(notificationChannelId)
+                );
+    }
+
+    public void migrateToMultipleNotificationChannelsForMessages() {
+        if (!androidFeatureProvider.hasNotificationChannelSupport()) {
+            return;
+        }
+
+        notificationManager.deleteNotificationChannel(MERGED_MESSAGE_CHANNEL_ID);
     }
 
 }

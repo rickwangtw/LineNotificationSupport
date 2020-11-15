@@ -34,7 +34,8 @@ public class LineNotificationBuilder {
     private final Context context;
     private final ChatTitleAndSenderResolver chatTitleAndSenderResolver;
 
-    public LineNotificationBuilder(Context context, ChatTitleAndSenderResolver chatTitleAndSenderResolver) {
+    public LineNotificationBuilder(final Context context,
+                                   final ChatTitleAndSenderResolver chatTitleAndSenderResolver) {
         this.context = context;
         this.chatTitleAndSenderResolver = chatTitleAndSenderResolver;
     }
@@ -80,11 +81,10 @@ public class LineNotificationBuilder {
             return CALL_VIRTUAL_CHAT_ID;
         }
         final String lineChatId = getChatId(statusBarNotification);
-        if (StringUtils.isNotBlank(lineChatId)) {
-            return lineChatId;
-        } else {
+        if (StringUtils.isBlank(lineChatId)) {
             return DEFAULT_CHAT_ID;
         }
+        return lineChatId;
     }
 
     private String getChatId(final StatusBarNotification statusBarNotification) {

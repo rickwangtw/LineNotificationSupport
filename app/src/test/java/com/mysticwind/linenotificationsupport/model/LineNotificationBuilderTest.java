@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 
 import com.google.common.collect.ImmutableList;
+import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -41,6 +42,9 @@ public class LineNotificationBuilderTest {
     private ChatTitleAndSenderResolver mockedChatTitleAndSenderResolver;
 
     @Mock
+    private PreferenceProvider mockedPreferenceProvider;
+
+    @Mock
     private StatusBarNotification mockedStatusBarNotification;
 
     @Mock
@@ -61,6 +65,7 @@ public class LineNotificationBuilderTest {
     public void setUp() {
         when(mockedChatTitleAndSenderResolver.resolveTitleAndSender(any())).thenReturn(Pair.of(TITLE, SENDER));
         mockedNotification.extras = this.mockedExtras;
+        when(mockedPreferenceProvider.shouldUseMergeMessageChatId()).thenReturn(false);
 
         classUnderTest = new LineNotificationBuilder(mockedContext, mockedChatTitleAndSenderResolver);
     }

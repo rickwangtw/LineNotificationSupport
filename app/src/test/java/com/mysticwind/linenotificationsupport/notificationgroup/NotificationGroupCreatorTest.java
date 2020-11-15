@@ -7,6 +7,7 @@ import android.app.NotificationManager;
 import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
+import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,6 +41,9 @@ public class NotificationGroupCreatorTest {
     private AndroidFeatureProvider mockedAndroidFeatureProvider;
 
     @Mock
+    private PreferenceProvider mockedPreferenceProvider;
+
+    @Mock
     private NotificationChannelGroup callNotificationChannelGroup;
 
     @Mock
@@ -57,12 +61,12 @@ public class NotificationGroupCreatorTest {
         when(messageNotificationChannelGroup.getId()).thenReturn(MESSAGE_NOTIFICATION_GROUP_ID);
         when(otherNotificationChannelGroup.getId()).thenReturn(OTHERS_NOTIFICATION_GROUP_ID);
 
-        classUnderTest = new NotificationGroupCreator(mockedNotificationManager, mockedAndroidFeatureProvider);
+        classUnderTest = new NotificationGroupCreator(mockedNotificationManager, mockedAndroidFeatureProvider, mockedPreferenceProvider);
     }
 
     @After
     public void tearDown() {
-        verifyNoMoreInteractions(mockedNotificationManager, mockedAndroidFeatureProvider);
+        verifyNoMoreInteractions(mockedNotificationManager, mockedAndroidFeatureProvider, mockedPreferenceProvider);
     }
 
     @Test

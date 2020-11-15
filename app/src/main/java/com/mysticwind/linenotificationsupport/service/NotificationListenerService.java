@@ -30,6 +30,7 @@ import com.mysticwind.linenotificationsupport.notification.NotificationPublisher
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
+import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
@@ -86,7 +87,7 @@ public class NotificationListenerService
 
         new NotificationGroupCreator(
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
-                new AndroidFeatureProvider())
+                new AndroidFeatureProvider(), getPreferenceProvider())
                 .createNotificationGroups();
 
         return super.onBind(intent);
@@ -314,7 +315,8 @@ public class NotificationListenerService
             return;
         }
 
-        final LineNotification dismissedLineNotification = new LineNotificationBuilder(this,
+        final LineNotification dismissedLineNotification = new LineNotificationBuilder(
+                this,
                 CHAT_TITLE_AND_SENDER_RESOLVER).from(statusBarNotification);
 
         if (LineNotification.CallState.INCOMING == dismissedLineNotification.getCallState() &&
@@ -325,6 +327,10 @@ public class NotificationListenerService
         if (shouldAutoDismissLineNotificationSupportNotifications()) {
             dismissLineNotificationSupportNotifications(dismissedLineNotification.getChatId());
         }
+    }
+
+    private PreferenceProvider getPreferenceProvider() {
+        return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
     }
 
     private boolean shouldAutoDismissLineNotificationSupportNotifications() {
