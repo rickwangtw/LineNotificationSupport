@@ -8,6 +8,7 @@ import android.service.notification.StatusBarNotification;
 import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
+import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
@@ -42,6 +43,9 @@ public class LineNotificationBuilderTest {
     private ChatTitleAndSenderResolver mockedChatTitleAndSenderResolver;
 
     @Mock
+    private StatusBarNotificationPrinter mockedStatusBarNotificationPrinter;
+
+    @Mock
     private PreferenceProvider mockedPreferenceProvider;
 
     @Mock
@@ -67,7 +71,7 @@ public class LineNotificationBuilderTest {
         mockedNotification.extras = this.mockedExtras;
         when(mockedPreferenceProvider.shouldUseMergeMessageChatId()).thenReturn(false);
 
-        classUnderTest = new LineNotificationBuilder(mockedContext, mockedChatTitleAndSenderResolver);
+        classUnderTest = new LineNotificationBuilder(mockedContext, mockedChatTitleAndSenderResolver, mockedStatusBarNotificationPrinter);
     }
 
     @Test
@@ -138,6 +142,28 @@ public class LineNotificationBuilderTest {
         LineNotification lineNotification = classUnderTest.from(buildNotification(null, null, null, null, false));
 
         assertEquals(LineNotificationBuilder.DEFAULT_CHAT_ID, lineNotification.getChatId());
+    }
+
+    @Test
+    public void testBuilderWithSender() {
+        when(mockedChatTitleAndSenderResolver.resolveTitleAndSender(any(StatusBarNotification.class))).thenReturn(Pair.of(TITLE, SENDER));
+
+        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, null, null, null, false));
+
+        assertEquals(SENDER, lineNotification.getSender().getName());
+        assertEquals(TITLE, lineNotification.getTitle());
+        assertEquals(CHAT_ID, lineNotification.getChatId());
+    }
+
+    @Test
+    public void testNoSenderReturnsDefaultSender() {
+        when(mockedChatTitleAndSenderResolver.resolveTitleAndSender(any(StatusBarNotification.class))).thenReturn(Pair.of(TITLE, null));
+
+        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, null, null, null, false));
+
+        assertEquals(LineNotificationBuilder.DEFAULT_SENDER_NAME, lineNotification.getSender().getName());
+        assertEquals(TITLE, lineNotification.getTitle());
+        assertEquals(CHAT_ID, lineNotification.getChatId());
     }
 
     // TODO add more helper methods

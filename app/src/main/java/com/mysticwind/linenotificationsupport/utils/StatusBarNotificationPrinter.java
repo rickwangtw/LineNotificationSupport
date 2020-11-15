@@ -44,7 +44,7 @@ public class StatusBarNotificationPrinter {
                 .add("key", statusBarNotification.getKey())
                 .add("id", statusBarNotification.getId())
                 .add("tag", statusBarNotification.getTag())
-                .add("user", statusBarNotification.getUser().toString())
+                .add("user", statusBarNotification.getUser() == null ? "N/A" : statusBarNotification.getUser().toString())
                 .add("overrideGroupKey", statusBarNotification.getOverrideGroupKey())
                 .add("notification", ToStringBuilder.reflectionToString(statusBarNotification.getNotification()))
                 .add("actionLabels", extractActionLabels(statusBarNotification))
@@ -61,6 +61,16 @@ public class StatusBarNotificationPrinter {
                 .map(action -> action.title.toString())
                 .reduce((title1, title2) -> title1 + "," + title2)
                 .orElse("No title");
+    }
+
+    public void printError(final String message, final StatusBarNotification statusBarNotification) {
+        final String prefix = buildPrefix(message);
+
+        Log.e(TAG, String.format("%sNotification (%s): %s",
+                prefix,
+                statusBarNotification.getPackageName(),
+                stringifyNotification(statusBarNotification))
+        );
     }
 
 }

@@ -13,6 +13,7 @@ import androidx.core.app.Person;
 import androidx.core.graphics.drawable.IconCompat;
 
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
+import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -30,14 +31,18 @@ public class LineNotificationBuilder {
     protected static final String MESSAGE_CATEGORY = "msg";
     protected static final String MISSED_CALL_TAG = "NOTIFICATION_TAG_MISSED_CALL";
     protected static final String GENERAL_NOTIFICATION_CHANNEL = "jp.naver.line.android.notification.GeneralNotifications";
+    protected static final String DEFAULT_SENDER_NAME = "?";
 
     private final Context context;
     private final ChatTitleAndSenderResolver chatTitleAndSenderResolver;
+    private final StatusBarNotificationPrinter statusBarNotificationPrinter;
 
     public LineNotificationBuilder(final Context context,
-                                   final ChatTitleAndSenderResolver chatTitleAndSenderResolver) {
+                                   final ChatTitleAndSenderResolver chatTitleAndSenderResolver,
+                                   final StatusBarNotificationPrinter statusBarNotificationPrinter) {
         this.context = context;
         this.chatTitleAndSenderResolver = chatTitleAndSenderResolver;
+        this.statusBarNotificationPrinter = statusBarNotificationPrinter;
     }
 
     public LineNotification from(StatusBarNotification statusBarNotification) {
@@ -45,7 +50,7 @@ public class LineNotificationBuilder {
         final String title = titleAndSender.getLeft();
         final String sender = titleAndSender.getRight();
         final Bitmap largeIconBitmap = getLargeIconBitmap(statusBarNotification);
-        final Person senderPerson = buildPerson(sender, largeIconBitmap);
+        final Person senderPerson = buildPerson(sender, largeIconBitmap, statusBarNotification);
         final LineNotification.CallState callState = resolveCallState(statusBarNotification);
         final List<Notification.Action> actions = extractActions(statusBarNotification, callState);
 
@@ -127,15 +132,24 @@ public class LineNotificationBuilder {
         return bitmap;
     }
 
-    private Person buildPerson(String sender, Bitmap iconBitmap) {
+    private Person buildPerson(final String sender,
+                               final Bitmap iconBitmap,
+                               final StatusBarNotification statusBarNotification) {
         final IconCompat icon;
         if (iconBitmap == null) {
             icon = null;
         } else {
             icon = IconCompat.createWithBitmap(iconBitmap);
         }
+        final String senderName;
+        if (StringUtils.isBlank(sender)) {
+            senderName = DEFAULT_SENDER_NAME;
+            statusBarNotificationPrinter.printError("No sender identified, using default!", statusBarNotification);
+        } else {
+           senderName = sender;
+        }
         return new Person.Builder()
-                .setName(sender)
+                .setName(senderName)
                 .setIcon(icon)
                 .build();
     }

@@ -177,7 +177,7 @@ public class NotificationListenerService
 
     private void sendNotification(StatusBarNotification notificationFromLine) {
         final LineNotification lineNotification = new LineNotificationBuilder(this,
-                CHAT_TITLE_AND_SENDER_RESOLVER).from(notificationFromLine);
+                CHAT_TITLE_AND_SENDER_RESOLVER, NOTIFICATION_PRINTER).from(notificationFromLine);
 
         int notificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
 
@@ -346,8 +346,8 @@ public class NotificationListenerService
         }
 
         final LineNotification dismissedLineNotification = new LineNotificationBuilder(
-                this,
-                CHAT_TITLE_AND_SENDER_RESOLVER).from(statusBarNotification);
+                this, CHAT_TITLE_AND_SENDER_RESOLVER, NOTIFICATION_PRINTER)
+                .from(statusBarNotification);
 
         if (LineNotification.CallState.INCOMING == dismissedLineNotification.getCallState() &&
                 this.autoIncomingCallNotificationState != null) {
