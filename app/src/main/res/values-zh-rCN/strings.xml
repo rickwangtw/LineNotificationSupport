@@ -22,9 +22,14 @@
     <string name="call_notification_action_reverse_order_title">LINE来电按钮顺序</string>
     <string name="call_notification_action_reverse_summary_on">先『拒绝』再『应答』。使用这个选项如果您较常选择拒绝来电。</string>
     <string name="call_notification_action_reverse_summary_off">先『应答』再『拒绝』。使用这个选项如果您较常选择应答来电。</string>
+
+    <!-- Notification Preferences -->
     <string name="auto_dismiss_line_notification_support_messages_title">通知连动</string>
     <string name="auto_dismiss_line_notification_support_messages_summary_on">取消 LINE 提示时，自动取消 LINE提示助手 的提示。</string>
     <string name="auto_dismiss_line_notification_support_messages_summary_off">取消 LINE 提示时，依然保留 LINE提示助手 的提示。</string>
+    <string name="merge_message_notification_channel_title">单一信息通知设置</string>
+    <string name="merge_message_notification_channel_summary_on">所有信息通知皆使用相同设置。您可以轻易的将所有的信息设定为同一个响铃。</string>
+    <string name="merge_message_notification_channel_summary_off">个人或群皆有分开的通知设置。您可以对每个群使用不同的通知音效，您也可以选则忽略特定群的通知。</string>
 
     <!-- LINE version warnings -->
     <string name="line_version_warning_10_19_1">您使用的这个 LINE 版本 (10.19.1) 在信息中不显示群组名称。应对这个问题，这个应用会显示之前在群中传过信息的朋友列表。如果不显示群名称对您造成困扰，请降版本至 10.18.2 或 10.19.2 以上。</string>

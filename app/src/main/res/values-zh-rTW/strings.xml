@@ -22,9 +22,14 @@
     <string name="call_notification_action_reverse_order_title">LINE 通話按鈕順序</string>
     <string name="call_notification_action_reverse_summary_on">先『拒絕』再『接聽』。使用這個選項如果您較常選擇拒絕。</string>
     <string name="call_notification_action_reverse_summary_off">先『接聽』再『拒絕』。使用這個選項如果您較常選擇接聽。</string>
+
+    <!-- Notification Preferences -->
     <string name="auto_dismiss_line_notification_support_messages_title">通知連動</string>
     <string name="auto_dismiss_line_notification_support_messages_summary_on">取消 LINE 通知時，自動取消 LINE 通知小幫手的通知。</string>
     <string name="auto_dismiss_line_notification_support_messages_summary_off">取消 LINE 通知時，依然保留 LINE 通知小幫手的通知。</string>
+    <string name="merge_message_notification_channel_title">單一訊息通知設定</string>
+    <string name="merge_message_notification_channel_summary_on">所有訊息通知皆使用相同設定。您可以輕易的將所有的訊息設定同一個鈴聲。</string>
+    <string name="merge_message_notification_channel_summary_off">個人或群組皆有分開的通知設定。您可以對每個群組使用不同的通知音效，您也可以選則忽略特定群組的通知。</string>
 
     <!-- LINE version warnings -->
     <string name="line_version_warning_10_19_1">您使用的這個 LINE 版本 (10.19.1) 在訊息中不顯示群組名稱。應對這個問題，這個 app 會顯示之前在群組中傳過訊息的朋友列表。如果不顯示群組名稱對您造成困擾，請降版本至 10.18.2 或 10.19.2 以上。</string>
