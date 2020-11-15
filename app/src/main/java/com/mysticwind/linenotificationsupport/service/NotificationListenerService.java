@@ -74,21 +74,48 @@ public class NotificationListenerService
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
 
+    private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String preferenceKey) {
+            if (PreferenceProvider.MAX_NOTIFICATION_WORKAROUND_PREFERENCE_KEY.equals(preferenceKey)) {
+                NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
+            }
+        }
+    };
+
+    private NotificationPublisher buildNotificationPublisher() {
+        return buildNotificationPublisher(getPreferenceProvider().shouldExecuteMaxNotificationWorkaround());
+    }
+
+    private NotificationPublisher buildNotificationPublisher(boolean handleMaxNotificationAndroidLimit) {
+        final SimpleNotificationPublisher simpleNotificationPublisher = new SimpleNotificationPublisher(this, GROUP_ID_RESOLVER);
+
+        if (!handleMaxNotificationAndroidLimit) {
+            return simpleNotificationPublisher;
+        }
+
+        return new MaxNotificationHandlingNotificationPublisherDecorator(
+                getMaxNotificationsPerApp(),
+                (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE),
+                handler,
+                simpleNotificationPublisher,
+                getPackageName()
+        );
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
-        this.notificationPublisher =
-                new MaxNotificationHandlingNotificationPublisherDecorator(
-                        getMaxNotificationsPerApp(),
-                        (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE),
-                        handler,
-                        new SimpleNotificationPublisher(this, GROUP_ID_RESOLVER),
-                        getPackageName()
-                );
+        this.notificationPublisher = buildNotificationPublisher(
+                getPreferenceProvider().shouldExecuteMaxNotificationWorkaround()
+        );
 
         new NotificationGroupCreator(
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
                 new AndroidFeatureProvider(), getPreferenceProvider())
                 .createNotificationGroups();
+
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
         return super.onBind(intent);
     }
@@ -104,6 +131,9 @@ public class NotificationListenerService
     @Override
     public boolean onUnbind(Intent intent) {
         this.notificationPublisher = NullNotificationPublisher.INSTANCE;
+
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
         return super.onUnbind(intent);
     }
