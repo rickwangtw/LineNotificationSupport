@@ -1,6 +1,10 @@
 package com.mysticwind.linenotificationsupport.identicalmessage;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.mysticwind.linenotificationsupport.model.LineNotification;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -13,15 +17,15 @@ import lombok.Value;
 
 public class IdenticalMessageEvaluator {
 
-    private static final Comparator<LineNotification> LINE_NOTIFICATION_COMPARATOR =
+    @VisibleForTesting
+    protected static final Comparator<LineNotification> LINE_NOTIFICATION_COMPARATOR =
             Comparator
-                    .comparing(LineNotification::getMessage)
-                    .thenComparing((n1, n2) -> senderName(n1).compareTo(senderName(n2)))
-                    .thenComparing(LineNotification::getTitle)
+                    .comparing(LineNotification::getMessage, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparing((n1, n2) -> compareSender(n1, n2))
+                    .thenComparing(LineNotification::getTitle, Comparator.nullsLast(Comparator.naturalOrder()))
                     .thenComparing(LineNotification::getLineStickerUrl, Comparator.nullsLast(Comparator.naturalOrder()))
-                    .thenComparing(LineNotification::getChatId)
+                    .thenComparing(LineNotification::getChatId, Comparator.nullsLast(Comparator.naturalOrder()))
                     .thenComparing(LineNotification::getCallState, Comparator.nullsLast(Comparator.naturalOrder()));
-
 
     private static final Map<String, IdenticalMessageEvaluator.State> CHAT_ID_TO_STATE_MAP = new HashMap<>();
 
@@ -97,7 +101,19 @@ public class IdenticalMessageEvaluator {
         return LINE_NOTIFICATION_COMPARATOR.compare(previousLineNotification, newLineNotification) == 0;
     }
 
+    private static int compareSender(LineNotification lineNotification1, LineNotification lineNotification2) {
+        final String senderName1 = senderName(lineNotification1);
+        final String senderName2 = senderName(lineNotification2);
+        return StringUtils.compare(senderName1, senderName2);
+    }
+
     private static String senderName(final LineNotification lineNotification) {
+        if (lineNotification.getSender() == null) {
+            return null;
+        }
+        if (StringUtils.isBlank(lineNotification.getSender().getName())) {
+            return null;
+        }
         return lineNotification.getSender().getName().toString();
     }
 
