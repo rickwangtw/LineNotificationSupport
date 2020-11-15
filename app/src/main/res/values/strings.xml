@@ -25,7 +25,7 @@
     <string name="auto_call_notifications_summary_off">Receive one notification during incoming call.</string>
     <string name="auto_call_notifications_timeout_title">When to stop auto call notifications?</string>
     <string name="auto_call_notifications_wait_title">Duration in between continuous call notifications</string>
-    <string name="call_notification_action_reverse_order_title">Order of incoming call actions</string>
+    <string name="call_notification_action_reverse_order_title">Incoming call action order</string>
     <string name="call_notification_action_reverse_summary_on">Show "Decline" then "Answer". Use this option when you tend to decline calls more often.</string>
     <string name="call_notification_action_reverse_summary_off">Show "Answer" then "Decline". Use this option when you tend to answer calls more often.</string>
 
@@ -33,7 +33,7 @@
     <string name="auto_dismiss_line_notification_support_messages_title">Auto dismiss notifications</string>
     <string name="auto_dismiss_line_notification_support_messages_summary_on">Dismiss notifications from LINE Notification Support when LINE notifications are dismissed</string>
     <string name="auto_dismiss_line_notification_support_messages_summary_off">Do not dismiss notifications from LINE Notification Support when LINE notifications are dismissed</string>
-    <string name="merge_message_notification_channel_title">Merge notification channel for messages</string>
+    <string name="merge_message_notification_channel_title">Merge message notification channels</string>
     <string name="merge_message_notification_channel_summary_on">Single notification channel for messages. Calls will have a separate notification channel. Useful if you\'d like to set the same notification sound for all messages.</string>
     <string name="merge_message_notification_channel_summary_off">Multiple notification channels for messages. You can set different notification sounds for each chat and even mute the ones you don\'t really care.</string>
 

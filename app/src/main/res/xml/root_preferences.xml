@@ -1,8 +1,10 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <PreferenceCategory app:title="@string/messages_header">
+    <PreferenceCategory app:title="@string/messages_header"
+        app:iconSpaceReserved="false" >
 
         <ListPreference
+            app:iconSpaceReserved="false"
             app:defaultValue="IGNORE"
             app:entries="@array/identical_message_handling_strategy_entries"
             app:entryValues="@array/identical_message_handling_strategy_values"
@@ -12,9 +14,11 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/calls_header">
+    <PreferenceCategory app:title="@string/calls_header"
+        app:iconSpaceReserved="false" >
 
         <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
             app:key="auto_call_notifications"
             app:title="@string/auto_call_notifications_title"
             app:defaultValue="true"
@@ -22,6 +26,7 @@
             app:summaryOn="@string/auto_call_notifications_summary_on" />
 
         <ListPreference
+            app:iconSpaceReserved="false"
             app:dependency="auto_call_notifications"
             app:defaultValue="-1"
             app:entries="@array/auto_call_timeout_entries"
@@ -31,6 +36,8 @@
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
             app:dependency="auto_call_notifications"
             app:defaultValue="3"
             app:entries="@array/auto_call_wait_entries"
@@ -40,6 +47,7 @@
             app:useSimpleSummaryProvider="true" />
 
         <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
             app:key="call_notifications_reverse_action"
             app:title="@string/call_notification_action_reverse_order_title"
             app:defaultValue="false"
@@ -48,9 +56,11 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/notifications_header">
+    <PreferenceCategory app:title="@string/notifications_header"
+        app:iconSpaceReserved="false" >
 
         <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
             app:key="auto_dismiss_line_notification_support_messages"
             app:title="@string/auto_dismiss_line_notification_support_messages_title"
             app:defaultValue="true"
@@ -58,6 +68,8 @@
             app:summaryOn="@string/auto_dismiss_line_notification_support_messages_summary_on" />
 
         <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
             app:key="merge_message_notification_channels"
             app:title="@string/merge_message_notification_channel_title"
             app:defaultValue="false"
