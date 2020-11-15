@@ -76,6 +76,15 @@
             app:summaryOff="@string/merge_message_notification_channel_summary_off"
             app:summaryOn="@string/merge_message_notification_channel_summary_on" />
 
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            app:key="max_notification_workaround"
+            app:title="@string/max_notification_workaround_title"
+            app:defaultValue="true"
+            app:summaryOff="@string/max_notification_workaround_summary_off"
+            app:summaryOn="@string/max_notification_workaround_summary_on" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
