@@ -38,7 +38,7 @@
     <string name="merge_message_notification_channel_summary_off">Multiple notification channels for messages. You can set different notification sounds for each chat and even mute the ones you don\'t really care.</string>
     <string name="max_notification_workaround_title">[BETA] Workaround Android notification limit. Android 10 has a limit of 25 notifications per app while older Android versions have a limit of 50.</string>
     <string name="max_notification_workaround_summary_on">This option holds notifications when exceeding the limit and resends them when slots are available after notifications being dismissed. This is a new feature and may have bugs. Please keep your active notification count low if possible.</string>
-    <string name="max_notification_workaround_summary_off">This is the default Android behavior. You will not receive any notifications from this app if you exceed the limit.has a limit of 25 notifications per app.</string>
+    <string name="max_notification_workaround_summary_off">This is the default Android behavior. You will not receive any notifications from this app if you exceed the limit.</string>
 
     <!-- LINE version warnings -->
     <string name="line_version_warning_10_19_1">This LINE version (10.19.1) you are using does not provide the title of the chat group. Instead of showing the title of the chat group, this app will list out the users who previously responded as a mitigation. If not showing the title is a problem, please downgrade your LINE version to 10.18.2 or 10.19.2 and above.</string>
