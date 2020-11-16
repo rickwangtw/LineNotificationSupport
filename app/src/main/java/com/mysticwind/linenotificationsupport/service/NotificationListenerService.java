@@ -5,6 +5,8 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -13,9 +15,13 @@ import android.util.Log;
 
 import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
+import androidx.room.Room;
 
 import com.google.common.collect.ImmutableMap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
+import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
+import com.mysticwind.linenotificationsupport.debug.history.manager.impl.NullNotificationHistoryManager;
+import com.mysticwind.linenotificationsupport.debug.history.manager.impl.RoomNotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.identicalmessage.AsIsIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageEvaluator;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageHandler;
@@ -30,6 +36,7 @@ import com.mysticwind.linenotificationsupport.notification.NotificationPublisher
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
+import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
@@ -73,6 +80,7 @@ public class NotificationListenerService
 
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
+    private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
     private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -117,6 +125,11 @@ public class NotificationListenerService
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
+        AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
+                AppDatabase.class, "database").build();
+
+        this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
+
         return super.onBind(intent);
     }
 
@@ -135,6 +148,8 @@ public class NotificationListenerService
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
+        this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
+
         return super.onUnbind(intent);
     }
 
@@ -150,6 +165,7 @@ public class NotificationListenerService
         }
 
         NOTIFICATION_PRINTER.print("Received", statusBarNotification);
+        notificationHistoryManager.record(statusBarNotification, getLineAppVersion());
 
         sendNotification(statusBarNotification);
     }
@@ -173,6 +189,19 @@ public class NotificationListenerService
         final String summaryText = statusBarNotification.getNotification().extras
                 .getString("android.summaryText");
         return StringUtils.isNotBlank(summaryText);
+    }
+
+    // TODO remove one of the duplicates
+    private String getLineAppVersion() {
+        // https://stackoverflow.com/questions/50795458/android-how-to-get-any-application-version-by-package-name
+        final PackageManager packageManager = getPackageManager();
+        try {
+            final PackageInfo packageInfo = packageManager.getPackageInfo(LINE_PACKAGE_NAME, 0);
+            return packageInfo.versionName;
+        } catch (final PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "LINE not installed. Package: " + LINE_PACKAGE_NAME);
+            return null;
+        }
     }
 
     private void sendNotification(StatusBarNotification notificationFromLine) {
