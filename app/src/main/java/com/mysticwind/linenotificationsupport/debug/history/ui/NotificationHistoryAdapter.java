@@ -25,7 +25,7 @@ public class NotificationHistoryAdapter extends ListAdapter<NotificationHistoryE
     @Override
     public void onBindViewHolder(@NonNull NotificationHistoryEntryViewHolder holder, int position) {
         final NotificationHistoryEntry current = getItem(position);
-        holder.bind(current);
+        holder.bind(current, position);
     }
 
 

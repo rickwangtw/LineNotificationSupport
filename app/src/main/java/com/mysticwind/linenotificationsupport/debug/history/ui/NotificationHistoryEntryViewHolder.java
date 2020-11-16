@@ -1,5 +1,6 @@
 package com.mysticwind.linenotificationsupport.debug.history.ui;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,10 +25,16 @@ public class NotificationHistoryEntryViewHolder extends RecyclerView.ViewHolder 
         notificationEntryTextView = itemView.findViewById(R.id.notification_entry_text_view);
     }
 
-    public void bind(NotificationHistoryEntry entry) {
+    public void bind(NotificationHistoryEntry entry, int position) {
         timestampTextView.setText(entry.getRecordDateTime());
         lineVersionTextView.setText(entry.getLineVersion());
         notificationEntryTextView.setText(entry.getNotification());
+
+        if (position % 2 == 1) {
+            itemView.setBackgroundColor(Color.GRAY);
+        } else {
+            itemView.setBackgroundColor(Color.WHITE);
+        }
     }
 
     static NotificationHistoryEntryViewHolder create(ViewGroup parent) {
