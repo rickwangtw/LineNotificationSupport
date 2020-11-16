@@ -4,12 +4,15 @@ import android.os.AsyncTask;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
+
 import com.mysticwind.linenotificationsupport.debug.history.dto.NotificationHistoryEntry;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
 import java.time.Instant;
+import java.util.List;
 
 public class RoomNotificationHistoryManager implements NotificationHistoryManager {
 
@@ -50,6 +53,11 @@ public class RoomNotificationHistoryManager implements NotificationHistoryManage
                 .lineVersion(lineVersion)
                 .recordDateTime(Instant.now().toString())
                 .build();
+    }
+
+    @Override
+    public LiveData<List<NotificationHistoryEntry>> getHistory() {
+        return appDatabase.lineNotificationHistoryDao().getAllEntries();
     }
 
 }

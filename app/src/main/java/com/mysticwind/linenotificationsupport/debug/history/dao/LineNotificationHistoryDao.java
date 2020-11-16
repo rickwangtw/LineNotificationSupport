@@ -1,5 +1,6 @@
 package com.mysticwind.linenotificationsupport.debug.history.dao;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -14,7 +15,7 @@ import java.util.List;
 public interface LineNotificationHistoryDao {
 
     @Query("SELECT * FROM notification_history ORDER BY record_date_time DESC")
-    List<NotificationHistoryEntry> getAllEntries();
+    LiveData<List<NotificationHistoryEntry>> getAllEntries();
 
     @Query("SELECT * FROM notification_history WHERE record_date_time BETWEEN :recordDateTimeStart AND :recordDateTimeEnd ORDER BY record_date_time DESC")
     List<NotificationHistoryEntry> getEntriesBetweenRecordDateTimes(String recordDateTimeStart, String recordDateTimeEnd);
