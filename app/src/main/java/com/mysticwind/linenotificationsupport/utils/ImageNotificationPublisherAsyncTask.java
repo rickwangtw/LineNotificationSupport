@@ -142,7 +142,13 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
             return new NotificationCompat.BigPictureStyle()
                     .bigPicture(downloadedImage)
                     .setSummaryText(lineNotification.getMessage());
-        } else {
+        }  else if (lineNotification.getSender().getName().equals(lineNotification.getTitle())) {
+            // this is usually the case if you're talking to a single person.
+            // Don't set the conversation title in this case.
+            return new NotificationCompat.MessagingStyle(lineNotification.getSender())
+                    .addMessage(lineNotification.getMessage(),
+                            lineNotification.getTimestamp(), lineNotification.getSender());
+        }  else {
             return new NotificationCompat.MessagingStyle(lineNotification.getSender())
                     .setConversationTitle(lineNotification.getTitle())
                     .addMessage(lineNotification.getMessage(),
