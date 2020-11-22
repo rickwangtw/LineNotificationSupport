@@ -19,6 +19,7 @@ import androidx.room.Room;
 
 import com.google.common.collect.ImmutableMap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
+import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.debug.history.manager.impl.NullNotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.debug.history.manager.impl.RoomNotificationHistoryManager;
@@ -66,6 +67,7 @@ public class NotificationListenerService
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
     private static final ChatTitleAndSenderResolver CHAT_TITLE_AND_SENDER_RESOLVER = new ChatTitleAndSenderResolver();
     private static final StatusBarNotificationPrinter NOTIFICATION_PRINTER = new StatusBarNotificationPrinter();
+    private static final DebugModeProvider DEBUG_MODE_PROVIDER = new DebugModeProvider();
 
     private static final IdenticalMessageEvaluator IDENTICAL_MESSAGE_EVALUATOR = new IdenticalMessageEvaluator();
     private static final MergeIdenticalMessageHandler MERGE_IDENTICAL_MESSAGE_HANDLER = new MergeIdenticalMessageHandler(IDENTICAL_MESSAGE_EVALUATOR);
@@ -127,10 +129,12 @@ public class NotificationListenerService
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
-        AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase.class, "database").build();
+        if (DEBUG_MODE_PROVIDER.isDebugMode()) {
+            AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
+                    AppDatabase.class, "database").build();
 
-        this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
+            this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
+        }
 
         return super.onBind(intent);
     }
