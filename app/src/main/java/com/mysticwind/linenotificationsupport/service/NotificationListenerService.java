@@ -60,6 +60,8 @@ public class NotificationListenerService
 
     private static final String TAG = "LINE_NOTIFICATION_SUPPORT";
 
+    private static final String GROUP_MESSAGE_GROUP_KEY = "NOTIFICATION_GROUP_MESSAGE";
+
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
     private static final ChatTitleAndSenderResolver CHAT_TITLE_AND_SENDER_RESOLVER = new ChatTitleAndSenderResolver();
@@ -182,6 +184,13 @@ public class NotificationListenerService
         if (isSummary(statusBarNotification)) {
             return true;
         }
+
+        // don't know why, but this seems to filter out some duplicated messages
+        if (LineNotificationBuilder.GENERAL_NOTIFICATION_CHANNEL.equals(statusBarNotification.getNotification().getChannelId()) &&
+                GROUP_MESSAGE_GROUP_KEY.equals(statusBarNotification.getNotification().getGroup())) {
+            return true;
+        }
+
         return false;
     }
 
