@@ -197,7 +197,17 @@ public class NotificationListenerService
     private boolean isSummary(final StatusBarNotification statusBarNotification) {
         final String summaryText = statusBarNotification.getNotification().extras
                 .getString("android.summaryText");
-        return StringUtils.isNotBlank(summaryText);
+        if (StringUtils.isNotBlank(summaryText)) {
+            Log.d(TAG, String.format("Skipping notification with message [%s]: it contains summary text [%s]",
+                    statusBarNotification.getNotification().tickerText, summaryText));
+            return true;
+        }
+        if ((statusBarNotification.getNotification().flags & Notification.FLAG_GROUP_SUMMARY) > 0) {
+            Log.d(TAG, String.format("Skipping notification with message [%s]: flag %s",
+                    statusBarNotification.getNotification().tickerText, statusBarNotification.getNotification().flags));
+            return true;
+        }
+        return false;
     }
 
     // TODO remove one of the duplicates
