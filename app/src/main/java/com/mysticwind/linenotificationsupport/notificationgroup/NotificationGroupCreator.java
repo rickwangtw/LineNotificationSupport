@@ -137,7 +137,12 @@ public class NotificationGroupCreator {
         return Optional.of(channelId);
     }
 
+    // TODO unit tests
     private String getChannelId(String chatId) {
+        if (LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID.equals(chatId) ||
+                LineNotificationBuilder.DEFAULT_CHAT_ID.equals(chatId)) {
+            return chatId;
+        }
         if (preferenceProvider.shouldUseMergeMessageChatId()) {
             return MERGED_MESSAGE_CHANNEL_ID;
         }
