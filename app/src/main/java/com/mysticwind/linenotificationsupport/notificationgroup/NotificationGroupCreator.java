@@ -33,6 +33,7 @@ public class NotificationGroupCreator {
     protected static final String CALL_CHANNEL_NAME = "Calls";
     protected static final String MERGED_MESSAGE_CHANNEL_ID = "merged_message_channel_id";
     protected static final String MERGED_MESSAGE_CHANNEL_NAME = "All Messages";
+    private static final String NO_CHANNEL_NAME_DEFAULT = "No title";
 
     private static final Map<String, String> NOTIFICATION_GROUP_ID_TO_NAME_MAP = ImmutableMap.of(
             MESSAGE_NOTIFICATION_GROUP_ID, MESSAGE_NOTIFICATION_GROUP_NAME,
@@ -137,7 +138,12 @@ public class NotificationGroupCreator {
         return Optional.of(channelId);
     }
 
+    // TODO unit tests
     private String getChannelId(String chatId) {
+        if (LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID.equals(chatId) ||
+                LineNotificationBuilder.DEFAULT_CHAT_ID.equals(chatId)) {
+            return chatId;
+        }
         if (preferenceProvider.shouldUseMergeMessageChatId()) {
             return MERGED_MESSAGE_CHANNEL_ID;
         }
@@ -163,6 +169,10 @@ public class NotificationGroupCreator {
             return CALL_CHANNEL_NAME;
         } else if (MERGED_MESSAGE_CHANNEL_ID.equals(channelId)) {
             return MERGED_MESSAGE_CHANNEL_NAME;
+        }
+        // TODO unit tests
+        if (StringUtils.isBlank(defaultChannelName)) {
+            return NO_CHANNEL_NAME_DEFAULT;
         }
         return defaultChannelName;
     }

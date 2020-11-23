@@ -8,6 +8,8 @@ import com.google.common.collect.HashMultimap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class ChatTitleAndSenderResolver {
@@ -15,6 +17,8 @@ public class ChatTitleAndSenderResolver {
     private static final String TAG = ChatTitleAndSenderResolver.class.getSimpleName();
 
     private final HashMultimap<String, String> chatIdToSenderMultimap = HashMultimap.create();
+    // there are crazy weird situations where LINE don't provide chat room names. This acts as a workaround.
+    private final Map<String, String> chatIdToChatRoomNameMap = new HashMap<>();
 
     public Pair<String, String> resolveTitleAndSender(final StatusBarNotification statusBarNotification) {
         // individual: android.title is the sender
@@ -24,6 +28,7 @@ public class ChatTitleAndSenderResolver {
         // it is straightforward for chat groups
         if (isChatGroup(statusBarNotification)) {
             final String title = getGroupChatTitle(statusBarNotification);
+            cacheGroupTitle(statusBarNotification, title);
             final String sender = calculateGroupSender(statusBarNotification);
             return Pair.of(title, sender);
         }
@@ -37,12 +42,28 @@ public class ChatTitleAndSenderResolver {
         }
 
         chatIdToSenderMultimap.put(chatId, sender);
-        return Pair.of(sortAndMerge(chatIdToSenderMultimap.get(chatId)), sender);
+
+        final String title;
+        final String highConfidenceChatRoomName = chatIdToChatRoomNameMap.get(chatId);
+        if (StringUtils.isNotBlank(highConfidenceChatRoomName)) {
+            title = highConfidenceChatRoomName;
+            Log.w(TAG, "Override with chat room name: " + title);
+        } else {
+            title = sortAndMerge(chatIdToSenderMultimap.get(chatId));
+        }
+        return Pair.of(title, sender);
     }
 
     private boolean isChatGroup(final StatusBarNotification statusBarNotification) {
         final String title = getGroupChatTitle(statusBarNotification);
         return StringUtils.isNotBlank(title);
+    }
+
+    private void cacheGroupTitle(final StatusBarNotification statusBarNotification, final String groupName) {
+        final String chatId = getChatId(statusBarNotification);
+        if (StringUtils.isNotBlank(chatId)) {
+            chatIdToChatRoomNameMap.put(chatId, groupName);
+        }
     }
 
     private String getGroupChatTitle(final StatusBarNotification statusBarNotification) {

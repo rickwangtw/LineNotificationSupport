@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.service.notification.StatusBarNotification;
@@ -17,7 +18,6 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
 
 import com.google.common.collect.Lists;
-import com.mysticwind.linenotificationsupport.MainActivity;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
@@ -111,8 +111,9 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
 
         final NotificationCompat.Style style = buildMessageStyle(downloadedImage);
 
-        final Intent intent = new Intent(context, MainActivity.class);
-        final PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        final Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse("https://line.me/R/nv/chat"));
+        final PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
 
         final Optional<String> channelId = createNotificationChannel();
 
@@ -142,7 +143,13 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
             return new NotificationCompat.BigPictureStyle()
                     .bigPicture(downloadedImage)
                     .setSummaryText(lineNotification.getMessage());
-        } else {
+        }  else if (lineNotification.getSender().getName().equals(lineNotification.getTitle())) {
+            // this is usually the case if you're talking to a single person.
+            // Don't set the conversation title in this case.
+            return new NotificationCompat.MessagingStyle(lineNotification.getSender())
+                    .addMessage(lineNotification.getMessage(),
+                            lineNotification.getTimestamp(), lineNotification.getSender());
+        }  else {
             return new NotificationCompat.MessagingStyle(lineNotification.getSender())
                     .setConversationTitle(lineNotification.getTitle())
                     .addMessage(lineNotification.getMessage(),

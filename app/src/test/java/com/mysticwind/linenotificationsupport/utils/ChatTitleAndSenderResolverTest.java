@@ -4,7 +4,10 @@ import android.app.Notification;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 
+import com.mysticwind.linenotificationsupport.components.helper.StatusBarNotificationBuilder;
+
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -50,6 +53,35 @@ public class ChatTitleAndSenderResolverTest {
 
         assertEquals(EXPECTED_GROUP_NAME, titleAndSender.getLeft());
         assertEquals(EXPECTED_SENDER, titleAndSender.getRight());
+    }
+
+    @Test
+    @Ignore("TODO: fix the Log.w in resolveTitleAndSender()")
+    public void testGroupTitleCaching() {
+        final ChatTitleAndSenderResolver classUnderTest = new ChatTitleAndSenderResolver();
+        Pair<String, String> titleAndSender = classUnderTest.resolveTitleAndSender(
+                new StatusBarNotificationBuilder()
+                        .withAndroidConversationTitle(ACTUAL_CONVERSATION_TITLE)
+                        .withAndroidText(ACTUAL_ANDROID_TEXT)
+                        .withAndroidTitle(ACTUAL_ANDROID_TITLE)
+                        .withLineChatId(CHAT_ID)
+                        .withTickerText(ACTUAL_TICKER_TEXT_WITH_MESSAGE)
+                        .build()
+        );
+        assertEquals(EXPECTED_GROUP_NAME, titleAndSender.getLeft());
+        assertEquals(EXPECTED_SENDER, titleAndSender.getRight());
+
+        // the real test - this should get the same chat ID even if not provided
+        Pair<String, String> titleAndSenderWithoutChatId = classUnderTest.resolveTitleAndSender(
+                new StatusBarNotificationBuilder()
+                        .withAndroidText(ACTUAL_ANDROID_TEXT)
+                        .withAndroidTitle(EXPECTED_SENDER)
+                        .withTickerText(ACTUAL_TICKER_TEXT_WITH_MESSAGE)
+                        .withLineChatId(CHAT_ID)
+                        .build()
+        );
+        assertEquals(EXPECTED_GROUP_NAME, titleAndSenderWithoutChatId.getLeft());
+        assertEquals(EXPECTED_SENDER, titleAndSenderWithoutChatId.getRight());
     }
 
     @Test

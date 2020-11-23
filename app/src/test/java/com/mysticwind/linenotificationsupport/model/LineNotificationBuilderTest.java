@@ -2,10 +2,10 @@ package com.mysticwind.linenotificationsupport.model;
 
 import android.app.Notification;
 import android.content.Context;
-import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 
 import com.google.common.collect.ImmutableList;
+import com.mysticwind.linenotificationsupport.components.helper.StatusBarNotificationBuilder;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
@@ -49,15 +49,6 @@ public class LineNotificationBuilderTest {
     private PreferenceProvider mockedPreferenceProvider;
 
     @Mock
-    private StatusBarNotification mockedStatusBarNotification;
-
-    @Mock
-    private Notification mockedNotification;
-
-    @Mock
-    private Bundle mockedExtras;
-
-    @Mock
     private Notification.Action action1;
 
     @Mock
@@ -68,7 +59,6 @@ public class LineNotificationBuilderTest {
     @Before
     public void setUp() {
         when(mockedChatTitleAndSenderResolver.resolveTitleAndSender(any())).thenReturn(Pair.of(TITLE, SENDER));
-        mockedNotification.extras = this.mockedExtras;
         when(mockedPreferenceProvider.shouldUseMergeMessageChatId()).thenReturn(false);
 
         classUnderTest = new LineNotificationBuilder(mockedContext, mockedChatTitleAndSenderResolver, mockedStatusBarNotificationPrinter);
@@ -166,27 +156,22 @@ public class LineNotificationBuilderTest {
         assertEquals(CHAT_ID, lineNotification.getChatId());
     }
 
-    // TODO add more helper methods
     private StatusBarNotification buildNotification(final String lineChatId, final String category, final String tag, String notificationChannel, boolean hasSingleAction) {
-        when(mockedExtras.getString("android.text")).thenReturn(ANDROID_TEXT);
-        when(mockedExtras.getString("android.conversationTitle")).thenReturn(CONVERSATION_TITLE);
-        when(mockedExtras.getString("android.title")).thenReturn(ANDROID_TITLE);
-        when(mockedExtras.getString("line.chat.id")).thenReturn(lineChatId);
-        when(mockedNotification.getLargeIcon()).thenReturn(null);
-        when(mockedNotification.getChannelId()).thenReturn(notificationChannel);
-
-        mockedNotification.category = category;
+        StatusBarNotificationBuilder statusBarNotificationBuilder = new StatusBarNotificationBuilder()
+                .withAndroidText(ANDROID_TEXT)
+                .withAndroidConversationTitle(CONVERSATION_TITLE)
+                .withAndroidTitle(ANDROID_TITLE)
+                .withLineChatId(lineChatId)
+                .withChannelId(notificationChannel)
+                .withCategory(category)
+                .withTag(tag);
 
         if (hasSingleAction) {
-            mockedNotification.actions = new Notification.Action[] {action1};
+            statusBarNotificationBuilder.withActions(action1);
         } else {
-            mockedNotification.actions = new Notification.Action[] {action1, action2};
+            statusBarNotificationBuilder.withActions(action1, action2);
         }
-
-        when(mockedStatusBarNotification.getNotification()).thenReturn(mockedNotification);
-        when(mockedStatusBarNotification.getTag()).thenReturn(tag);
-
-        return mockedStatusBarNotification;
+        return statusBarNotificationBuilder.build();
     }
 
     @After

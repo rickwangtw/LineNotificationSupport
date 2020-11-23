@@ -5,6 +5,8 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -13,9 +15,14 @@ import android.util.Log;
 
 import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
+import androidx.room.Room;
 
 import com.google.common.collect.ImmutableMap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
+import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
+import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
+import com.mysticwind.linenotificationsupport.debug.history.manager.impl.NullNotificationHistoryManager;
+import com.mysticwind.linenotificationsupport.debug.history.manager.impl.RoomNotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.identicalmessage.AsIsIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageEvaluator;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageHandler;
@@ -30,6 +37,7 @@ import com.mysticwind.linenotificationsupport.notification.NotificationPublisher
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
+import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
@@ -53,10 +61,13 @@ public class NotificationListenerService
 
     private static final String TAG = "LINE_NOTIFICATION_SUPPORT";
 
+    private static final String GROUP_MESSAGE_GROUP_KEY = "NOTIFICATION_GROUP_MESSAGE";
+
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
     private static final ChatTitleAndSenderResolver CHAT_TITLE_AND_SENDER_RESOLVER = new ChatTitleAndSenderResolver();
     private static final StatusBarNotificationPrinter NOTIFICATION_PRINTER = new StatusBarNotificationPrinter();
+    private static final DebugModeProvider DEBUG_MODE_PROVIDER = new DebugModeProvider();
 
     private static final IdenticalMessageEvaluator IDENTICAL_MESSAGE_EVALUATOR = new IdenticalMessageEvaluator();
     private static final MergeIdenticalMessageHandler MERGE_IDENTICAL_MESSAGE_HANDLER = new MergeIdenticalMessageHandler(IDENTICAL_MESSAGE_EVALUATOR);
@@ -73,6 +84,7 @@ public class NotificationListenerService
 
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
+    private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
     private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -117,6 +129,13 @@ public class NotificationListenerService
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
+        if (DEBUG_MODE_PROVIDER.isDebugMode()) {
+            AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
+                    AppDatabase.class, "database").build();
+
+            this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
+        }
+
         return super.onBind(intent);
     }
 
@@ -135,6 +154,8 @@ public class NotificationListenerService
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
+        this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
+
         return super.onUnbind(intent);
     }
 
@@ -150,6 +171,7 @@ public class NotificationListenerService
         }
 
         NOTIFICATION_PRINTER.print("Received", statusBarNotification);
+        notificationHistoryManager.record(statusBarNotification, getLineAppVersion());
 
         sendNotification(statusBarNotification);
     }
@@ -166,13 +188,43 @@ public class NotificationListenerService
         if (isSummary(statusBarNotification)) {
             return true;
         }
+
+        // don't know why, but this seems to filter out some duplicated messages
+        if (LineNotificationBuilder.GENERAL_NOTIFICATION_CHANNEL.equals(statusBarNotification.getNotification().getChannelId()) &&
+                GROUP_MESSAGE_GROUP_KEY.equals(statusBarNotification.getNotification().getGroup())) {
+            return true;
+        }
+
         return false;
     }
 
     private boolean isSummary(final StatusBarNotification statusBarNotification) {
         final String summaryText = statusBarNotification.getNotification().extras
                 .getString("android.summaryText");
-        return StringUtils.isNotBlank(summaryText);
+        if (StringUtils.isNotBlank(summaryText)) {
+            Log.d(TAG, String.format("Skipping notification with message [%s]: it contains summary text [%s]",
+                    statusBarNotification.getNotification().tickerText, summaryText));
+            return true;
+        }
+        if ((statusBarNotification.getNotification().flags & Notification.FLAG_GROUP_SUMMARY) > 0) {
+            Log.d(TAG, String.format("Skipping notification with message [%s]: flag %s",
+                    statusBarNotification.getNotification().tickerText, statusBarNotification.getNotification().flags));
+            return true;
+        }
+        return false;
+    }
+
+    // TODO remove one of the duplicates
+    private String getLineAppVersion() {
+        // https://stackoverflow.com/questions/50795458/android-how-to-get-any-application-version-by-package-name
+        final PackageManager packageManager = getPackageManager();
+        try {
+            final PackageInfo packageInfo = packageManager.getPackageInfo(LINE_PACKAGE_NAME, 0);
+            return packageInfo.versionName;
+        } catch (final PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "LINE not installed. Package: " + LINE_PACKAGE_NAME);
+            return null;
+        }
     }
 
     private void sendNotification(StatusBarNotification notificationFromLine) {

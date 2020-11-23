@@ -30,7 +30,7 @@ public class LineNotificationBuilder {
     protected static final String CALL_CATEGORY = "call";
     protected static final String MESSAGE_CATEGORY = "msg";
     protected static final String MISSED_CALL_TAG = "NOTIFICATION_TAG_MISSED_CALL";
-    protected static final String GENERAL_NOTIFICATION_CHANNEL = "jp.naver.line.android.notification.GeneralNotifications";
+    public static final String GENERAL_NOTIFICATION_CHANNEL = "jp.naver.line.android.notification.GeneralNotifications";
     protected static final String DEFAULT_SENDER_NAME = "?";
 
     private final Context context;
@@ -75,7 +75,8 @@ public class LineNotificationBuilder {
         } else if (MISSED_CALL_TAG.equals(statusBarNotification.getTag())) {
             return LineNotification.CallState.MISSED_CALL;
         // if not incoming, not missed, it is probably in a call ... (but not guaranteed, we'll see)
-        } else if (GENERAL_NOTIFICATION_CHANNEL.equals(statusBarNotification.getNotification().getChannelId())) {
+        } else if (GENERAL_NOTIFICATION_CHANNEL.equals(statusBarNotification.getNotification().getChannelId()) &&
+                StringUtils.isBlank(statusBarNotification.getNotification().getGroup())) {
             return LineNotification.CallState.IN_A_CALL;
         }
         return null;

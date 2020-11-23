@@ -18,6 +18,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.common.collect.ImmutableMap;
+import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 
 import java.util.Map;
 
@@ -26,6 +27,8 @@ import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE
 public class HelpActivity extends AppCompatActivity {
 
     private static final String TAG = HelpActivity.class.getSimpleName();
+
+    private static final DebugModeProvider DEBUG_MODE_PROVIDER = new DebugModeProvider();
 
     private static final Map<String, Integer> LINE_VERSION_TO_WARNING_MESSAGE_ID = ImmutableMap.of(
             "10.19.1", R.string.line_version_warning_10_19_1
@@ -113,6 +116,11 @@ public class HelpActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        if (DEBUG_MODE_PROVIDER.isDebugMode()) {
+            menu.getItem(1).setVisible(true);
+        }
+
         return true;
     }
 
@@ -126,6 +134,10 @@ public class HelpActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (id == R.id.action_debug) {
+            Intent intent = new Intent(this, NotificationHistoryDebugActivity.class);
             startActivity(intent);
             return true;
         }

@@ -73,4 +73,8 @@ public class StatusBarNotificationPrinter {
         );
     }
 
+    public String toString(final StatusBarNotification statusBarNotification) {
+        return stringifyNotification(statusBarNotification);
+    }
+
 }
