@@ -37,4 +37,7 @@
     <!-- LINE version warnings -->
     <string name="line_version_warning_10_19_1">您使用的這個 LINE 版本 (10.19.1) 在訊息中不顯示群組名稱。應對這個問題，這個 app 會顯示之前在群組中傳過訊息的朋友列表。如果不顯示群組名稱對您造成困擾，請降版本至 10.18.2 或 10.19.2 以上。</string>
 
+    <!-- Help page strings -->
+    <string name="support_donate_app">請透過捐贈版支持我的努力！ https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate</string>
+
 </resources>
