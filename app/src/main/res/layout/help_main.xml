@@ -42,14 +42,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:autoLink="web"
-            android:text="Author: Rick Wang (rickwangtw1014@gmail.com)" />
+            android:text="@string/author" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:autoLink="web"
-            android:text="This is an open source project! Feel free to contribute! https://github.com/rickwangtw/LineNotificationSupport" />
+            android:text="@string/contribute_to_open_source" />
 
         <TextView
             android:layout_width="wrap_content"

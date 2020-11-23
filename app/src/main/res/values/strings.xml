@@ -45,6 +45,8 @@
     <string name="line_version_warning_10_19_1">This LINE version (10.19.1) you are using does not provide the title of the chat group. Instead of showing the title of the chat group, this app will list out the users who previously responded as a mitigation. If not showing the title is a problem, please downgrade your LINE version to 10.18.2 or 10.19.2 and above.</string>
 
     <!-- Help page strings -->
+    <string name="author">Author: Rick Wang (rickwangtw1014@gmail.com)"</string>
+    <string name="contribute_to_open_source">This is an open source project! Feel free to contribute! https://github.com/rickwangtw/LineNotificationSupport"</string>
     <string name="support_donate_app">Please support my effort through the donate version: https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate</string>
 
 </resources>
