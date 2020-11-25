@@ -34,6 +34,11 @@
             android:label="@string/action_debug">
         </activity>
 
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/action_test_notifications">
+        </activity>
+
         <service
             android:name=".service.NotificationListenerService"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">

@@ -118,6 +118,7 @@ public class HelpActivity extends AppCompatActivity {
 
         if (DEBUG_MODE_PROVIDER.isDebugMode()) {
             menu.getItem(1).setVisible(true);
+            menu.getItem(2).setVisible(true);
         }
 
         return true;
@@ -139,7 +140,11 @@ public class HelpActivity extends AppCompatActivity {
             Intent intent = new Intent(this, NotificationHistoryDebugActivity.class);
             startActivity(intent);
             return true;
-        }
+        } else if (id == R.id.action_test_notifications) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        return true;
+    }
 
         return super.onOptionsItemSelected(item);
     }
