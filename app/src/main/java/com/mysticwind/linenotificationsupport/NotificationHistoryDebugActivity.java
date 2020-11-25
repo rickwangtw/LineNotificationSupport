@@ -13,10 +13,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.mysticwind.linenotificationsupport.debug.history.ui.NotificationHistoryAdapter;
 import com.mysticwind.linenotificationsupport.debug.history.ui.NotificationHistoryViewModel;
+import com.mysticwind.linenotificationsupport.log.TagBuilder;
 
 public class NotificationHistoryDebugActivity extends AppCompatActivity {
 
-    private static final String TAG = NotificationHistoryDebugActivity.class.getSimpleName();
+    private static final String TAG = TagBuilder.build(NotificationHistoryDebugActivity.class);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -7,13 +7,14 @@ import androidx.lifecycle.LiveData;
 
 import com.mysticwind.linenotificationsupport.debug.history.dto.NotificationHistoryEntry;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
+import com.mysticwind.linenotificationsupport.log.TagBuilder;
 
 import java.util.List;
 
 public enum NullNotificationHistoryManager implements NotificationHistoryManager {
     INSTANCE;
 
-    private static final String TAG = NullNotificationHistoryManager.class.getSimpleName();
+    private static final String TAG = TagBuilder.build(NullNotificationHistoryManager.class);
 
     @Override
     public void record(StatusBarNotification statusBarNotification, String lineVersion) {

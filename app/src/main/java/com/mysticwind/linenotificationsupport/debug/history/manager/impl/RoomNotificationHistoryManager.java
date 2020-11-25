@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData;
 
 import com.mysticwind.linenotificationsupport.debug.history.dto.NotificationHistoryEntry;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
+import com.mysticwind.linenotificationsupport.log.TagBuilder;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
@@ -16,7 +17,7 @@ import java.util.List;
 
 public class RoomNotificationHistoryManager implements NotificationHistoryManager {
 
-    private static final String TAG = RoomNotificationHistoryManager.class.getSimpleName();
+    private static final String TAG = TagBuilder.build(RoomNotificationHistoryManager.class);
 
     private final AppDatabase appDatabase;
     private final StatusBarNotificationPrinter statusBarNotificationPrinter;

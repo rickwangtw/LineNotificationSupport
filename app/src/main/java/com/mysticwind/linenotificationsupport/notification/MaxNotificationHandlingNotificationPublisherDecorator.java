@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
+import com.mysticwind.linenotificationsupport.log.TagBuilder;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +21,7 @@ import lombok.Value;
 
 public class MaxNotificationHandlingNotificationPublisherDecorator implements NotificationPublisher {
 
-    private static final String TAG = MaxNotificationHandlingNotificationPublisherDecorator.class.getSimpleName();
+    private static final String TAG = TagBuilder.build(MaxNotificationHandlingNotificationPublisherDecorator.class);
 
     // without the cool down, messages may not get sent if messages of the same group was just dismissed
     private static final long DISMISS_COOL_DOWN_IN_MILLIS = 500L;

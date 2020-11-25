@@ -28,6 +28,7 @@ import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageE
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.IgnoreIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.MergeIdenticalMessageHandler;
+import com.mysticwind.linenotificationsupport.log.TagBuilder;
 import com.mysticwind.linenotificationsupport.model.AutoIncomingCallNotificationState;
 import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStrategy;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
@@ -59,7 +60,7 @@ import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
 
-    private static final String TAG = "LINE_NOTIFICATION_SUPPORT";
+    private static final String TAG = TagBuilder.build(NotificationListenerService.class);
 
     private static final String GROUP_MESSAGE_GROUP_KEY = "NOTIFICATION_GROUP_MESSAGE";
 

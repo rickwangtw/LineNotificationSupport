@@ -24,6 +24,7 @@ import androidx.core.app.Person;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.mysticwind.linenotificationsupport.log.TagBuilder;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.ImageNotificationPublisherAsyncTask;
@@ -36,7 +37,7 @@ import static androidx.core.app.NotificationCompat.EXTRA_TEXT;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String TAG = TagBuilder.build(MainActivity.class);
 
     public static final String CHANNEL_ID = "converted-jp.naver.line.android.notification.NewMessages";
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver(1);

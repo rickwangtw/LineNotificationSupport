@@ -20,6 +20,7 @@ import androidx.preference.PreferenceManager;
 import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
+import com.mysticwind.linenotificationsupport.log.TagBuilder;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -39,7 +40,7 @@ import static androidx.core.app.NotificationCompat.EXTRA_TEXT;
 
 public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void, Bitmap> {
 
-    private static final String TAG = ImageNotificationPublisherAsyncTask.class.getSimpleName();
+    private static final String TAG = TagBuilder.build(ImageNotificationPublisherAsyncTask.class);
 
     private final Context context;
     private final LineNotification lineNotification;

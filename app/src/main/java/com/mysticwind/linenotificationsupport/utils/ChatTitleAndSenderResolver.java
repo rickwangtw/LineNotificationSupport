@@ -4,6 +4,7 @@ import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import com.google.common.collect.HashMultimap;
+import com.mysticwind.linenotificationsupport.log.TagBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -14,7 +15,7 @@ import java.util.Set;
 
 public class ChatTitleAndSenderResolver {
 
-    private static final String TAG = ChatTitleAndSenderResolver.class.getSimpleName();
+    private static final String TAG = TagBuilder.build(ChatTitleAndSenderResolver.class);
 
     private final HashMultimap<String, String> chatIdToSenderMultimap = HashMultimap.create();
     // there are crazy weird situations where LINE don't provide chat room names. This acts as a workaround.

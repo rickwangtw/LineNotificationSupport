@@ -19,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.common.collect.ImmutableMap;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
+import com.mysticwind.linenotificationsupport.log.TagBuilder;
 
 import java.util.Map;
 
@@ -26,7 +27,7 @@ import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE
 
 public class HelpActivity extends AppCompatActivity {
 
-    private static final String TAG = HelpActivity.class.getSimpleName();
+    private static final String TAG = TagBuilder.build(HelpActivity.class);
 
     private static final DebugModeProvider DEBUG_MODE_PROVIDER = new DebugModeProvider();
 

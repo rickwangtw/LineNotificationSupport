@@ -5,6 +5,7 @@ import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import com.google.common.base.MoreObjects;
+import com.mysticwind.linenotificationsupport.log.TagBuilder;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -14,7 +15,7 @@ import java.util.Arrays;
 
 public class StatusBarNotificationPrinter {
 
-    private static final String TAG = StatusBarNotificationPrinter.class.getSimpleName();
+    private static final String TAG = TagBuilder.build(StatusBarNotificationPrinter.class);
 
     public void print(final String message, final StatusBarNotification statusBarNotification) {
         final String prefix = buildPrefix(message);
