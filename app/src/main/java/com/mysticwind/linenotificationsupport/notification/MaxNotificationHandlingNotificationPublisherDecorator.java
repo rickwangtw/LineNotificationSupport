@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.mysticwind.linenotificationsupport.log.TagBuilder;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
+import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -99,7 +100,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
         if (!StringUtils.equals(packageName, statusBarNotification.getPackageName())) {
             return;
         }
-        if (isSummary(statusBarNotification)) {
+        if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
             return;
         }
         final String chatId = statusBarNotification.getNotification().getGroup();
@@ -118,13 +119,6 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
             }
         }, delayInMillis);
         CHAT_ID_TO_LAST_DISMISSED_INSTANT_MAP.put(chatId, Instant.now().plusMillis(delayInMillis));
-    }
-
-    // TODO deal with duplicated code
-    private boolean isSummary(final StatusBarNotification statusBarNotification) {
-        final String summaryText = statusBarNotification.getNotification().extras
-                .getString("android.summaryText");
-        return StringUtils.isNotBlank(summaryText);
     }
 
     private long calculateDelayInMillis(final String chatId) {

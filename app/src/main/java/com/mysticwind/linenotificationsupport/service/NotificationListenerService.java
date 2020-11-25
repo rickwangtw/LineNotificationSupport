@@ -43,9 +43,9 @@ import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
+import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Arrays;
@@ -186,7 +186,7 @@ public class NotificationListenerService
         }
 
         // ignore summaries
-        if (isSummary(statusBarNotification)) {
+        if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
             return true;
         }
 
@@ -196,22 +196,6 @@ public class NotificationListenerService
             return true;
         }
 
-        return false;
-    }
-
-    private boolean isSummary(final StatusBarNotification statusBarNotification) {
-        final String summaryText = statusBarNotification.getNotification().extras
-                .getString("android.summaryText");
-        if (StringUtils.isNotBlank(summaryText)) {
-            Log.d(TAG, String.format("Skipping notification with message [%s]: it contains summary text [%s]",
-                    statusBarNotification.getNotification().tickerText, summaryText));
-            return true;
-        }
-        if ((statusBarNotification.getNotification().flags & Notification.FLAG_GROUP_SUMMARY) > 0) {
-            Log.d(TAG, String.format("Skipping notification with message [%s]: flag %s",
-                    statusBarNotification.getNotification().tickerText, statusBarNotification.getNotification().flags));
-            return true;
-        }
         return false;
     }
 
