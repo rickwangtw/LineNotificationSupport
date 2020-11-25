@@ -10,7 +10,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -19,7 +18,6 @@ import androidx.preference.PreferenceManager;
 import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
-import com.mysticwind.linenotificationsupport.log.TagBuilder;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -36,12 +34,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import timber.log.Timber;
+
 import static android.content.Context.NOTIFICATION_SERVICE;
 import static androidx.core.app.NotificationCompat.EXTRA_TEXT;
 
 public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void, Bitmap> {
-
-    private static final String TAG = TagBuilder.build(ImageNotificationPublisherAsyncTask.class);
 
     private final Context context;
     private final String lineNotificationSupportPackageName;
@@ -78,8 +76,8 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
             in = connection.getInputStream();
             return BitmapFactory.decodeStream(in);
         } catch (final Exception e) {
-            Log.e(TAG, String.format("Failed to download image %s: %s",
-                    lineNotification.getLineStickerUrl(), e.getMessage()), e);
+            Timber.e(e, String.format("Failed to download image %s: %s",
+                    lineNotification.getLineStickerUrl(), e.getMessage()));
             return null;
         }
     }

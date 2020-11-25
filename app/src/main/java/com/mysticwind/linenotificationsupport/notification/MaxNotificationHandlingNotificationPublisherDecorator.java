@@ -3,9 +3,7 @@ package com.mysticwind.linenotificationsupport.notification;
 import android.app.NotificationManager;
 import android.os.Handler;
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
 
-import com.mysticwind.linenotificationsupport.log.TagBuilder;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 
@@ -19,10 +17,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import lombok.Value;
+import timber.log.Timber;
 
 public class MaxNotificationHandlingNotificationPublisherDecorator implements NotificationPublisher {
-
-    private static final String TAG = TagBuilder.build(MaxNotificationHandlingNotificationPublisherDecorator.class);
 
     // without the cool down, messages may not get sent if messages of the same group was just dismissed
     private static final long DISMISS_COOL_DOWN_IN_MILLIS = 500L;
@@ -63,12 +60,12 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
     public void publishNotification(final LineNotification lineNotification, final int notificationId) {
         final long remainingSlots = getRemainingSlots();
         if (remainingSlots <= 0) {
-            Log.d(TAG, "Reached maximum notifications, add to queue: " + notificationId);
+            Timber.d("Reached maximum notifications, add to queue: " + notificationId);
             QUEUE_ITEMS.add(new QueueItem(lineNotification, notificationId));
             return;
         }
         if (QUEUE_ITEMS.isEmpty()) {
-            Log.d(TAG, "Publish new notification: " + notificationId);
+            Timber.d("Publish new notification: " + notificationId);
             publish(lineNotification, notificationId);
             return;
         }
@@ -80,7 +77,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
                 return;
             }
             firstItem.ifPresent(item -> {
-                        Log.d(TAG, "Publish previously queued notification: " + item.getNotificationId());
+                        Timber.d("Publish previously queued notification: " + item.getNotificationId());
                         publish(item.getLineNotification(), item.getNotificationId());
                     }
             );
@@ -91,7 +88,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
         final long numberOfActiveNotifications = Arrays.stream(notificationManager.getActiveNotifications())
                 .filter(notification -> notification.getPackageName().equals(packageName))
                 .count();
-        Log.d(TAG, "Number of active notifications: " + numberOfActiveNotifications);
+        Timber.d("Number of active notifications: " + numberOfActiveNotifications);
         return maxNotificationsPerApp - numberOfActiveNotifications;
     }
 
@@ -113,7 +110,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Log.d(TAG, String.format("Publishing notification (after delay of %d): %s",
+                Timber.d(String.format("Publishing notification (after delay of %d): %s",
                         delayInMillis, firstItem.get().getLineNotification().getMessage()));
                 publish(firstItem.get().getLineNotification(), firstItem.get().getNotificationId());
             }

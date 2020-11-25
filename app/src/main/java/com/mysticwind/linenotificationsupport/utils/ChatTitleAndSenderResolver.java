@@ -1,10 +1,8 @@
 package com.mysticwind.linenotificationsupport.utils;
 
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
 
 import com.google.common.collect.HashMultimap;
-import com.mysticwind.linenotificationsupport.log.TagBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -13,9 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class ChatTitleAndSenderResolver {
+import timber.log.Timber;
 
-    private static final String TAG = TagBuilder.build(ChatTitleAndSenderResolver.class);
+public class ChatTitleAndSenderResolver {
 
     private final HashMultimap<String, String> chatIdToSenderMultimap = HashMultimap.create();
     // there are crazy weird situations where LINE don't provide chat room names. This acts as a workaround.
@@ -48,7 +46,7 @@ public class ChatTitleAndSenderResolver {
         final String highConfidenceChatRoomName = chatIdToChatRoomNameMap.get(chatId);
         if (StringUtils.isNotBlank(highConfidenceChatRoomName)) {
             title = highConfidenceChatRoomName;
-            Log.w(TAG, "Override with chat room name: " + title);
+            Timber.w("Override with chat room name: " + title);
         } else {
             title = sortAndMerge(chatIdToSenderMultimap.get(chatId));
         }
@@ -93,7 +91,7 @@ public class ChatTitleAndSenderResolver {
             }
         }
         // fallback if we can't find a common substring for whatever reason
-        Log.w(TAG, String.format("Cannot find common substring with group:(%s) title:(%s) ticker(%s)",
+        Timber.w(String.format("Cannot find common substring with group:(%s) title:(%s) ticker(%s)",
                 groupName, androidTitle, tickerText));
         return tickerText;
     }

@@ -11,7 +11,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
 
 import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
@@ -28,7 +27,6 @@ import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageE
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.IgnoreIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.MergeIdenticalMessageHandler;
-import com.mysticwind.linenotificationsupport.log.TagBuilder;
 import com.mysticwind.linenotificationsupport.model.AutoIncomingCallNotificationState;
 import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStrategy;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
@@ -55,12 +53,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import timber.log.Timber;
+
 import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
 
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
-
-    private static final String TAG = TagBuilder.build(NotificationListenerService.class);
 
     private static final String GROUP_MESSAGE_GROUP_KEY = "NOTIFICATION_GROUP_MESSAGE";
 
@@ -207,7 +205,7 @@ public class NotificationListenerService
             final PackageInfo packageInfo = packageManager.getPackageInfo(LINE_PACKAGE_NAME, 0);
             return packageInfo.versionName;
         } catch (final PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "LINE not installed. Package: " + LINE_PACKAGE_NAME);
+            Timber.e(e, "LINE not installed. Package: " + LINE_PACKAGE_NAME);
             return null;
         }
     }
@@ -345,7 +343,7 @@ public class NotificationListenerService
 
             autoIncomingCallNotificationState.notified(nextNotificationId);
         } catch (Exception e) {
-            Log.e(TAG, "Failed to send incoming call notifications: " + e.getMessage(), e);
+            Timber.e(e, "Failed to send incoming call notifications: " + e.getMessage());
         }
 
         scheduleNextIncomingCallNotification(autoIncomingCallNotificationState);
@@ -357,7 +355,7 @@ public class NotificationListenerService
             try {
                 notificationManager.cancel(notificationId);
             } catch (final Exception e) {
-                Log.w(TAG, String.format("Failed to cancel notification %d: %s", notificationId, e.getMessage(), e));
+                Timber.w(e, String.format("Failed to cancel notification %d: %s", notificationId, e.getMessage()));
             }
         }
     }
@@ -417,7 +415,7 @@ public class NotificationListenerService
                 .collect(Collectors.toSet());
 
         for (Integer notificationId : notificationIdsToCancel) {
-            Log.d(TAG, "Cancelling notification: " + notificationId);
+            Timber.d("Cancelling notification: " + notificationId);
             notificationManager.cancel(notificationId.intValue());
         }
 

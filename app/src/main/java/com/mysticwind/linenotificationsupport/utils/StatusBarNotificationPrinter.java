@@ -2,10 +2,8 @@ package com.mysticwind.linenotificationsupport.utils;
 
 import android.app.Notification;
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
 
 import com.google.common.base.MoreObjects;
-import com.mysticwind.linenotificationsupport.log.TagBuilder;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,14 +11,14 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Arrays;
 
-public class StatusBarNotificationPrinter {
+import timber.log.Timber;
 
-    private static final String TAG = TagBuilder.build(StatusBarNotificationPrinter.class);
+public class StatusBarNotificationPrinter {
 
     public void print(final String message, final StatusBarNotification statusBarNotification) {
         final String prefix = buildPrefix(message);
 
-        Log.i(TAG, String.format("%sNotification (%s): %s",
+        Timber.i(String.format("%sNotification (%s): %s",
                 prefix,
                 statusBarNotification.getPackageName(),
                 stringifyNotification(statusBarNotification))
@@ -67,7 +65,7 @@ public class StatusBarNotificationPrinter {
     public void printError(final String message, final StatusBarNotification statusBarNotification) {
         final String prefix = buildPrefix(message);
 
-        Log.e(TAG, String.format("%sNotification (%s): %s",
+        Timber.e(String.format("%sNotification (%s): %s",
                 prefix,
                 statusBarNotification.getPackageName(),
                 stringifyNotification(statusBarNotification))
