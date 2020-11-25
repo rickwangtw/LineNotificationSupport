@@ -5,16 +5,19 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.FileProvider;
 import androidx.preference.PreferenceManager;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.FutureTarget;
+import com.bumptech.glide.request.target.Target;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
@@ -25,9 +28,7 @@ import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,7 +40,10 @@ import timber.log.Timber;
 import static android.content.Context.NOTIFICATION_SERVICE;
 import static androidx.core.app.NotificationCompat.EXTRA_TEXT;
 
-public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void, Bitmap> {
+public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void, Uri> {
+
+    private static final String AUTHORITY = "com.mysticwind.linenotificationsupport.fileprovider";
+
 
     private final Context context;
     private final String lineNotificationSupportPackageName;
@@ -62,20 +66,23 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
     }
 
     @Override
-    protected Bitmap doInBackground(String... params) {
+    protected Uri doInBackground(String... params) {
         if (StringUtils.isBlank(lineNotification.getLineStickerUrl())) {
             return null;
         }
+        // Glide auto-caches
+        final FutureTarget<File> target = Glide.with(context)
+                .downloadOnly()
+                .load(lineNotification.getLineStickerUrl())
+                .submit(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
 
-        InputStream in;
+        // https://stackoverflow.com/questions/63988424/show-an-image-in-messagingstyle-notification-in-android
         try {
-            URL url = new URL(lineNotification.getLineStickerUrl());
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            in = connection.getInputStream();
-            return BitmapFactory.decodeStream(in);
-        } catch (final Exception e) {
+            final File file = target.get(); // needs to be called on background thread
+            final Uri uri = FileProvider.getUriForFile(context, AUTHORITY, file);
+            Timber.i("URL %s downloaded at: %s", lineNotification.getLineStickerUrl(), uri);
+            return uri;
+        } catch (Exception e) {
             Timber.e(e, String.format("Failed to download image %s: %s",
                     lineNotification.getLineStickerUrl(), e.getMessage()));
             return null;
@@ -109,10 +116,10 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
     }
 
     @Override
-    protected void onPostExecute(Bitmap downloadedImage) {
-        super.onPostExecute(downloadedImage);
+    protected void onPostExecute(Uri downloadedImageUri) {
+        super.onPostExecute(downloadedImageUri);
 
-        final NotificationCompat.Style style = buildMessageStyle(downloadedImage);
+        final NotificationCompat.Style style = buildMessageStyle(downloadedImageUri);
 
         final Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse("https://line.me/R/nv/chat"));
@@ -141,23 +148,42 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
         }
     }
 
-    private NotificationCompat.Style buildMessageStyle(final Bitmap downloadedImage) {
-        if (downloadedImage != null) {
-            return new NotificationCompat.BigPictureStyle()
-                    .bigPicture(downloadedImage)
-                    .setSummaryText(lineNotification.getMessage());
-        }  else if (lineNotification.getSender().getName().equals(lineNotification.getTitle())) {
+    private NotificationCompat.Style buildMessageStyle(final Uri downloadedImageUri) {
+        final String conversationTitle;
+        if (lineNotification.getSender().getName().equals(lineNotification.getTitle())) {
             // this is usually the case if you're talking to a single person.
             // Don't set the conversation title in this case.
-            return new NotificationCompat.MessagingStyle(lineNotification.getSender())
-                    .addMessage(lineNotification.getMessage(),
-                            lineNotification.getTimestamp(), lineNotification.getSender());
-        }  else {
-            return new NotificationCompat.MessagingStyle(lineNotification.getSender())
-                    .setConversationTitle(lineNotification.getTitle())
-                    .addMessage(lineNotification.getMessage(),
-                            lineNotification.getTimestamp(), lineNotification.getSender());
+            conversationTitle = null;
+        } else {
+            conversationTitle = lineNotification.getTitle();
         }
+
+        final NotificationCompat.MessagingStyle messagingStyle =
+                new NotificationCompat.MessagingStyle(lineNotification.getSender())
+                        .setConversationTitle(conversationTitle);
+
+        final List<NotificationCompat.MessagingStyle.Message> messages = buildMessages(lineNotification, downloadedImageUri);
+        for (final NotificationCompat.MessagingStyle.Message message : messages) {
+            messagingStyle.addMessage(message);
+        }
+        return messagingStyle;
+    }
+
+    private List<NotificationCompat.MessagingStyle.Message> buildMessages(final LineNotification lineNotification,
+                                                                          final Uri downloadedImageUri) {
+        if (downloadedImageUri == null) {
+            return ImmutableList.of(
+                    new NotificationCompat.MessagingStyle.Message(
+                            lineNotification.getMessage(), lineNotification.getTimestamp(), lineNotification.getSender()));
+        }
+
+        return ImmutableList.of(
+                new NotificationCompat.MessagingStyle.Message(
+                        lineNotification.getMessage(), lineNotification.getTimestamp(), lineNotification.getSender())
+                        .setData("image/", downloadedImageUri),
+                new NotificationCompat.MessagingStyle.Message(
+                        lineNotification.getMessage(), lineNotification.getTimestamp(), lineNotification.getSender())
+        );
     }
 
     private void addActionInNotification(Notification notification) {
