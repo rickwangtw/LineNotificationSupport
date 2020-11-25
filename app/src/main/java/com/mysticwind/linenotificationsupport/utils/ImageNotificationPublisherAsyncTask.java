@@ -136,6 +136,7 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
                 .setLargeIcon(lineNotification.getIcon())
                 .setContentIntent(pendingIntent)
                 .setChannelId(channelId.orElse(null))
+                .setAutoCancel(true)
                 .build();
 
         addActionInNotification(singleNotification);
@@ -223,8 +224,8 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
                 .setGroup(lineNotification.getChatId())
                 .setGroupSummary(true)
                 .setChannelId(channelId)
+                .setAutoCancel(true)
                 .build();
-
 
         int groupId = groupIdResolver.resolveGroupId(lineNotification.getChatId());
 
