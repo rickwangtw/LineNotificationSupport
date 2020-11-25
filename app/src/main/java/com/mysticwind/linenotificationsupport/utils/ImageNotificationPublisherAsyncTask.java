@@ -10,7 +10,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -32,8 +31,10 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 import static androidx.core.app.NotificationCompat.EXTRA_TEXT;
@@ -43,17 +44,20 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
     private static final String TAG = TagBuilder.build(ImageNotificationPublisherAsyncTask.class);
 
     private final Context context;
+    private final String lineNotificationSupportPackageName;
     private final LineNotification lineNotification;
     private final List<CharSequence> currentNotificationMessages = new ArrayList<>();
     private final int notificationId;
     private final GroupIdResolver groupIdResolver;
 
     public ImageNotificationPublisherAsyncTask(final Context context,
+                                               final String packageName,
                                                final LineNotification lineNotification,
                                                final int notificationId,
                                                final GroupIdResolver groupIdResolver) {
         super();
         this.context = context;
+        this.lineNotificationSupportPackageName = packageName;
         this.lineNotification = lineNotification;
         this.notificationId = notificationId;
         this.groupIdResolver = groupIdResolver;
@@ -96,14 +100,14 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
 
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
 
-        final int groupId = groupIdResolver.resolveGroupId(lineNotification.getChatId());
-        for (final StatusBarNotification statusBarNotification : notificationManager.getActiveNotifications()) {
-            if (statusBarNotification.getId() != groupId &&
-                    lineNotification.getChatId().equalsIgnoreCase(statusBarNotification.getNotification().getGroup())) {
-                currentNotificationMessages.add(statusBarNotification.getNotification().extras.getCharSequence(EXTRA_TEXT));
-                break;
-            }
-        }
+        List<String> previousNotifications = Arrays.stream(notificationManager.getActiveNotifications())
+                .filter(statusBarNotification -> StringUtils.equals(lineNotificationSupportPackageName , statusBarNotification.getPackageName()))
+                .filter(statusBarNotification -> StringUtils.equals(lineNotification.getChatId(), statusBarNotification.getNotification().getGroup()))
+                .filter(statusBarNotification -> !StatusBarNotificationExtractor.isSummary(statusBarNotification))
+                .map(statusBarNotification -> (String) statusBarNotification.getNotification().extras.getCharSequence(EXTRA_TEXT))
+                .collect(Collectors.toList());
+
+        currentNotificationMessages.addAll(previousNotifications);
     }
 
     @Override
@@ -184,8 +188,7 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
         for (CharSequence text: currentNotificationMessages) {
             style.addLine(text);
         }
-        int groupCount = currentNotificationMessages.size() + 1;
-        style.setSummaryText(groupCount + " new notifications");
+        style.setSummaryText(currentNotificationMessages.size() + " new notifications");
 
         Notification groupNotification = new NotificationCompat.Builder(context, lineNotification.getChatId())
                 .setStyle(style)

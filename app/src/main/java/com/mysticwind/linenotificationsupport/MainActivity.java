@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                     .chatId(groupKey)
                     .sender(sender)
                     .build();
-            new ImageNotificationPublisherAsyncTask(this, lineNotification,
+            new ImageNotificationPublisherAsyncTask(this, getPackageName(), lineNotification,
                     notificationId, GROUP_ID_RESOLVER).execute();
         } else {
             Notification singleNotification = new NotificationCompat.Builder(this, CHANNEL_ID)
