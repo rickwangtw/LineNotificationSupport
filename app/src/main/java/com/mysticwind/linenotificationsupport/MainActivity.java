@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
                 .setIcon(IconCompat.createWithResource(this, R.mipmap.ic_launcher_round))
                 .build();
 
-        final long timestamp = Instant.now().getEpochSecond();
+        final long timestamp = Instant.now().toEpochMilli();
         LineNotification lineNotification = LineNotification.builder()
                 .title("Title")
                 .message(message)
