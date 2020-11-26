@@ -1,16 +1,11 @@
 package com.mysticwind.linenotificationsupport.notification;
 
-import android.app.NotificationManager;
 import android.os.Handler;
 import android.service.notification.StatusBarNotification;
 
 import com.mysticwind.linenotificationsupport.model.LineNotification;
-import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
-
-import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,11 +25,9 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
     // this is to make sure we have sufficient cool down for each chat after it being dismissed
     private static final Map<String, Instant> CHAT_ID_TO_LAST_DISMISSED_INSTANT_MAP = new ConcurrentHashMap<>();
 
-    private final long maxNotificationsPerApp;
-    private final NotificationManager notificationManager;
     private final Handler handler;
     private final NotificationPublisher notificationPublisher;
-    private final String packageName;
+    private final NotificationCounter notificationCounter;
 
     // TODO should we just have this class implemented and shared??
     @Value
@@ -43,23 +36,17 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
         private final int notificationId;
     }
 
-    public MaxNotificationHandlingNotificationPublisherDecorator(
-            final long maxNotificationsPerApp,
-            final NotificationManager notificationManager,
-            final Handler handler,
-            final NotificationPublisher notificationPublisher,
-            final String packageName) {
-        this.maxNotificationsPerApp = maxNotificationsPerApp - 1; // leave one for group as a buffer
-        this.notificationManager = notificationManager;
+    public MaxNotificationHandlingNotificationPublisherDecorator(final Handler handler,
+                                                                 final NotificationPublisher notificationPublisher,
+                                                                 final NotificationCounter notificationCounter) {
         this.handler = handler;
         this.notificationPublisher = notificationPublisher;
-        this.packageName = packageName;
+        this.notificationCounter = notificationCounter;
     }
 
     @Override
     public void publishNotification(final LineNotification lineNotification, final int notificationId) {
-        final long remainingSlots = getRemainingSlots();
-        if (remainingSlots <= 0) {
+        if (!notificationCounter.hasSlot(lineNotification.getChatId())) {
             Timber.d("Reached maximum notifications, add to queue: " + notificationId);
             QUEUE_ITEMS.add(new QueueItem(lineNotification, notificationId));
             return;
@@ -71,36 +58,25 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
         }
         QUEUE_ITEMS.add(new QueueItem(lineNotification, notificationId));
 
-        for (int slotIndex = 0 ; slotIndex < remainingSlots ; ++slotIndex) {
-            final Optional<QueueItem> firstItem = getFirstItem();
-            if (!firstItem.isPresent()) {
-                return;
-            }
-            firstItem.ifPresent(item -> {
-                        Timber.d("Publish previously queued notification: " + item.getNotificationId());
-                        publish(item.getLineNotification(), item.getNotificationId());
-                    }
-            );
+        final Optional<QueueItem> firstItem = getFirstItem();
+        if (!firstItem.isPresent()) {
+            return;
         }
-    }
-
-    private long getRemainingSlots() {
-        final long numberOfActiveNotifications = Arrays.stream(notificationManager.getActiveNotifications())
-                .filter(notification -> notification.getPackageName().equals(packageName))
-                .count();
-        Timber.d("Number of active notifications: " + numberOfActiveNotifications);
-        return maxNotificationsPerApp - numberOfActiveNotifications;
+        firstItem.ifPresent(item -> {
+                    Timber.d("Publish previously queued notification: " + item.getNotificationId());
+                    publish(item.getLineNotification(), item.getNotificationId());
+                }
+        );
     }
 
     @Override
     public void updateNotificationDismissed(final StatusBarNotification statusBarNotification) {
-        if (!StringUtils.equals(packageName, statusBarNotification.getPackageName())) {
-            return;
-        }
-        if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
-            return;
-        }
         final String chatId = statusBarNotification.getNotification().getGroup();
+
+        if (!notificationCounter.hasSlot(chatId)) {
+            return;
+        }
+
         Optional<QueueItem> firstItem = getFirstItem();
         if (!firstItem.isPresent()) {
             CHAT_ID_TO_LAST_DISMISSED_INSTANT_MAP.put(chatId, Instant.now());

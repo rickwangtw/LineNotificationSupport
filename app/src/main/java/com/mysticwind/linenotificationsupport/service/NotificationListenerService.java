@@ -111,16 +111,13 @@ public class NotificationListenerService
         }
 
         return new MaxNotificationHandlingNotificationPublisherDecorator(
-                getMaxNotificationsPerApp(),
-                (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE),
-                handler,
-                simpleNotificationPublisher,
-                getPackageName()
-        );
+                handler, simpleNotificationPublisher, notificationCounter);
     }
 
     @Override
     public IBinder onBind(Intent intent) {
+        this.notificationCounter = new NotificationCounter((int) getMaxNotificationsPerApp());
+
         this.notificationPublisher = buildNotificationPublisher(
                 getPreferenceProvider().shouldExecuteMaxNotificationWorkaround()
         );
@@ -140,7 +137,6 @@ public class NotificationListenerService
             this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
         }
 
-        this.notificationCounter = new NotificationCounter((int) getMaxNotificationsPerApp());
         this.summaryNotificationPublisher = new SummaryNotificationPublisher(this,
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE), getPackageName(), GROUP_ID_RESOLVER);
 
