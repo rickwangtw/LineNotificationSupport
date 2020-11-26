@@ -42,7 +42,7 @@ public class NotificationCounterTest {
         assertTrue(classUnderTest.hasSlot(GROUP_2));
 
         classUnderTest.notified(GROUP_1, 3);
-        assertTrue(classUnderTest.hasSlot(GROUP_1));
+        assertFalse(classUnderTest.hasSlot(GROUP_1));
         assertTrue(classUnderTest.hasSlot(GROUP_2));
 
         classUnderTest.notified(GROUP_2, 4);

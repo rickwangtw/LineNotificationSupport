@@ -39,8 +39,8 @@ public class NotificationCounter {
             // need one for the notification and another one for the group
             return remainingSlots >= 2;
         } else {
-            // SHOULD only need one because we clear the original summary
-            return remainingSlots >= 1;
+            // even if there is summary, we will still need 2 slots to update the summary
+            return remainingSlots >= 2;
         }
     }
 
