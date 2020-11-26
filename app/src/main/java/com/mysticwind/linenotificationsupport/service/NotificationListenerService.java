@@ -385,8 +385,6 @@ public class NotificationListenerService
 
         handleSelfNotificationDismissed(statusBarNotification);
 
-        notificationPublisher.updateNotificationDismissed(statusBarNotification);
-
         if (shouldIgnoreNotification(statusBarNotification)) {
             return;
         }
@@ -459,6 +457,7 @@ public class NotificationListenerService
         if (summaryNotificationPublisher != null) {
             summaryNotificationPublisher.updateSummary(statusBarNotification.getNotification().getGroup());
         }
+        notificationPublisher.updateNotificationDismissed(statusBarNotification);
     }
 
 }
