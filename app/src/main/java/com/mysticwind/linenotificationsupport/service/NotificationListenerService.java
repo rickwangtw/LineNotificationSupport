@@ -32,6 +32,7 @@ import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStra
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.notification.NotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
@@ -44,6 +45,7 @@ import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Arrays;
@@ -84,6 +86,7 @@ public class NotificationListenerService
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
+    private NotificationCounter notificationCounter;
 
     private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -135,6 +138,8 @@ public class NotificationListenerService
             this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
         }
 
+        this.notificationCounter = new NotificationCounter((int) getMaxNotificationsPerApp());
+
         return super.onBind(intent);
     }
 
@@ -160,6 +165,9 @@ public class NotificationListenerService
 
     @Override
     public void onNotificationPosted(StatusBarNotification statusBarNotification) {
+
+        incrementCounter(statusBarNotification);
+
         // ignore messages from ourselves
         if (statusBarNotification.getPackageName().startsWith(getPackageName())) {
             return;
@@ -374,6 +382,8 @@ public class NotificationListenerService
     public void onNotificationRemoved(StatusBarNotification statusBarNotification) {
         super.onNotificationRemoved(statusBarNotification);
 
+        decrementCounter(statusBarNotification);
+
         notificationPublisher.updateNotificationDismissed(statusBarNotification);
 
         if (shouldIgnoreNotification(statusBarNotification)) {
@@ -418,7 +428,30 @@ public class NotificationListenerService
             Timber.d("Cancelling notification: " + notificationId);
             notificationManager.cancel(notificationId.intValue());
         }
+    }
 
+    private void incrementCounter(StatusBarNotification statusBarNotification) {
+        if (!StringUtils.equals(statusBarNotification.getPackageName(), getPackageName())) {
+            return;
+        }
+        if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
+            return;
+        }
+        if (notificationCounter != null) {
+            notificationCounter.notified(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
+        }
+    }
+
+    private void decrementCounter(StatusBarNotification statusBarNotification) {
+        if (!StringUtils.equals(statusBarNotification.getPackageName(), getPackageName())) {
+            return;
+        }
+        if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
+            return;
+        }
+        if (notificationCounter != null) {
+            notificationCounter.dismissed(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
+        }
     }
 
 }
