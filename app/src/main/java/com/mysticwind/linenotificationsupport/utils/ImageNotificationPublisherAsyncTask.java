@@ -137,6 +137,7 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
                 .setContentIntent(pendingIntent)
                 .setChannelId(channelId.orElse(null))
                 .setAutoCancel(true)
+                .setWhen(lineNotification.getTimestamp())
                 .build();
 
         addActionInNotification(singleNotification);

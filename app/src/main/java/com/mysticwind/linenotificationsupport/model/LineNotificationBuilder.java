@@ -62,7 +62,7 @@ public class LineNotificationBuilder {
                 .sender(senderPerson)
                 .lineStickerUrl(lineStickerUrl)
                 .chatId(resolveChatId(statusBarNotification, callState))
-                .timestamp(statusBarNotification.getPostTime())
+                .timestamp(statusBarNotification.getNotification().when)
                 .actions(actions)
                 .icon(largeIconBitmap)
                 .callState(callState)
