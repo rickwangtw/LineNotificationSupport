@@ -97,7 +97,7 @@ public class ChatTitleAndSenderResolver {
     }
 
     private String getAndroidTitle(final StatusBarNotification statusBarNotification) {
-        return statusBarNotification.getNotification().extras.getString("android.title");
+        return NotificationExtractor.getTitle(statusBarNotification.getNotification());
     }
 
     private String getChatId(final StatusBarNotification statusBarNotification) {

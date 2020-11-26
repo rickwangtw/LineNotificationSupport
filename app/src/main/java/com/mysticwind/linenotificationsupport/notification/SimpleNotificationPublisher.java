@@ -23,8 +23,7 @@ public class SimpleNotificationPublisher implements NotificationPublisher {
 
     @Override
     public void publishNotification(final LineNotification lineNotification, final int notificationId) {
-        new ImageNotificationPublisherAsyncTask(
-                context, packageName, lineNotification, notificationId, groupIdResolver)
+        new ImageNotificationPublisherAsyncTask(context, lineNotification, notificationId)
                 .execute();
     }
 

@@ -66,8 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 .timestamp(timestamp)
                 .icon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round))
                 .build();
-        new ImageNotificationPublisherAsyncTask(this, getPackageName(), lineNotification,
-                notificationId, GROUP_ID_RESOLVER).execute();
+        new ImageNotificationPublisherAsyncTask(this, lineNotification, notificationId).execute();
     }
 
     @Override

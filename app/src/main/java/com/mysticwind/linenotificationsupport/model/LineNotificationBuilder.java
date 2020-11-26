@@ -13,6 +13,7 @@ import androidx.core.app.Person;
 import androidx.core.graphics.drawable.IconCompat;
 
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
+import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
 import org.apache.commons.lang3.StringUtils;
@@ -54,7 +55,7 @@ public class LineNotificationBuilder {
         final LineNotification.CallState callState = resolveCallState(statusBarNotification);
         final List<Notification.Action> actions = extractActions(statusBarNotification, callState);
 
-        final String message = getMessage(statusBarNotification);
+        final String message = NotificationExtractor.getMessage(statusBarNotification.getNotification());
         final String lineStickerUrl = getLineStickerUrl(statusBarNotification);
         return LineNotification.builder()
                 .title(title)
@@ -157,10 +158,6 @@ public class LineNotificationBuilder {
 
     private boolean isMessage(StatusBarNotification statusBarNotification) {
         return MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category);
-    }
-
-    private String getMessage(StatusBarNotification statusBarNotification) {
-        return statusBarNotification.getNotification().extras.getString("android.text");
     }
 
     private List<Notification.Action> extractActions(final StatusBarNotification statusBarNotification,

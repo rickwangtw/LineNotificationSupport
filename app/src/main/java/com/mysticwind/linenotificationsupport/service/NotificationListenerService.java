@@ -36,6 +36,7 @@ import com.mysticwind.linenotificationsupport.notification.NotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -87,6 +88,7 @@ public class NotificationListenerService
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
     private NotificationCounter notificationCounter;
+    private SummaryNotificationPublisher summaryNotificationPublisher;
 
     private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -139,6 +141,8 @@ public class NotificationListenerService
         }
 
         this.notificationCounter = new NotificationCounter((int) getMaxNotificationsPerApp());
+        this.summaryNotificationPublisher = new SummaryNotificationPublisher(this,
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE), getPackageName(), GROUP_ID_RESOLVER);
 
         return super.onBind(intent);
     }
@@ -159,6 +163,7 @@ public class NotificationListenerService
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
         this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
+        this.summaryNotificationPublisher = null;
 
         return super.onUnbind(intent);
     }
@@ -166,7 +171,7 @@ public class NotificationListenerService
     @Override
     public void onNotificationPosted(StatusBarNotification statusBarNotification) {
 
-        incrementCounter(statusBarNotification);
+        handleSelfNotificationPublished(statusBarNotification);
 
         // ignore messages from ourselves
         if (statusBarNotification.getPackageName().startsWith(getPackageName())) {
@@ -382,7 +387,7 @@ public class NotificationListenerService
     public void onNotificationRemoved(StatusBarNotification statusBarNotification) {
         super.onNotificationRemoved(statusBarNotification);
 
-        decrementCounter(statusBarNotification);
+        handleSelfNotificationDismissed(statusBarNotification);
 
         notificationPublisher.updateNotificationDismissed(statusBarNotification);
 
@@ -430,7 +435,7 @@ public class NotificationListenerService
         }
     }
 
-    private void incrementCounter(StatusBarNotification statusBarNotification) {
+    private void handleSelfNotificationPublished(StatusBarNotification statusBarNotification) {
         if (!StringUtils.equals(statusBarNotification.getPackageName(), getPackageName())) {
             return;
         }
@@ -440,9 +445,12 @@ public class NotificationListenerService
         if (notificationCounter != null) {
             notificationCounter.notified(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
         }
+        if (summaryNotificationPublisher != null) {
+            summaryNotificationPublisher.updateSummary(statusBarNotification.getNotification().getGroup());
+        }
     }
 
-    private void decrementCounter(StatusBarNotification statusBarNotification) {
+    private void handleSelfNotificationDismissed(StatusBarNotification statusBarNotification) {
         if (!StringUtils.equals(statusBarNotification.getPackageName(), getPackageName())) {
             return;
         }
@@ -451,6 +459,9 @@ public class NotificationListenerService
         }
         if (notificationCounter != null) {
             notificationCounter.dismissed(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
+        }
+        if (summaryNotificationPublisher != null) {
+            summaryNotificationPublisher.updateSummary(statusBarNotification.getNotification().getGroup());
         }
     }
 

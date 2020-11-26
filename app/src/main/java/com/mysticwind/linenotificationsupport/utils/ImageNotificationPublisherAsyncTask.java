@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -29,40 +28,26 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import timber.log.Timber;
-
-import static android.content.Context.NOTIFICATION_SERVICE;
-import static androidx.core.app.NotificationCompat.EXTRA_TEXT;
 
 public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void, Uri> {
 
     private static final String AUTHORITY = "com.mysticwind.linenotificationsupport.fileprovider";
 
-
     private final Context context;
-    private final String lineNotificationSupportPackageName;
     private final LineNotification lineNotification;
-    private final List<CharSequence> currentNotificationMessages = new ArrayList<>();
     private final int notificationId;
-    private final GroupIdResolver groupIdResolver;
 
     public ImageNotificationPublisherAsyncTask(final Context context,
-                                               final String packageName,
                                                final LineNotification lineNotification,
-                                               final int notificationId,
-                                               final GroupIdResolver groupIdResolver) {
+                                               final int notificationId) {
         super();
         this.context = context;
-        this.lineNotificationSupportPackageName = packageName;
         this.lineNotification = lineNotification;
         this.notificationId = notificationId;
-        this.groupIdResolver = groupIdResolver;
     }
 
     @Override
@@ -87,32 +72,6 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
                     lineNotification.getLineStickerUrl(), e.getMessage()));
             return null;
         }
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-
-        if (StringUtils.isBlank(lineNotification.getChatId())) {
-            return;
-        }
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return;
-        }
-
-        currentNotificationMessages.add(lineNotification.getMessage());
-
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
-
-        List<String> previousNotifications = Arrays.stream(notificationManager.getActiveNotifications())
-                .filter(statusBarNotification -> StringUtils.equals(lineNotificationSupportPackageName , statusBarNotification.getPackageName()))
-                .filter(statusBarNotification -> StringUtils.equals(lineNotification.getChatId(), statusBarNotification.getNotification().getGroup()))
-                .filter(statusBarNotification -> !StatusBarNotificationExtractor.isSummary(statusBarNotification))
-                .map(statusBarNotification -> (String) statusBarNotification.getNotification().extras.getCharSequence(EXTRA_TEXT))
-                .collect(Collectors.toList());
-
-        currentNotificationMessages.addAll(previousNotifications);
     }
 
     @Override
@@ -144,10 +103,6 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(notificationId, singleNotification);
-
-        if (currentNotificationMessages.size() > 1) {
-            showGroupNotification(channelId.orElse(null));
-        }
     }
 
     private NotificationCompat.Style buildMessageStyle(final Uri downloadedImageUri) {
@@ -207,31 +162,6 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
         return new NotificationGroupCreator(notificationManager, new AndroidFeatureProvider(),
                 new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(context)))
                 .createNotificationChannel(lineNotification.getChatId(), lineNotification.getTitle());
-    }
-
-    private void showGroupNotification(String channelId) {
-        NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
-        for (CharSequence text: currentNotificationMessages) {
-            style.addLine(text);
-        }
-        style.setSummaryText(currentNotificationMessages.size() + " new notifications");
-
-        Notification groupNotification = new NotificationCompat.Builder(context, lineNotification.getChatId())
-                .setStyle(style)
-                .setContentTitle(lineNotification.getTitle())
-                .setContentText(currentNotificationMessages.get(0))
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setLargeIcon(lineNotification.getIcon())
-                .setGroup(lineNotification.getChatId())
-                .setGroupSummary(true)
-                .setChannelId(channelId)
-                .setAutoCancel(true)
-                .build();
-
-        int groupId = groupIdResolver.resolveGroupId(lineNotification.getChatId());
-
-        final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        notificationManager.notify(groupId, groupNotification);
     }
 
 }
