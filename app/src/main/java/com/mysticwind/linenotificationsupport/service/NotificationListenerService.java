@@ -49,6 +49,7 @@ import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -251,6 +252,7 @@ public class NotificationListenerService
                     .waitDurationInSeconds(getWaitDurationInSeconds())
                     .timeoutInSeconds(getAutoSendTimeoutInSecondsFromPreferences())
                     .build();
+            this.autoIncomingCallNotificationState.notified(notificationAndId.get().getRight());
             sendIncomingCallNotification(this.autoIncomingCallNotificationState);
         }
 
@@ -345,12 +347,15 @@ public class NotificationListenerService
             return;
         }
         try {
-            // resend a new one
-            int nextNotificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
+            LineNotification lineNotificationWithUpdatedTimestamp =
+                    autoIncomingCallNotificationState.getLineNotification().toBuilder()
+                            // very interesting that the timestamp needs to be updated for the watch to vibrate
+                            .timestamp(Instant.now().toEpochMilli())
+                            .build();
 
-            notificationPublisher.publishNotification(autoIncomingCallNotificationState.getLineNotification(), nextNotificationId);
-
-            autoIncomingCallNotificationState.notified(nextNotificationId);
+            notificationPublisher.publishNotification(
+                    lineNotificationWithUpdatedTimestamp,
+                    autoIncomingCallNotificationState.getIncomingCallNotificationIds().iterator().next());
         } catch (Exception e) {
             Timber.e(e, "Failed to send incoming call notifications: " + e.getMessage());
         }
