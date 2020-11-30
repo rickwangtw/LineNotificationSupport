@@ -2,9 +2,7 @@ package com.mysticwind.linenotificationsupport.utils;
 
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 
@@ -20,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
+import com.mysticwind.linenotificationsupport.line.LineLauncher;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -34,6 +33,8 @@ import java.util.Optional;
 import timber.log.Timber;
 
 public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void, Uri> {
+
+    private static final LineLauncher LINE_LAUNCHER = new LineLauncher();
 
     private static final String AUTHORITY = "com.mysticwind.linenotificationsupport.fileprovider";
 
@@ -80,10 +81,6 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
 
         final NotificationCompat.Style style = buildMessageStyle(downloadedImageUri);
 
-        final Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse("https://line.me/R/nv/chat"));
-        final PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-
         final Optional<String> channelId = createNotificationChannel();
 
         Notification singleNotification = new NotificationCompat.Builder(context, lineNotification.getChatId())
@@ -93,7 +90,7 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
                 .setGroup(lineNotification.getChatId())
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(lineNotification.getIcon())
-                .setContentIntent(pendingIntent)
+                .setContentIntent(LINE_LAUNCHER.buildPendingIntent(context))
                 .setChannelId(channelId.orElse(null))
                 .setAutoCancel(true)
                 .setWhen(lineNotification.getTimestamp())

@@ -10,6 +10,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.mysticwind.linenotificationsupport.R;
+import com.mysticwind.linenotificationsupport.line.LineLauncher;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
@@ -23,6 +24,8 @@ import java.util.stream.Collectors;
 import timber.log.Timber;
 
 public class SummaryNotificationPublisher {
+
+    private static final LineLauncher LINE_LAUNCHER = new LineLauncher();
 
     private final Context context;
     private final NotificationManager notificationManager;
@@ -78,6 +81,7 @@ public class SummaryNotificationPublisher {
                 .setGroupSummary(true)
                 .setChannelId(lastNotification.getChannelId())
                 .setAutoCancel(true)
+                .setContentIntent(LINE_LAUNCHER.buildPendingIntent(context))
                 .build();
 
         final int groupId = groupIdResolver.resolveGroupId(group);
