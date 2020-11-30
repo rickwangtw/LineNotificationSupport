@@ -12,7 +12,8 @@ public class StatusBarNotificationExtractor {
     public static boolean isSummary(final StatusBarNotification statusBarNotification) {
         if ((statusBarNotification.getNotification().flags & Notification.FLAG_GROUP_SUMMARY) > 0) {
             Timber.d(String.format("Summary notification with message [%s]: flag %s",
-                    statusBarNotification.getNotification().tickerText, statusBarNotification.getNotification().flags));
+                    NotificationExtractor.getMessage(statusBarNotification.getNotification()),
+                    statusBarNotification.getNotification().flags));
             return true;
         }
 
@@ -20,12 +21,11 @@ public class StatusBarNotificationExtractor {
                 .getString(Notification.EXTRA_SUMMARY_TEXT);
         if (StringUtils.isNotBlank(summaryText)) {
             Timber.d(String.format("Summary notification with message [%s]: it contains summary text [%s]",
-                    statusBarNotification.getNotification().tickerText, summaryText));
+                    NotificationExtractor.getMessage(statusBarNotification.getNotification()), summaryText));
             return true;
         }
 
         return false;
-
     }
 
 }
