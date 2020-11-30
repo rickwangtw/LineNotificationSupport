@@ -7,7 +7,6 @@ import android.service.notification.StatusBarNotification;
 import com.mysticwind.linenotificationsupport.components.helper.StatusBarNotificationBuilder;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -56,7 +55,6 @@ public class ChatTitleAndSenderResolverTest {
     }
 
     @Test
-    @Ignore("TODO: fix the Log.w in resolveTitleAndSender()")
     public void testGroupTitleCaching() {
         final ChatTitleAndSenderResolver classUnderTest = new ChatTitleAndSenderResolver();
         Pair<String, String> titleAndSender = classUnderTest.resolveTitleAndSender(

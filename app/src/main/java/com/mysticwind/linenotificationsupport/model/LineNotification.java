@@ -8,6 +8,7 @@ import androidx.core.app.Person;
 import java.util.List;
 
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 @Value
@@ -28,6 +29,7 @@ public class LineNotification {
     private final CallState callState;
     private final long timestamp;
     // Actions ordered as defined during build time
+    @Singular
     private final List<Notification.Action> actions;
     private final Bitmap icon;
 

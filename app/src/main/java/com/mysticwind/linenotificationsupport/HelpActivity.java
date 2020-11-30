@@ -8,7 +8,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,11 +21,11 @@ import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 
 import java.util.Map;
 
+import timber.log.Timber;
+
 import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
 
 public class HelpActivity extends AppCompatActivity {
-
-    private static final String TAG = HelpActivity.class.getSimpleName();
 
     private static final DebugModeProvider DEBUG_MODE_PROVIDER = new DebugModeProvider();
 
@@ -50,7 +49,7 @@ public class HelpActivity extends AppCompatActivity {
 
     private void showLineVersionWarning() {
         final String lineVersion = getLineAppVersion();
-        Log.d(TAG, "Detected LINE with version: " + lineVersion);
+        Timber.d("Detected LINE with version: " + lineVersion);
 
         final Integer warningMessageId = LINE_VERSION_TO_WARNING_MESSAGE_ID.get(lineVersion);
         if (warningMessageId == null) {
@@ -68,7 +67,7 @@ public class HelpActivity extends AppCompatActivity {
             final PackageInfo packageInfo = packageManager.getPackageInfo(LINE_PACKAGE_NAME, 0);
             return packageInfo.versionName;
         } catch (final PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "LINE not installed. Package: " + LINE_PACKAGE_NAME);
+            Timber.e(e, "LINE not installed. Package: " + LINE_PACKAGE_NAME);
             return null;
         }
     }
@@ -119,6 +118,7 @@ public class HelpActivity extends AppCompatActivity {
 
         if (DEBUG_MODE_PROVIDER.isDebugMode()) {
             menu.getItem(1).setVisible(true);
+            menu.getItem(2).setVisible(true);
         }
 
         return true;
@@ -140,7 +140,11 @@ public class HelpActivity extends AppCompatActivity {
             Intent intent = new Intent(this, NotificationHistoryDebugActivity.class);
             startActivity(intent);
             return true;
-        }
+        } else if (id == R.id.action_test_notifications) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        return true;
+    }
 
         return super.onOptionsItemSelected(item);
     }

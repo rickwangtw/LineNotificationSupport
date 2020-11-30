@@ -2,7 +2,6 @@ package com.mysticwind.linenotificationsupport.debug.history.manager.impl;
 
 import android.os.AsyncTask;
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 
@@ -14,9 +13,9 @@ import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter
 import java.time.Instant;
 import java.util.List;
 
-public class RoomNotificationHistoryManager implements NotificationHistoryManager {
+import timber.log.Timber;
 
-    private static final String TAG = RoomNotificationHistoryManager.class.getSimpleName();
+public class RoomNotificationHistoryManager implements NotificationHistoryManager {
 
     private final AppDatabase appDatabase;
     private final StatusBarNotificationPrinter statusBarNotificationPrinter;
@@ -37,9 +36,9 @@ public class RoomNotificationHistoryManager implements NotificationHistoryManage
                 try {
                     final long id = appDatabase.lineNotificationHistoryDao().insert(entry);
                     entry.setId(id);
-                    Log.i(TAG, "Recorded entry with ID: " + entry.getId());
+                    Timber.i("Recorded entry with ID: " + entry.getId());
                 } catch (Exception e) {
-                    Log.e(TAG, "Error recording notification: " + e.getMessage(), e);
+                    Timber.e(e, "Error recording notification: " + e.getMessage());
                 }
                 return null;
             }

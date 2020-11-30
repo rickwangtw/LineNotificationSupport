@@ -16,8 +16,6 @@ import com.mysticwind.linenotificationsupport.debug.history.ui.NotificationHisto
 
 public class NotificationHistoryDebugActivity extends AppCompatActivity {
 
-    private static final String TAG = NotificationHistoryDebugActivity.class.getSimpleName();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

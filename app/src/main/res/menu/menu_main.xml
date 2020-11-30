@@ -16,4 +16,11 @@
         android:title="@string/action_debug"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_test_notifications"
+        android:visible="false"
+        android:orderInCategory="100"
+        android:title="@string/action_test_notifications"
+        app:showAsAction="never" />
+
 </menu>

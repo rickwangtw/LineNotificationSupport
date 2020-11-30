@@ -11,7 +11,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
 
 import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
@@ -33,20 +32,24 @@ import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStra
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.notification.NotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
+import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -54,12 +57,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import timber.log.Timber;
+
 import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
 
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
-
-    private static final String TAG = "LINE_NOTIFICATION_SUPPORT";
 
     private static final String GROUP_MESSAGE_GROUP_KEY = "NOTIFICATION_GROUP_MESSAGE";
 
@@ -85,6 +88,8 @@ public class NotificationListenerService
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
+    private NotificationCounter notificationCounter;
+    private SummaryNotificationPublisher summaryNotificationPublisher;
 
     private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -100,23 +105,20 @@ public class NotificationListenerService
     }
 
     private NotificationPublisher buildNotificationPublisher(boolean handleMaxNotificationAndroidLimit) {
-        final SimpleNotificationPublisher simpleNotificationPublisher = new SimpleNotificationPublisher(this, GROUP_ID_RESOLVER);
+        final SimpleNotificationPublisher simpleNotificationPublisher = new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER);
 
         if (!handleMaxNotificationAndroidLimit) {
             return simpleNotificationPublisher;
         }
 
         return new MaxNotificationHandlingNotificationPublisherDecorator(
-                getMaxNotificationsPerApp(),
-                (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE),
-                handler,
-                simpleNotificationPublisher,
-                getPackageName()
-        );
+                handler, simpleNotificationPublisher, notificationCounter);
     }
 
     @Override
     public IBinder onBind(Intent intent) {
+        this.notificationCounter = new NotificationCounter((int) getMaxNotificationsPerApp());
+
         this.notificationPublisher = buildNotificationPublisher(
                 getPreferenceProvider().shouldExecuteMaxNotificationWorkaround()
         );
@@ -135,6 +137,9 @@ public class NotificationListenerService
 
             this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
         }
+
+        this.summaryNotificationPublisher = new SummaryNotificationPublisher(this,
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE), getPackageName(), GROUP_ID_RESOLVER);
 
         return super.onBind(intent);
     }
@@ -155,12 +160,16 @@ public class NotificationListenerService
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
         this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
+        this.summaryNotificationPublisher = null;
 
         return super.onUnbind(intent);
     }
 
     @Override
     public void onNotificationPosted(StatusBarNotification statusBarNotification) {
+
+        handleSelfNotificationPublished(statusBarNotification);
+
         // ignore messages from ourselves
         if (statusBarNotification.getPackageName().startsWith(getPackageName())) {
             return;
@@ -185,7 +194,7 @@ public class NotificationListenerService
         }
 
         // ignore summaries
-        if (isSummary(statusBarNotification)) {
+        if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
             return true;
         }
 
@@ -198,22 +207,6 @@ public class NotificationListenerService
         return false;
     }
 
-    private boolean isSummary(final StatusBarNotification statusBarNotification) {
-        final String summaryText = statusBarNotification.getNotification().extras
-                .getString("android.summaryText");
-        if (StringUtils.isNotBlank(summaryText)) {
-            Log.d(TAG, String.format("Skipping notification with message [%s]: it contains summary text [%s]",
-                    statusBarNotification.getNotification().tickerText, summaryText));
-            return true;
-        }
-        if ((statusBarNotification.getNotification().flags & Notification.FLAG_GROUP_SUMMARY) > 0) {
-            Log.d(TAG, String.format("Skipping notification with message [%s]: flag %s",
-                    statusBarNotification.getNotification().tickerText, statusBarNotification.getNotification().flags));
-            return true;
-        }
-        return false;
-    }
-
     // TODO remove one of the duplicates
     private String getLineAppVersion() {
         // https://stackoverflow.com/questions/50795458/android-how-to-get-any-application-version-by-package-name
@@ -222,7 +215,7 @@ public class NotificationListenerService
             final PackageInfo packageInfo = packageManager.getPackageInfo(LINE_PACKAGE_NAME, 0);
             return packageInfo.versionName;
         } catch (final PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "LINE not installed. Package: " + LINE_PACKAGE_NAME);
+            Timber.e(e, "LINE not installed. Package: " + LINE_PACKAGE_NAME);
             return null;
         }
     }
@@ -259,6 +252,7 @@ public class NotificationListenerService
                     .waitDurationInSeconds(getWaitDurationInSeconds())
                     .timeoutInSeconds(getAutoSendTimeoutInSecondsFromPreferences())
                     .build();
+            this.autoIncomingCallNotificationState.notified(notificationAndId.get().getRight());
             sendIncomingCallNotification(this.autoIncomingCallNotificationState);
         }
 
@@ -353,14 +347,17 @@ public class NotificationListenerService
             return;
         }
         try {
-            // resend a new one
-            int nextNotificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
+            LineNotification lineNotificationWithUpdatedTimestamp =
+                    autoIncomingCallNotificationState.getLineNotification().toBuilder()
+                            // very interesting that the timestamp needs to be updated for the watch to vibrate
+                            .timestamp(Instant.now().toEpochMilli())
+                            .build();
 
-            notificationPublisher.publishNotification(autoIncomingCallNotificationState.getLineNotification(), nextNotificationId);
-
-            autoIncomingCallNotificationState.notified(nextNotificationId);
+            notificationPublisher.publishNotification(
+                    lineNotificationWithUpdatedTimestamp,
+                    autoIncomingCallNotificationState.getIncomingCallNotificationIds().iterator().next());
         } catch (Exception e) {
-            Log.e(TAG, "Failed to send incoming call notifications: " + e.getMessage(), e);
+            Timber.e(e, "Failed to send incoming call notifications: " + e.getMessage());
         }
 
         scheduleNextIncomingCallNotification(autoIncomingCallNotificationState);
@@ -372,7 +369,7 @@ public class NotificationListenerService
             try {
                 notificationManager.cancel(notificationId);
             } catch (final Exception e) {
-                Log.w(TAG, String.format("Failed to cancel notification %d: %s", notificationId, e.getMessage(), e));
+                Timber.w(e, String.format("Failed to cancel notification %d: %s", notificationId, e.getMessage()));
             }
         }
     }
@@ -391,7 +388,7 @@ public class NotificationListenerService
     public void onNotificationRemoved(StatusBarNotification statusBarNotification) {
         super.onNotificationRemoved(statusBarNotification);
 
-        notificationPublisher.updateNotificationDismissed(statusBarNotification);
+        handleSelfNotificationDismissed(statusBarNotification);
 
         if (shouldIgnoreNotification(statusBarNotification)) {
             return;
@@ -432,10 +429,40 @@ public class NotificationListenerService
                 .collect(Collectors.toSet());
 
         for (Integer notificationId : notificationIdsToCancel) {
-            Log.d(TAG, "Cancelling notification: " + notificationId);
+            Timber.d("Cancelling notification: " + notificationId);
             notificationManager.cancel(notificationId.intValue());
         }
+    }
 
+    private void handleSelfNotificationPublished(StatusBarNotification statusBarNotification) {
+        if (!StringUtils.equals(statusBarNotification.getPackageName(), getPackageName())) {
+            return;
+        }
+        if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
+            return;
+        }
+        if (notificationCounter != null) {
+            notificationCounter.notified(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
+        }
+        if (summaryNotificationPublisher != null) {
+            summaryNotificationPublisher.updateSummary(statusBarNotification.getNotification().getGroup());
+        }
+    }
+
+    private void handleSelfNotificationDismissed(StatusBarNotification statusBarNotification) {
+        if (!StringUtils.equals(statusBarNotification.getPackageName(), getPackageName())) {
+            return;
+        }
+        if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
+            return;
+        }
+        if (notificationCounter != null) {
+            notificationCounter.dismissed(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
+        }
+        if (summaryNotificationPublisher != null) {
+            summaryNotificationPublisher.updateSummary(statusBarNotification.getNotification().getGroup());
+        }
+        notificationPublisher.updateNotificationDismissed(statusBarNotification);
     }
 
 }
