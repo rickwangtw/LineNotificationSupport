@@ -65,7 +65,7 @@ public class SummaryNotificationPublisher {
 
         final NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
         for (StatusBarNotification notification: notifications) {
-            style.addLine(notification.getNotification().tickerText);
+            style.addLine(NotificationExtractor.getMessage(notification.getNotification()));
         }
         style.setSummaryText(notifications.size() + " new notifications");
 
