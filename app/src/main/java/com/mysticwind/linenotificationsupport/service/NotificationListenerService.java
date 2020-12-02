@@ -50,6 +50,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -238,17 +239,17 @@ public class NotificationListenerService
 
         notificationPublisher.publishNotification(actionAdjustedLineNotification, notificationAndId.get().getRight());
 
-        if (lineNotification.getCallState() == null) {
+        if (actionAdjustedLineNotification.getCallState() == null) {
             return;
         }
 
         // deal with auto notifications for calls
-        if (lineNotification.getCallState() == LineNotification.CallState.INCOMING) {
+        if (actionAdjustedLineNotification.getCallState() == LineNotification.CallState.INCOMING) {
             if (this.autoIncomingCallNotificationState != null) {
                 this.autoIncomingCallNotificationState.cancel();
             }
             this.autoIncomingCallNotificationState = AutoIncomingCallNotificationState.builder()
-                    .lineNotification(lineNotification)
+                    .lineNotification(actionAdjustedLineNotification)
                     .waitDurationInSeconds(getWaitDurationInSeconds())
                     .timeoutInSeconds(getAutoSendTimeoutInSecondsFromPreferences())
                     .build();
@@ -272,13 +273,15 @@ public class NotificationListenerService
         if (!shouldReverseActionOrder(lineNotification)) {
             return lineNotification;
         }
-        final List<Notification.Action> actions = lineNotification.getActions();
-        if (actions.size() >= 2) {
-            final Notification.Action firstAction = actions.get(0);
-            actions.add(0, actions.get(1));
-            actions.add(1, firstAction);
+        if (lineNotification.getActions().size() < 2) {
+            return lineNotification;
         }
+        final List<Notification.Action> actions =  new ArrayList<>(lineNotification.getActions());
+        final Notification.Action firstAction = actions.get(0);
+        actions.add(0, actions.get(1));
+        actions.add(1, firstAction);
         return lineNotification.toBuilder()
+                .clearActions()
                 .actions(actions)
                 .build();
     }
