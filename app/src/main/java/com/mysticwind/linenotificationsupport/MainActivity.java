@@ -14,7 +14,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
-import com.mysticwind.linenotificationsupport.utils.ImageNotificationPublisherAsyncTask;
+import com.mysticwind.linenotificationsupport.utils.MessageStyleImageSupportedNotificationPublisherAsyncTask;
 
 import java.time.Instant;
 
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 .timestamp(timestamp)
                 .icon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round))
                 .build();
-        new ImageNotificationPublisherAsyncTask(this, lineNotification, notificationId).execute();
+        new MessageStyleImageSupportedNotificationPublisherAsyncTask(this, lineNotification, notificationId).execute();
     }
 
     @Override

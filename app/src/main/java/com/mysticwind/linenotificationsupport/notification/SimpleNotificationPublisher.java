@@ -5,7 +5,7 @@ import android.service.notification.StatusBarNotification;
 
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
-import com.mysticwind.linenotificationsupport.utils.ImageNotificationPublisherAsyncTask;
+import com.mysticwind.linenotificationsupport.utils.MessageStyleImageSupportedNotificationPublisherAsyncTask;
 
 public class SimpleNotificationPublisher implements NotificationPublisher {
 
@@ -23,7 +23,7 @@ public class SimpleNotificationPublisher implements NotificationPublisher {
 
     @Override
     public void publishNotification(final LineNotification lineNotification, final int notificationId) {
-        new ImageNotificationPublisherAsyncTask(context, lineNotification, notificationId)
+        new MessageStyleImageSupportedNotificationPublisherAsyncTask(context, lineNotification, notificationId)
                 .execute();
     }
 
