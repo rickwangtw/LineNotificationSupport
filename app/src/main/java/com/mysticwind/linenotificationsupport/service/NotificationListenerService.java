@@ -106,7 +106,9 @@ public class NotificationListenerService
     }
 
     private NotificationPublisher buildNotificationPublisher(boolean handleMaxNotificationAndroidLimit) {
-        final SimpleNotificationPublisher simpleNotificationPublisher = new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER);
+        final SimpleNotificationPublisher simpleNotificationPublisher =
+                new SimpleNotificationPublisher(this, getPackageName(),
+                        GROUP_ID_RESOLVER, getPreferenceProvider());
 
         if (!handleMaxNotificationAndroidLimit) {
             return simpleNotificationPublisher;

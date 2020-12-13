@@ -12,6 +12,14 @@
             app:title="@string/identical_messages_title"
             app:useSimpleSummaryProvider="true" />
 
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="use_legacy_sticker_loader"
+            app:title="@string/use_legacy_sticker_loader_title"
+            app:defaultValue="false"
+            app:summaryOff="@string/use_legacy_sticker_loader_summary_off"
+            app:summaryOn="@string/use_legacy_sticker_loader_summary_on" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/calls_header"

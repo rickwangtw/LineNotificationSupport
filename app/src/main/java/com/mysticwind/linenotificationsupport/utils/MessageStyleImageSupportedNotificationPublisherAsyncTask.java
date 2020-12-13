@@ -32,7 +32,7 @@ import java.util.Optional;
 
 import timber.log.Timber;
 
-public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void, Uri> {
+public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends AsyncTask<String, Void, Uri> {
 
     private static final LineLauncher LINE_LAUNCHER = new LineLauncher();
 
@@ -42,9 +42,9 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
     private final LineNotification lineNotification;
     private final int notificationId;
 
-    public ImageNotificationPublisherAsyncTask(final Context context,
-                                               final LineNotification lineNotification,
-                                               final int notificationId) {
+    public MessageStyleImageSupportedNotificationPublisherAsyncTask(final Context context,
+                                                                    final LineNotification lineNotification,
+                                                                    final int notificationId) {
         super();
         this.context = context;
         this.lineNotification = lineNotification;
