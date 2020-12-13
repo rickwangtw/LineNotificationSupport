@@ -87,8 +87,7 @@ public class HelpActivity extends AppCompatActivity {
 
     private Dialog createGrantPermissionDialog() {
         return new AlertDialog.Builder(this)
-                // TODO localization
-                .setMessage("You'll need to grant permissions for this app to access Line notifications.")
+                .setMessage(R.string.permission_request_dialog_message)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         redirectToNotificationSettingsPage();

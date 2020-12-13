@@ -5,6 +5,9 @@
 
     <string name="action_settings">設定</string>
 
+    <!-- Permission Dialog -->
+    <string name="permission_request_dialog_message">您必須授與 LINE通知小幫手 存取 LINE 通知的權限。</string>
+
     <!-- Preference Titles -->
     <string name="messages_header">LINE 訊息</string>
     <string name="calls_header">LINE 通話</string>
