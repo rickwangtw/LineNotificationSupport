@@ -9,12 +9,16 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.Person;
 import androidx.core.graphics.drawable.IconCompat;
+import androidx.preference.PreferenceManager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
+import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
+import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
-import com.mysticwind.linenotificationsupport.utils.MessageStyleImageSupportedNotificationPublisherAsyncTask;
 
 import java.time.Instant;
 
@@ -22,10 +26,15 @@ public class MainActivity extends AppCompatActivity {
 
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver(1);
 
+    private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        notificationPublisher = new SimpleNotificationPublisher(this, getPackageName(),
+                GROUP_ID_RESOLVER, getPreferenceProvider());
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -66,7 +75,11 @@ public class MainActivity extends AppCompatActivity {
                 .timestamp(timestamp)
                 .icon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round))
                 .build();
-        new MessageStyleImageSupportedNotificationPublisherAsyncTask(this, lineNotification, notificationId).execute();
+        notificationPublisher.publishNotification(lineNotification, notificationId);
+    }
+
+    private PreferenceProvider getPreferenceProvider() {
+        return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
     }
 
     @Override
@@ -95,4 +108,12 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        notificationPublisher = NullNotificationPublisher.INSTANCE;
+    }
+
 }
