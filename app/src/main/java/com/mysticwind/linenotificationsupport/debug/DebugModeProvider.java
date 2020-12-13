@@ -1,10 +1,13 @@
 package com.mysticwind.linenotificationsupport.debug;
 
+import com.mysticwind.linenotificationsupport.BuildConfig;
+
+import org.apache.commons.lang3.StringUtils;
+
 public class DebugModeProvider {
 
-    // TODO implement this using preference
     public boolean isDebugMode() {
-        return false;
+        return StringUtils.equals(BuildConfig.BUILD_TYPE, "debug");
     }
 
 }
