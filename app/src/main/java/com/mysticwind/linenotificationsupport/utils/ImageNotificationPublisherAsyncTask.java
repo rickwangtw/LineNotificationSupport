@@ -36,7 +36,7 @@ public class ImageNotificationPublisherAsyncTask extends AsyncTask<String, Void,
 
     private static final LineLauncher LINE_LAUNCHER = new LineLauncher();
 
-    private static final String AUTHORITY = "com.mysticwind.linenotificationsupport.fileprovider";
+    private static final String AUTHORITY = "com.mysticwind.linenotificationsupport.donate.fileprovider";
 
     private final Context context;
     private final LineNotification lineNotification;
