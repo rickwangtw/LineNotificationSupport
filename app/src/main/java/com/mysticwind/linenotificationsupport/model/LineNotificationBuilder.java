@@ -156,13 +156,9 @@ public class LineNotificationBuilder {
                 .build();
     }
 
-    private boolean isMessage(StatusBarNotification statusBarNotification) {
-        return MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category);
-    }
-
     private List<Notification.Action> extractActions(final StatusBarNotification statusBarNotification,
                                                      final LineNotification.CallState callState) {
-        if(isMessage(statusBarNotification)) {
+        if(isMessage(statusBarNotification, callState)) {
             // mute and reply buttons
             // the mute button doesn't seem very useful
             return extractActionsOfIndices(statusBarNotification, 1);
@@ -187,6 +183,13 @@ public class LineNotificationBuilder {
             default:
                 return Collections.EMPTY_LIST;
         }
+    }
+
+    private boolean isMessage(StatusBarNotification statusBarNotification, LineNotification.CallState callState) {
+        if (callState != null) {
+            return false;
+        }
+        return MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category);
     }
 
     private List<Notification.Action> extractActionsOfIndices(final StatusBarNotification notificationFromLine,
