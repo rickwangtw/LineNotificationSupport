@@ -11,6 +11,9 @@
 
     <!-- Messages Preferences -->
     <string name="identical_messages_title">重複的訊息</string>
+    <string name="use_legacy_sticker_loader_title">舊的貼圖下載模式</string>
+    <string name="use_legacy_sticker_loader_summary_on">使用舊的貼圖下載模式。請只在新的下載模式無法正常顯示貼圖時使用。</string>
+    <string name="use_legacy_sticker_loader_summary_off">使用新的貼圖下載模式。</string>
 
     <!-- Calls Preferences -->
     <string name="auto_call_notifications_title">LINE 通話通知</string>
