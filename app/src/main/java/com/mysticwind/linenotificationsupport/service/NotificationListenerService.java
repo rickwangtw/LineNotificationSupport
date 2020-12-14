@@ -31,6 +31,7 @@ import com.mysticwind.linenotificationsupport.model.AutoIncomingCallNotification
 import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStrategy;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
+import com.mysticwind.linenotificationsupport.notification.BigNotificationSplittingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
@@ -111,11 +112,16 @@ public class NotificationListenerService
                         GROUP_ID_RESOLVER, getPreferenceProvider());
 
         if (!handleMaxNotificationAndroidLimit) {
-            return simpleNotificationPublisher;
+            return new BigNotificationSplittingNotificationPublisherDecorator(
+                    simpleNotificationPublisher, NOTIFICATION_ID_GENERATOR, getPreferenceProvider());
         }
 
-        return new MaxNotificationHandlingNotificationPublisherDecorator(
-                handler, simpleNotificationPublisher, notificationCounter);
+        return new BigNotificationSplittingNotificationPublisherDecorator(
+                new MaxNotificationHandlingNotificationPublisherDecorator(
+                        handler, simpleNotificationPublisher, notificationCounter),
+                NOTIFICATION_ID_GENERATOR,
+                getPreferenceProvider()
+        );
     }
 
     @Override
