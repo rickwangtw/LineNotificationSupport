@@ -27,4 +27,12 @@ public class PreferenceProvider {
         return sharedPreferences.getBoolean(USE_LEGACY_STICKER_LOADER_PREFERENCE_KEY, false);
     }
 
+    public int getMessageSizeLimit() {
+        return 60;
+    }
+
+    public int getMaxPageCount() {
+        return 10;
+    }
+
 }
