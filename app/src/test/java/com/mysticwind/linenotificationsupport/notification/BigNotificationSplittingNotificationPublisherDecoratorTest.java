@@ -158,6 +158,16 @@ public class BigNotificationSplittingNotificationPublisherDecoratorTest {
         verify(notificationIdGenerator, times(3)).getNextNotificationId();
     }
 
+    @Test
+    public void testSingleNotificationWithUrl() {
+        classUnderTest.publishNotification(buildNotification("123456789012345 http://google.com"), 1);
+
+        verify(notificationPublisher).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
+        assertEquals("123456789012345 http://google.com", lineNotificationCaptor.getValue().getMessage());
+        assertEquals(1, notificationIdCaptor.getValue().intValue());
+        verify(preferenceProvider).getMessageSizeLimit();
+    }
+
     private LineNotification buildNotification(String message) {
         return LineNotification.builder()
                 .message(message)
