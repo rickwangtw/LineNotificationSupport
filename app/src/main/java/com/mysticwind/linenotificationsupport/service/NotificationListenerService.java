@@ -98,39 +98,37 @@ public class NotificationListenerService
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String preferenceKey) {
             if (PreferenceProvider.MAX_NOTIFICATION_WORKAROUND_PREFERENCE_KEY.equals(preferenceKey)) {
                 NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
+            } else if (PreferenceProvider.USE_MESSAGE_SPLITTER_PREFERENCE_KEY.equals(preferenceKey)) {
+                NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
             }
         }
     };
 
     private NotificationPublisher buildNotificationPublisher() {
-        return buildNotificationPublisher(getPreferenceProvider().shouldExecuteMaxNotificationWorkaround());
-    }
-
-    private NotificationPublisher buildNotificationPublisher(boolean handleMaxNotificationAndroidLimit) {
-        final SimpleNotificationPublisher simpleNotificationPublisher =
+        NotificationPublisher notificationPublisher =
                 new SimpleNotificationPublisher(this, getPackageName(),
                         GROUP_ID_RESOLVER, getPreferenceProvider());
 
-        if (!handleMaxNotificationAndroidLimit) {
-            return new BigNotificationSplittingNotificationPublisherDecorator(
-                    simpleNotificationPublisher, NOTIFICATION_ID_GENERATOR, getPreferenceProvider());
+        if (getPreferenceProvider().shouldExecuteMaxNotificationWorkaround()) {
+            notificationPublisher = new MaxNotificationHandlingNotificationPublisherDecorator(
+                    handler, notificationPublisher, notificationCounter);
         }
 
-        return new BigNotificationSplittingNotificationPublisherDecorator(
-                new MaxNotificationHandlingNotificationPublisherDecorator(
-                        handler, simpleNotificationPublisher, notificationCounter),
-                NOTIFICATION_ID_GENERATOR,
-                getPreferenceProvider()
-        );
+        if (getPreferenceProvider().shouldUseMessageSplitter()) {
+             notificationPublisher = new BigNotificationSplittingNotificationPublisherDecorator(
+                    notificationPublisher,
+                    NOTIFICATION_ID_GENERATOR,
+                    getPreferenceProvider());
+        }
+
+        return notificationPublisher;
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         this.notificationCounter = new NotificationCounter((int) getMaxNotificationsPerApp());
 
-        this.notificationPublisher = buildNotificationPublisher(
-                getPreferenceProvider().shouldExecuteMaxNotificationWorkaround()
-        );
+        this.notificationPublisher = buildNotificationPublisher();
 
         new NotificationGroupCreator(
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),

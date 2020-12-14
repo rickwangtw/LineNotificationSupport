@@ -8,6 +8,7 @@ public class PreferenceProvider {
 
     public static final String MAX_NOTIFICATION_WORKAROUND_PREFERENCE_KEY = "max_notification_workaround";
     public static final String USE_LEGACY_STICKER_LOADER_PREFERENCE_KEY = "use_legacy_sticker_loader";
+    public static final String USE_MESSAGE_SPLITTER_PREFERENCE_KEY = "use_big_message_splitter";
     public static final String MESSAGE_SIZE_LIMIT_PREFERENCE_KEY = "message_size_limit";
     public static final String SPLIT_MESSAGE_MAX_PAGES_KEY = "split_message_max_pages";
 
@@ -27,6 +28,10 @@ public class PreferenceProvider {
 
     public boolean shouldUseLegacyStickerLoader() {
         return sharedPreferences.getBoolean(USE_LEGACY_STICKER_LOADER_PREFERENCE_KEY, false);
+    }
+
+    public boolean shouldUseMessageSplitter() {
+        return sharedPreferences.getBoolean(USE_MESSAGE_SPLITTER_PREFERENCE_KEY, true);
     }
 
     public int getMessageSizeLimit() {
