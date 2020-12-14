@@ -8,6 +8,8 @@ public class PreferenceProvider {
 
     public static final String MAX_NOTIFICATION_WORKAROUND_PREFERENCE_KEY = "max_notification_workaround";
     public static final String USE_LEGACY_STICKER_LOADER_PREFERENCE_KEY = "use_legacy_sticker_loader";
+    public static final String MESSAGE_SIZE_LIMIT_PREFERENCE_KEY = "message_size_limit";
+    public static final String SPLIT_MESSAGE_MAX_PAGES_KEY = "split_message_max_pages";
 
     private final SharedPreferences sharedPreferences;
 
@@ -28,11 +30,11 @@ public class PreferenceProvider {
     }
 
     public int getMessageSizeLimit() {
-        return 60;
+        return sharedPreferences.getInt(MESSAGE_SIZE_LIMIT_PREFERENCE_KEY, 60);
     }
 
     public int getMaxPageCount() {
-        return 10;
+        return sharedPreferences.getInt(SPLIT_MESSAGE_MAX_PAGES_KEY, 5);
     }
 
 }
