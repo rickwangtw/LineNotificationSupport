@@ -43,10 +43,12 @@ public class BigNotificationSplittingNotificationPublisherDecorator implements N
             return;
         }
         final List<String> splitMessages = splitMessage(message, messageSizeLimit);
-        for (final String partialMessage : splitMessages) {
+        for (int messageIndex = 0 ; messageIndex < splitMessages.size() ; ++messageIndex) {
+            final String partialMessage = splitMessages.get(messageIndex);
             final LineNotification partialNotification =
                     lineNotification.toBuilder()
                             .message(partialMessage)
+                            .timestamp(lineNotification.getTimestamp() + messageIndex)
                             .build();
             notificationPublisher.publishNotification(partialNotification, notificationIdGenerator.getNextNotificationId());
         }
