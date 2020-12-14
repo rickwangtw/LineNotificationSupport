@@ -18,6 +18,11 @@
     <string name="use_legacy_sticker_loader_title">旧的贴图下载模式</string>
     <string name="use_legacy_sticker_loader_summary_on">使用旧的贴图下载模式。请只在新的下载模式无法正常显示贴图时使用。</string>
     <string name="use_legacy_sticker_loader_summary_off">使用新的贴图下载模式。</string>
+    <string name="use_big_message_splitter_title">分割长讯息</string>
+    <string name="use_big_message_splitter_summary_on">将长讯息分割成多条通知。</string>
+    <string name="use_big_message_splitter_summary_off">不分割长讯息。</string>
+    <string name="message_size_limit_title">讯息最大字元数</string>
+    <string name="split_message_max_pages_title">最多分割页面数</string>
 
     <!-- Calls Preferences -->
     <string name="auto_call_notifications_title">LINE 来电通知</string>

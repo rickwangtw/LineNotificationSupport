@@ -1,4 +1,6 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <PreferenceCategory app:title="@string/messages_header"
         app:iconSpaceReserved="false" >
@@ -19,6 +21,36 @@
             app:defaultValue="false"
             app:summaryOff="@string/use_legacy_sticker_loader_summary_off"
             app:summaryOn="@string/use_legacy_sticker_loader_summary_on" />
+
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="use_big_message_splitter"
+            app:title="@string/use_big_message_splitter_title"
+            app:defaultValue="true"
+            app:summaryOff="@string/use_big_message_splitter_summary_off"
+            app:summaryOn="@string/use_big_message_splitter_summary_on" />
+
+        <SeekBarPreference
+            app:iconSpaceReserved="false"
+            app:key="message_size_limit"
+            app:dependency="use_big_message_splitter"
+            app:title="@string/message_size_limit_title"
+            app:showSeekBarValue="true"
+            app:defaultValue="60"
+            app:seekBarIncrement="1"
+            app:min="20"
+            android:max="150" />
+
+        <SeekBarPreference
+            app:iconSpaceReserved="false"
+            app:key="split_message_max_pages"
+            app:dependency="use_big_message_splitter"
+            app:title="@string/split_message_max_pages_title"
+            app:showSeekBarValue="true"
+            app:defaultValue="5"
+            app:seekBarIncrement="1"
+            app:min="2"
+            android:max="20" />
 
     </PreferenceCategory>
 

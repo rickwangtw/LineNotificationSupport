@@ -27,6 +27,11 @@
     <string name="use_legacy_sticker_loader_title">Legacy sticker loader</string>
     <string name="use_legacy_sticker_loader_summary_on">Use the old sticker loader. Use this option only if the stickers are not showing.</string>
     <string name="use_legacy_sticker_loader_summary_off">Use the up-to-date sticker loader.</string>
+    <string name="use_big_message_splitter_title">Split large messages</string>
+    <string name="use_big_message_splitter_summary_on">Split large messages into multiple notifications.</string>
+    <string name="use_big_message_splitter_summary_off">Do not split large messages into multiple notifications.</string>
+    <string name="message_size_limit_title">Message size limit</string>
+    <string name="split_message_max_pages_title">Max number of pages of split messages</string>
 
     <!-- Calls Preferences -->
     <string name="auto_call_notifications_title">Continuous call notifications</string>
