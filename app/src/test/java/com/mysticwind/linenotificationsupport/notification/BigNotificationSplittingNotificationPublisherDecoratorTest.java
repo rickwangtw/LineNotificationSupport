@@ -168,6 +168,24 @@ public class BigNotificationSplittingNotificationPublisherDecoratorTest {
         verify(preferenceProvider).getMessageSizeLimit();
     }
 
+    @Test
+    public void testTwoNotificationsWithEnglishWords() {
+        classUnderTest.publishNotification(buildNotification("i am testing a sentence"), 1);
+
+        verify(notificationPublisher, times(3)).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
+        List<LineNotification> lineNotifications = lineNotificationCaptor.getAllValues();
+        List<Integer> notificationIds = notificationIdCaptor.getAllValues();
+        assertEquals("i am(...)", lineNotifications.get(0).getMessage());
+        assertEquals(2, notificationIds.get(0).intValue());
+        assertEquals("(...)testi(...)", lineNotifications.get(1).getMessage());
+        assertEquals(3, notificationIds.get(1).intValue());
+        assertEquals("(...)ng a(...)", lineNotifications.get(2).getMessage());
+        assertEquals(4, notificationIds.get(2).intValue());
+        verify(preferenceProvider).getMessageSizeLimit();
+        verify(preferenceProvider).getMaxPageCount();
+        verify(notificationIdGenerator, times(3)).getNextNotificationId();
+    }
+
     private LineNotification buildNotification(String message) {
         return LineNotification.builder()
                 .message(message)

@@ -2,6 +2,7 @@ package com.mysticwind.linenotificationsupport.notification;
 
 import android.service.notification.StatusBarNotification;
 
+import com.google.common.base.CharMatcher;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
@@ -80,18 +81,56 @@ public class BigNotificationSplittingNotificationPublisherDecorator implements N
         // 55, 55
         // 55, 50, 55
         // 55, 50, 50, 55
-        String remainingMessage = originalMessage;
+        String remainingMessage = removeLeadingSpaces(originalMessage);
         int pageCount = 0;
         while (pageCount++ < maxPageCount) {
+            remainingMessage = removeLeadingSpaces(remainingMessage);
             if (remainingMessage.length() <= messageSizeLimit) {
                 splitMessages.add(remainingMessage);
                 break;
             }
-            String firstHalfMessage = remainingMessage.substring(0, messageSizeLimit - MESSAGE_SEPARATOR_LENGTH);
+            String firstHalfMessage = findNextPage(remainingMessage, messageSizeLimit);
+            //String firstHalfMessage = remainingMessage.substring(0, messageSizeLimit - MESSAGE_SEPARATOR_LENGTH);
             splitMessages.add(firstHalfMessage + MESSAGE_SEPARATOR);
-            remainingMessage = MESSAGE_SEPARATOR + remainingMessage.substring(messageSizeLimit - MESSAGE_SEPARATOR_LENGTH);
+            remainingMessage = MESSAGE_SEPARATOR + removeLeadingSpaces(remainingMessage.substring(firstHalfMessage.length()));
         }
         return splitMessages;
+    }
+
+    private String removeLeadingSpaces(final String message) {
+        for (int characterIndex = 0 ; characterIndex < message.length() ; ++characterIndex) {
+            final char character = message.charAt(characterIndex);
+            if (!CharMatcher.whitespace().matches(character)) {
+                return message.substring(characterIndex);
+            }
+        }
+        return "";
+    }
+
+    private String findNextPage(String message, int messageSizeLimit) {
+        int lastWhitespaceIndex = 0;
+        int characterIndex = 0;
+        for (; characterIndex < message.length() && characterIndex < (messageSizeLimit - MESSAGE_SEPARATOR_LENGTH) ;
+             ++characterIndex) {
+            final char character = message.charAt(characterIndex);
+            if (CharMatcher.whitespace().matches(character)) {
+                lastWhitespaceIndex = characterIndex;
+            }
+        }
+        if (lastWhitespaceIndex > 0) {
+            return message.substring(0, lastWhitespaceIndex);
+        }
+        return message.substring(0, characterIndex);
+    }
+
+    private int findFirstNoneWhitespaceIndex(final String message) {
+        for (int characterIndex = 0; characterIndex < message.length() ; ++characterIndex) {
+            final char character = message.charAt(characterIndex);
+            if (!CharMatcher.whitespace().matches(character)) {
+                return characterIndex;
+            }
+        }
+        return message.length();
     }
 
     @Override
