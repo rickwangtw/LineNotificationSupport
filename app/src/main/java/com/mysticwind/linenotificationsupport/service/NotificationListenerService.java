@@ -490,7 +490,7 @@ public class NotificationListenerService
             notificationCounter.notified(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
         }
         if (summaryNotificationPublisher != null) {
-            summaryNotificationPublisher.updateSummary(statusBarNotification.getNotification().getGroup());
+            summaryNotificationPublisher.updateSummaryWhenNotificationsPublished(statusBarNotification.getNotification().getGroup());
         }
     }
 
@@ -505,7 +505,7 @@ public class NotificationListenerService
             notificationCounter.dismissed(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
         }
         if (summaryNotificationPublisher != null) {
-            summaryNotificationPublisher.updateSummary(statusBarNotification.getNotification().getGroup());
+            summaryNotificationPublisher.updateSummaryWhenNotificationsDismissed(statusBarNotification.getNotification().getGroup());
         }
         notificationPublisher.updateNotificationDismissed(statusBarNotification);
     }
