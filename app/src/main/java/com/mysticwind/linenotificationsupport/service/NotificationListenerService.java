@@ -43,6 +43,7 @@ import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
+import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
@@ -399,12 +400,38 @@ public class NotificationListenerService
     private void dismissLineNotification(StatusBarNotification statusBarNotification) {
         // we only dismiss notifications that are in the message category
         if (!LineNotificationBuilder.MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category)) {
+            Timber.d("LINE notification not message category but [%s]: [%s]",
+                    statusBarNotification.getNotification().category, statusBarNotification.getNotification().tickerText);
             return;
         }
+
+        final Optional<String> summaryKey = findLineNotificationSummary(statusBarNotification.getNotification().getGroup());
+        summaryKey.ifPresent(
+                key -> {
+                    Timber.d("Cancelling LINE summary: [%s]", key);
+                    cancelNotification(key);
+                }
+        );
 
         Timber.d("Dismiss LINE notification: key[%s] tag[%s] id[%d]",
                 statusBarNotification.getKey(), statusBarNotification.getTag(), statusBarNotification.getId());
         cancelNotification(statusBarNotification.getKey());
+    }
+
+    private Optional<String> findLineNotificationSummary(String group) {
+        return Arrays.stream(getActiveNotifications())
+                .filter(notification -> notification.getPackageName().equals(LINE_PACKAGE_NAME))
+                .peek(notification -> Timber.d("LINE notification key [%s] category [%s] group [%s] isSummary [%s] title [%s] message [%s]",
+                        notification.getKey(), notification.getNotification().category,
+                        notification.getNotification().getGroup(),
+                        StatusBarNotificationExtractor.isSummary(notification),
+                        NotificationExtractor.getTitle(notification.getNotification()),
+                        NotificationExtractor.getMessage(notification.getNotification())))
+                .filter(notification -> LineNotificationBuilder.MESSAGE_CATEGORY.equals(notification.getNotification().category))
+                .filter(notification -> StatusBarNotificationExtractor.isSummary(notification))
+                .filter(notification -> StringUtils.equals(group, notification.getNotification().getGroup()))
+                .map(notification -> notification.getKey())
+                .findFirst();
     }
 
     @Override
