@@ -100,9 +100,19 @@
         app:iconSpaceReserved="false" >
 
         <SwitchPreferenceCompat
+            android:disableDependentsState="true"
+            app:iconSpaceReserved="false"
+            app:key="manage_line_message_notifications"
+            app:title="@string/manage_line_message_notifications_title"
+            app:defaultValue="false"
+            app:summaryOff="@string/manage_line_message_notifications_summary_off"
+            app:summaryOn="@string/manage_line_message_notifications_summary_on" />
+
+        <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
             app:key="auto_dismiss_line_notification_support_messages"
             app:title="@string/auto_dismiss_line_notification_support_messages_title"
+            app:dependency="manage_line_message_notifications"
             app:defaultValue="true"
             app:summaryOff="@string/auto_dismiss_line_notification_support_messages_summary_off"
             app:summaryOn="@string/auto_dismiss_line_notification_support_messages_summary_on" />
