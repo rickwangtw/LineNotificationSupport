@@ -159,16 +159,6 @@ public class BigNotificationSplittingNotificationPublisherDecoratorTest {
     }
 
     @Test
-    public void testSingleNotificationWithUrl() {
-        classUnderTest.publishNotification(buildNotification("123456789012345 http://google.com"), 1);
-
-        verify(notificationPublisher).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
-        assertEquals("123456789012345 http://google.com", lineNotificationCaptor.getValue().getMessage());
-        assertEquals(1, notificationIdCaptor.getValue().intValue());
-        verify(preferenceProvider).getMessageSizeLimit();
-    }
-
-    @Test
     public void testTwoNotificationsWithEnglishWords() {
         classUnderTest.publishNotification(buildNotification("i am testing a sentence"), 1);
 
@@ -184,6 +174,38 @@ public class BigNotificationSplittingNotificationPublisherDecoratorTest {
         verify(preferenceProvider).getMessageSizeLimit();
         verify(preferenceProvider).getMaxPageCount();
         verify(notificationIdGenerator, times(3)).getNextNotificationId();
+    }
+
+    @Test
+    public void testMultipleNotificationsWithUrl() {
+        classUnderTest.publishNotification(buildNotification("123456789012345 http://www.google.com"), 1);
+
+        verify(notificationPublisher, times(2)).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
+        List<LineNotification> lineNotifications = lineNotificationCaptor.getAllValues();
+        List<Integer> notificationIds = notificationIdCaptor.getAllValues();
+        assertEquals("1234567890(...)", lineNotifications.get(0).getMessage());
+        assertEquals(2, notificationIds.get(0).intValue());
+        assertEquals("(...)12345 http://www.google.com", lineNotifications.get(1).getMessage());
+        assertEquals(3, notificationIds.get(1).intValue());
+        verify(preferenceProvider).getMessageSizeLimit();
+        verify(preferenceProvider).getMaxPageCount();
+        verify(notificationIdGenerator, times(2)).getNextNotificationId();
+    }
+
+    @Test
+    public void testMultipleNotificationsStartingWithUrl() {
+        classUnderTest.publishNotification(buildNotification("http://google.com 1234567890"), 1);
+
+        verify(notificationPublisher, times(2)).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
+        List<LineNotification> lineNotifications = lineNotificationCaptor.getAllValues();
+        List<Integer> notificationIds = notificationIdCaptor.getAllValues();
+        assertEquals("http://google.com(...)", lineNotifications.get(0).getMessage());
+        assertEquals(2, notificationIds.get(0).intValue());
+        assertEquals("(...)1234567890", lineNotifications.get(1).getMessage());
+        assertEquals(3, notificationIds.get(1).intValue());
+        verify(preferenceProvider).getMessageSizeLimit();
+        verify(preferenceProvider).getMaxPageCount();
+        verify(notificationIdGenerator, times(2)).getNextNotificationId();
     }
 
     private LineNotification buildNotification(String message) {
