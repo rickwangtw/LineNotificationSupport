@@ -41,6 +41,8 @@ public class SettingsActivity extends AppCompatActivity {
                 } else {
                     notificationGroupCreator.migrateToMultipleNotificationChannelsForMessages();
                 }
+
+                // TODO if we have chosen to manage LINE notification, we should also mute the notifications
             }
 
             private PreferenceProvider getPreferenceProvider() {

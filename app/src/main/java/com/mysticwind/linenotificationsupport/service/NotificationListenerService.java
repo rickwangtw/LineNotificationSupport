@@ -189,6 +189,10 @@ public class NotificationListenerService
         notificationHistoryManager.record(statusBarNotification, getLineAppVersion());
 
         sendNotification(statusBarNotification);
+
+        if (getPreferenceProvider().shouldManageLineMessageNotifications()) {
+            dismissLineNotification(statusBarNotification);
+        }
     }
 
     private boolean shouldIgnoreNotification(final StatusBarNotification statusBarNotification) {
@@ -390,6 +394,17 @@ public class NotificationListenerService
                 sendIncomingCallNotification(autoIncomingCallNotificationState);
             }
         }, delayInMillis);
+    }
+
+    private void dismissLineNotification(StatusBarNotification statusBarNotification) {
+        // we only dismiss notifications that are in the message category
+        if (!LineNotificationBuilder.MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category)) {
+            return;
+        }
+
+        Timber.d("Dismiss LINE notification: key[%s] tag[%s] id[%d]",
+                statusBarNotification.getKey(), statusBarNotification.getTag(), statusBarNotification.getId());
+        cancelNotification(statusBarNotification.getKey());
     }
 
     @Override
