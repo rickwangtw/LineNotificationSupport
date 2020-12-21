@@ -199,7 +199,7 @@ public class BigNotificationSplittingNotificationPublisherDecoratorTest {
         verify(notificationPublisher, times(2)).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
         List<LineNotification> lineNotifications = lineNotificationCaptor.getAllValues();
         List<Integer> notificationIds = notificationIdCaptor.getAllValues();
-        assertEquals("http://google.com(...)", lineNotifications.get(0).getMessage());
+        assertEquals("http://google.com (...)", lineNotifications.get(0).getMessage());
         assertEquals(2, notificationIds.get(0).intValue());
         assertEquals("(...)1234567890", lineNotifications.get(1).getMessage());
         assertEquals(3, notificationIds.get(1).intValue());

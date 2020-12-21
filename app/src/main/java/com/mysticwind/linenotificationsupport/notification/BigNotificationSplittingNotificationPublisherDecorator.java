@@ -70,7 +70,7 @@ public class BigNotificationSplittingNotificationPublisherDecorator implements N
                 break;
             }
             String firstHalfMessage = findNextPage(remainingMessage, messageSizeLimit);
-            if (remainingMessage.length() == firstHalfMessage.length()) {
+            if (firstHalfMessage.length() >= remainingMessage.length()) {
                 splitMessages.add(firstHalfMessage);
                 break;
             } else {
@@ -96,8 +96,15 @@ public class BigNotificationSplittingNotificationPublisherDecorator implements N
         if (urlIndexAndUrl.getLeft() >= 0 && urlIndexAndUrl.getLeft() <= messageSizeLimit) {
             // there is url within this page, handle this specially
             final int endIndex = urlIndexAndUrl.getLeft() + urlIndexAndUrl.getRight().length();
-            return message.substring(0, endIndex);
+            if (message.length() == endIndex) {
+                // end of message
+                return message.substring(0, endIndex);
+            } else {
+                // URL will need to end with a space in order to load correctly
+                return message.substring(0, endIndex) + " ";
+            }
         }
+
         // no url within this page
         int lastWhitespaceIndex = 0;
         int characterIndex = 0;
