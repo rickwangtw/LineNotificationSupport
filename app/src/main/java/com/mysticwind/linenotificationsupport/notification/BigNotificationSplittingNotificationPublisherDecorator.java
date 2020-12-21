@@ -139,6 +139,7 @@ public class BigNotificationSplittingNotificationPublisherDecorator implements N
     @Override
     public void updateNotificationDismissed(StatusBarNotification statusBarNotification) {
         // do nothing
+        notificationPublisher.updateNotificationDismissed(statusBarNotification);
     }
 
 }

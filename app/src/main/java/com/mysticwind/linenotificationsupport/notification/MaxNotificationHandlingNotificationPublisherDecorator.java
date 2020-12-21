@@ -72,6 +72,9 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
 
     @Override
     public void updateNotificationDismissed(final StatusBarNotification statusBarNotification) {
+        // when should this actually happen??
+        notificationPublisher.updateNotificationDismissed(statusBarNotification);
+
         final String chatId = statusBarNotification.getNotification().getGroup();
 
         if (!notificationCounter.hasSlot(chatId)) {
