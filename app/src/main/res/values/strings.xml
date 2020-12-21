@@ -17,6 +17,11 @@
     <!-- Permission Dialog -->
     <string name="permission_request_dialog_message">You will need to grant permissions for this app to access Line notifications.</string>
 
+    <!-- LINE Notification Settings Dialog -->
+    <string name="make_line_message_notification_silent">Highly recommend to update the \"Message notifications\" setting to \"Silent\"</string>
+    <string name="reminder_for_enabling_line_message_notification">Please remember to update the \"Message notifications\" setting back to \"Alert\"</string>
+    <string name="go_to_settings">Go to Settings</string>
+
     <!-- Preference Titles -->
     <string name="messages_header">LINE Messages</string>
     <string name="calls_header">LINE Calls</string>
