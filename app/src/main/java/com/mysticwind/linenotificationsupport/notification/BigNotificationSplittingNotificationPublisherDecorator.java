@@ -5,7 +5,6 @@ import android.service.notification.StatusBarNotification;
 import com.google.common.base.CharMatcher;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
-import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -20,14 +19,11 @@ public class BigNotificationSplittingNotificationPublisherDecorator implements N
     private static final int MESSAGE_SEPARATOR_LENGTH = MESSAGE_SEPARATOR.length();
 
     private final NotificationPublisher notificationPublisher;
-    private final NotificationIdGenerator notificationIdGenerator;
     private final PreferenceProvider preferenceProvider;
 
     public BigNotificationSplittingNotificationPublisherDecorator(final NotificationPublisher notificationPublisher,
-                                                                  final NotificationIdGenerator notificationIdGenerator,
                                                                   final PreferenceProvider preferenceProvider) {
         this.notificationPublisher = notificationPublisher;
-        this.notificationIdGenerator = notificationIdGenerator;
         this.preferenceProvider = preferenceProvider;
     }
 
@@ -41,15 +37,11 @@ public class BigNotificationSplittingNotificationPublisherDecorator implements N
             return;
         }
         final List<String> splitMessages = splitMessage(message, messageSizeLimit);
-        for (int messageIndex = 0 ; messageIndex < splitMessages.size() ; ++messageIndex) {
-            final String partialMessage = splitMessages.get(messageIndex);
-            final LineNotification partialNotification =
-                    lineNotification.toBuilder()
-                            .message(partialMessage)
-                            .timestamp(lineNotification.getTimestamp() + messageIndex)
-                            .build();
-            notificationPublisher.publishNotification(partialNotification, notificationIdGenerator.getNextNotificationId());
-        }
+        final LineNotification notificationWithSplitMessages =
+                lineNotification.toBuilder()
+                        .messages(splitMessages)
+                        .build();
+        notificationPublisher.publishNotification(notificationWithSplitMessages, notificationId);
     }
 
     private List<String> splitMessage(String originalMessage, int messageSizeLimit) {

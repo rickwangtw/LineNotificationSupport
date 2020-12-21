@@ -23,6 +23,8 @@ public class LineNotification {
 
     private final Person sender;
     private final String message;
+    // TODO migrate to use the list version of messages
+    private final List<String> messages;
     private final String title;
     private final String lineStickerUrl;
     private final String chatId;

@@ -2,7 +2,6 @@ package com.mysticwind.linenotificationsupport.notification;
 
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
-import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
 import org.junit.After;
 import org.junit.Before;
@@ -13,10 +12,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.times;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -28,16 +25,10 @@ public class BigNotificationSplittingNotificationPublisherDecoratorTest {
     private NotificationPublisher notificationPublisher;
 
     @Mock
-    private NotificationIdGenerator notificationIdGenerator;
-
-    @Mock
     private PreferenceProvider preferenceProvider;
 
     @Captor
     private ArgumentCaptor<LineNotification> lineNotificationCaptor;
-
-    @Captor
-    private ArgumentCaptor<Integer> notificationIdCaptor;
 
     private BigNotificationSplittingNotificationPublisherDecorator classUnderTest;
 
@@ -45,19 +36,14 @@ public class BigNotificationSplittingNotificationPublisherDecoratorTest {
     public void setUp() {
         when(preferenceProvider.getMessageSizeLimit()).thenReturn(15);
         when(preferenceProvider.getMaxPageCount()).thenReturn(3);
-        when(notificationIdGenerator.getNextNotificationId())
-                .thenReturn(2)
-                .thenReturn(3)
-                .thenReturn(4);
 
-        classUnderTest = new BigNotificationSplittingNotificationPublisherDecorator(notificationPublisher, notificationIdGenerator, preferenceProvider);
+        classUnderTest = new BigNotificationSplittingNotificationPublisherDecorator(notificationPublisher, preferenceProvider);
     }
 
     @After
     public void tearDown() {
         verifyNoMoreInteractions(
                 notificationPublisher,
-                notificationIdGenerator,
                 preferenceProvider
         );
     }
@@ -66,9 +52,8 @@ public class BigNotificationSplittingNotificationPublisherDecoratorTest {
     public void testSingleNotification() {
         classUnderTest.publishNotification(buildNotification("123456789012345"), 1);
 
-        verify(notificationPublisher).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
+        verify(notificationPublisher).publishNotification(lineNotificationCaptor.capture(), eq(1));
         assertEquals("123456789012345", lineNotificationCaptor.getValue().getMessage());
-        assertEquals(1, notificationIdCaptor.getValue().intValue());
         verify(preferenceProvider).getMessageSizeLimit();
     }
 
@@ -76,136 +61,100 @@ public class BigNotificationSplittingNotificationPublisherDecoratorTest {
     public void testTwoNotifications() {
         classUnderTest.publishNotification(buildNotification("1234567890123456"), 1);
 
-        verify(notificationPublisher, times(2)).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
-        List<LineNotification> lineNotifications = lineNotificationCaptor.getAllValues();
-        List<Integer> notificationIds = notificationIdCaptor.getAllValues();
-        assertEquals("1234567890(...)", lineNotifications.get(0).getMessage());
-        assertEquals(2, notificationIds.get(0).intValue());
-        assertEquals("(...)123456", lineNotifications.get(1).getMessage());
-        assertEquals(3, notificationIds.get(1).intValue());
+        verify(notificationPublisher).publishNotification(lineNotificationCaptor.capture(), eq(1));
+        LineNotification lineNotification = lineNotificationCaptor.getValue();
+        assertEquals("1234567890(...)", lineNotification.getMessages().get(0));
+        assertEquals("(...)123456", lineNotification.getMessages().get(1));
         verify(preferenceProvider).getMessageSizeLimit();
         verify(preferenceProvider).getMaxPageCount();
-        verify(notificationIdGenerator, times(2)).getNextNotificationId();
     }
 
     @Test
     public void testTwoNotificationsOnEdge() {
         classUnderTest.publishNotification(buildNotification("12345678901234567890"), 1);
 
-        verify(notificationPublisher, times(2)).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
-        List<LineNotification> lineNotifications = lineNotificationCaptor.getAllValues();
-        List<Integer> notificationIds = notificationIdCaptor.getAllValues();
-        assertEquals("1234567890(...)", lineNotifications.get(0).getMessage());
-        assertEquals(2, notificationIds.get(0).intValue());
-        assertEquals("(...)1234567890", lineNotifications.get(1).getMessage());
-        assertEquals(3, notificationIds.get(1).intValue());
+        verify(notificationPublisher).publishNotification(lineNotificationCaptor.capture(), eq(1));
+        LineNotification lineNotification = lineNotificationCaptor.getValue();
+        assertEquals("1234567890(...)", lineNotification.getMessages().get(0));
+        assertEquals("(...)1234567890", lineNotification.getMessages().get(1));
         verify(preferenceProvider).getMessageSizeLimit();
         verify(preferenceProvider).getMaxPageCount();
-        verify(notificationIdGenerator, times(2)).getNextNotificationId();
     }
 
     @Test
     public void testThreeNotifications() {
         classUnderTest.publishNotification(buildNotification("123456789012345678901"), 1);
 
-        verify(notificationPublisher, times(3)).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
-        List<LineNotification> lineNotifications = lineNotificationCaptor.getAllValues();
-        List<Integer> notificationIds = notificationIdCaptor.getAllValues();
-        assertEquals("1234567890(...)", lineNotifications.get(0).getMessage());
-        assertEquals(2, notificationIds.get(0).intValue());
-        assertEquals("(...)12345(...)", lineNotifications.get(1).getMessage());
-        assertEquals(3, notificationIds.get(1).intValue());
-        assertEquals("(...)678901", lineNotifications.get(2).getMessage());
-        assertEquals(4, notificationIds.get(2).intValue());
+        verify(notificationPublisher).publishNotification(lineNotificationCaptor.capture(), eq(1));
+        LineNotification lineNotification = lineNotificationCaptor.getValue();
+        assertEquals("1234567890(...)", lineNotification.getMessages().get(0));
+        assertEquals("(...)12345(...)", lineNotification.getMessages().get(1));
+        assertEquals("(...)678901", lineNotification.getMessages().get(2));
         verify(preferenceProvider).getMessageSizeLimit();
         verify(preferenceProvider).getMaxPageCount();
-        verify(notificationIdGenerator, times(3)).getNextNotificationId();
     }
 
     @Test
     public void testThreeNotificationsOnEdge() {
         classUnderTest.publishNotification(buildNotification("1234567890123456789012345"), 1);
 
-        verify(notificationPublisher, times(3)).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
-        List<LineNotification> lineNotifications = lineNotificationCaptor.getAllValues();
-        List<Integer> notificationIds = notificationIdCaptor.getAllValues();
-        assertEquals("1234567890(...)", lineNotifications.get(0).getMessage());
-        assertEquals(2, notificationIds.get(0).intValue());
-        assertEquals("(...)12345(...)", lineNotifications.get(1).getMessage());
-        assertEquals(3, notificationIds.get(1).intValue());
-        assertEquals("(...)6789012345", lineNotifications.get(2).getMessage());
-        assertEquals(4, notificationIds.get(2).intValue());
+        verify(notificationPublisher).publishNotification(lineNotificationCaptor.capture(), eq(1));
+        LineNotification lineNotification = lineNotificationCaptor.getValue();
+        assertEquals("1234567890(...)", lineNotification.getMessages().get(0));
+        assertEquals("(...)12345(...)", lineNotification.getMessages().get(1));
+        assertEquals("(...)6789012345", lineNotification.getMessages().get(2));
         verify(preferenceProvider).getMessageSizeLimit();
         verify(preferenceProvider).getMaxPageCount();
-        verify(notificationIdGenerator, times(3)).getNextNotificationId();
     }
 
     @Test
     public void testThreeNotificationsExceedingMaxPages() {
         classUnderTest.publishNotification(buildNotification("12345678901234567890123456"), 1);
 
-        verify(notificationPublisher, times(3)).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
-        List<LineNotification> lineNotifications = lineNotificationCaptor.getAllValues();
-        List<Integer> notificationIds = notificationIdCaptor.getAllValues();
-        assertEquals("1234567890(...)", lineNotifications.get(0).getMessage());
-        assertEquals(2, notificationIds.get(0).intValue());
-        assertEquals("(...)12345(...)", lineNotifications.get(1).getMessage());
-        assertEquals(3, notificationIds.get(1).intValue());
-        assertEquals("(...)67890(...)", lineNotifications.get(2).getMessage());
-        assertEquals(4, notificationIds.get(2).intValue());
+        verify(notificationPublisher).publishNotification(lineNotificationCaptor.capture(), eq(1));
+        LineNotification lineNotification = lineNotificationCaptor.getValue();
+        assertEquals("1234567890(...)", lineNotification.getMessages().get(0));
+        assertEquals("(...)12345(...)", lineNotification.getMessages().get(1));
+        assertEquals("(...)67890(...)", lineNotification.getMessages().get(2));
         verify(preferenceProvider).getMessageSizeLimit();
         verify(preferenceProvider).getMaxPageCount();
-        verify(notificationIdGenerator, times(3)).getNextNotificationId();
     }
 
     @Test
     public void testTwoNotificationsWithEnglishWords() {
         classUnderTest.publishNotification(buildNotification("i am testing a sentence"), 1);
 
-        verify(notificationPublisher, times(3)).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
-        List<LineNotification> lineNotifications = lineNotificationCaptor.getAllValues();
-        List<Integer> notificationIds = notificationIdCaptor.getAllValues();
-        assertEquals("i am(...)", lineNotifications.get(0).getMessage());
-        assertEquals(2, notificationIds.get(0).intValue());
-        assertEquals("(...)testi(...)", lineNotifications.get(1).getMessage());
-        assertEquals(3, notificationIds.get(1).intValue());
-        assertEquals("(...)ng a(...)", lineNotifications.get(2).getMessage());
-        assertEquals(4, notificationIds.get(2).intValue());
+        verify(notificationPublisher).publishNotification(lineNotificationCaptor.capture(), eq(1));
+        LineNotification lineNotification = lineNotificationCaptor.getValue();
+        assertEquals("i am(...)", lineNotification.getMessages().get(0));
+        assertEquals("(...)testi(...)", lineNotification.getMessages().get(1));
+        assertEquals("(...)ng a(...)", lineNotification.getMessages().get(2));
         verify(preferenceProvider).getMessageSizeLimit();
         verify(preferenceProvider).getMaxPageCount();
-        verify(notificationIdGenerator, times(3)).getNextNotificationId();
     }
 
     @Test
     public void testMultipleNotificationsWithUrl() {
         classUnderTest.publishNotification(buildNotification("123456789012345 http://www.google.com"), 1);
 
-        verify(notificationPublisher, times(2)).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
-        List<LineNotification> lineNotifications = lineNotificationCaptor.getAllValues();
-        List<Integer> notificationIds = notificationIdCaptor.getAllValues();
-        assertEquals("1234567890(...)", lineNotifications.get(0).getMessage());
-        assertEquals(2, notificationIds.get(0).intValue());
-        assertEquals("(...)12345 http://www.google.com", lineNotifications.get(1).getMessage());
-        assertEquals(3, notificationIds.get(1).intValue());
+        verify(notificationPublisher).publishNotification(lineNotificationCaptor.capture(), eq(1));
+        LineNotification lineNotification = lineNotificationCaptor.getValue();
+        assertEquals("1234567890(...)", lineNotification.getMessages().get(0));
+        assertEquals("(...)12345 http://www.google.com", lineNotification.getMessages().get(1));
         verify(preferenceProvider).getMessageSizeLimit();
         verify(preferenceProvider).getMaxPageCount();
-        verify(notificationIdGenerator, times(2)).getNextNotificationId();
     }
 
     @Test
     public void testMultipleNotificationsStartingWithUrl() {
         classUnderTest.publishNotification(buildNotification("http://google.com 1234567890"), 1);
 
-        verify(notificationPublisher, times(2)).publishNotification(lineNotificationCaptor.capture(), notificationIdCaptor.capture());
-        List<LineNotification> lineNotifications = lineNotificationCaptor.getAllValues();
-        List<Integer> notificationIds = notificationIdCaptor.getAllValues();
-        assertEquals("http://google.com (...)", lineNotifications.get(0).getMessage());
-        assertEquals(2, notificationIds.get(0).intValue());
-        assertEquals("(...)1234567890", lineNotifications.get(1).getMessage());
-        assertEquals(3, notificationIds.get(1).intValue());
+        verify(notificationPublisher).publishNotification(lineNotificationCaptor.capture(), eq(1));
+        LineNotification lineNotification = lineNotificationCaptor.getValue();
+        assertEquals("http://google.com (...)", lineNotification.getMessages().get(0));
+        assertEquals("(...)1234567890", lineNotification.getMessages().get(1));
         verify(preferenceProvider).getMessageSizeLimit();
         verify(preferenceProvider).getMaxPageCount();
-        verify(notificationIdGenerator, times(2)).getNextNotificationId();
     }
 
     private LineNotification buildNotification(String message) {

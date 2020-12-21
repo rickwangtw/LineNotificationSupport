@@ -117,7 +117,6 @@ public class NotificationListenerService
         if (getPreferenceProvider().shouldUseMessageSplitter()) {
              notificationPublisher = new BigNotificationSplittingNotificationPublisherDecorator(
                     notificationPublisher,
-                    NOTIFICATION_ID_GENERATOR,
                     getPreferenceProvider());
         }
 
