@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 
 public class PreferenceProvider {
 
+    private static final String AUTO_DISMISS_TRANSFORMED_MESSAGES_PREFERENCE_KEY = "auto_dismiss_line_notification_support_messages";
     private static final String MERGE_NOTIFICATION_CHANNEL_PREFERENCE_KEY = "merge_message_notification_channels";
 
     public static final String MAX_NOTIFICATION_WORKAROUND_PREFERENCE_KEY = "max_notification_workaround";
@@ -16,6 +17,10 @@ public class PreferenceProvider {
 
     public PreferenceProvider(final SharedPreferences sharedPreferences) {
         this.sharedPreferences = sharedPreferences;
+    }
+
+    public boolean shouldAutoDismissLineNotificationSupportNotifications() {
+        return sharedPreferences.getBoolean(AUTO_DISMISS_TRANSFORMED_MESSAGES_PREFERENCE_KEY, true);
     }
 
     public boolean shouldUseMergeMessageChatId() {

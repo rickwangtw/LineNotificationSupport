@@ -411,18 +411,13 @@ public class NotificationListenerService
             this.autoIncomingCallNotificationState.cancel();
         }
 
-        if (shouldAutoDismissLineNotificationSupportNotifications()) {
+        if (getPreferenceProvider().shouldAutoDismissLineNotificationSupportNotifications()) {
             dismissLineNotificationSupportNotifications(dismissedLineNotification.getChatId());
         }
     }
 
     private PreferenceProvider getPreferenceProvider() {
         return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
-    }
-
-    private boolean shouldAutoDismissLineNotificationSupportNotifications() {
-        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return preferences.getBoolean("auto_dismiss_line_notification_support_messages", true);
     }
 
     private void dismissLineNotificationSupportNotifications(final String groupId) {
