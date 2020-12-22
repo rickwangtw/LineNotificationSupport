@@ -97,18 +97,20 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
     }
 
     private void delayedPublish(final QueueItem queueItem, final long delayInMillis) {
+        Timber.d("Scheduling a delayed publish for item: " + queueItem.getLineNotification().getMessage());
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                Timber.d(String.format("Publishing notification (after delay of %d): %s",
-                        delayInMillis, queueItem.getLineNotification().getMessage()));
+                Timber.d("Publishing notification (after delay of %d): %s",
+                        delayInMillis, queueItem.getLineNotification().getMessage());
                 publish(queueItem.getLineNotification(), queueItem.getNotificationId());
             }
         }, delayInMillis);
     }
 
     private long calculateDelayInMillis(final String chatId) {
-        final long lastDismissedTimestamp = CHAT_ID_TO_LAST_DISMISSED_INSTANT_MAP.getOrDefault(chatId, Instant.now()).toEpochMilli(); final long now = Instant.now().toEpochMilli();
+        final long lastDismissedTimestamp = CHAT_ID_TO_LAST_DISMISSED_INSTANT_MAP.getOrDefault(chatId, Instant.now()).toEpochMilli();
+        final long now = Instant.now().toEpochMilli();
         if (lastDismissedTimestamp > now) {
             return lastDismissedTimestamp - now + 1;
         } else {
