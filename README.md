@@ -32,7 +32,7 @@ This app has been tested with Samsung Galaxy Watch Tizen 4.0.0.7.
 
 LINE version tested:
 
-* 10.21.3
+* 10.21.5, 10.21.4, 10.21.3
 * 10.20.1, 10.20.0
 * 10.19.3, 10.19.2, 10.19.1 (This LINE version does not provide the title of the chat group. Instead of showing the title of the chat group, this app will list out the users who previously responded as a mitigation. If not showing the title is a problem, please downgrade your LINE version.)
 * 10.18.2, 10.18.1
