@@ -5,6 +5,14 @@
 
     <string name="action_settings">設定</string>
 
+    <!-- Permission Dialog -->
+    <string name="permission_request_dialog_message">您必須授與 LINE通知小幫手 存取 LINE 通知的權限。</string>
+
+    <!-- LINE Notification Settings Dialog -->
+    <string name="make_line_message_notification_silent">強烈推薦將『訊息提醒』的設定改為『靜音』。</string>
+    <string name="reminder_for_enabling_line_message_notification">請記得將『訊息提醒』的設定改為『提醒』。</string>
+    <string name="go_to_settings">前往通知設定</string>
+
     <!-- Preference Titles -->
     <string name="messages_header">LINE 訊息</string>
     <string name="calls_header">LINE 通話</string>
@@ -15,6 +23,11 @@
     <string name="use_legacy_sticker_loader_title">舊的貼圖下載模式</string>
     <string name="use_legacy_sticker_loader_summary_on">使用舊的貼圖下載模式。請只在新的下載模式無法正常顯示貼圖時使用。</string>
     <string name="use_legacy_sticker_loader_summary_off">使用新的貼圖下載模式。</string>
+    <string name="use_big_message_splitter_title">分割長訊息</string>
+    <string name="use_big_message_splitter_summary_on">將長訊息分割成多條通知。</string>
+    <string name="use_big_message_splitter_summary_off">不分割長訊息。</string>
+    <string name="message_size_limit_title">訊息最大字元數</string>
+    <string name="split_message_max_pages_title">最多分割頁面數</string>
 
     <!-- Calls Preferences -->
     <string name="auto_call_notifications_title">LINE 通話通知</string>
@@ -27,6 +40,9 @@
     <string name="call_notification_action_reverse_summary_off">先『接聽』再『拒絕』。使用這個選項如果您較常選擇接聽。</string>
 
     <!-- Notification Preferences -->
+    <string name="manage_line_message_notifications_title">[測試中]管理 LINE 通知</string>
+    <string name="manage_line_message_notifications_summary_on">使用 LINE通知小幫手 管理LINE通知。LINE通知會自動被取消。</string>
+    <string name="manage_line_message_notifications_summary_off">不自動取消來自 LINE 的通知。</string>
     <string name="auto_dismiss_line_notification_support_messages_title">通知連動</string>
     <string name="auto_dismiss_line_notification_support_messages_summary_on">取消 LINE 通知時，自動取消 LINE 通知小幫手的通知。</string>
     <string name="auto_dismiss_line_notification_support_messages_summary_off">取消 LINE 通知時，依然保留 LINE 通知小幫手的通知。</string>

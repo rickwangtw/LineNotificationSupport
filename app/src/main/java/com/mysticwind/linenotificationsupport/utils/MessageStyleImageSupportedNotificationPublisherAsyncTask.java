@@ -23,6 +23,7 @@ import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -126,9 +127,16 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
     private List<NotificationCompat.MessagingStyle.Message> buildMessages(final LineNotification lineNotification,
                                                                           final Uri downloadedImageUri) {
         if (downloadedImageUri == null) {
-            return ImmutableList.of(
-                    new NotificationCompat.MessagingStyle.Message(
-                            lineNotification.getMessage(), lineNotification.getTimestamp(), lineNotification.getSender()));
+            List<String> messages = CollectionUtils.isEmpty(lineNotification.getMessages()) ?
+                    ImmutableList.of(lineNotification.getMessage()) : lineNotification.getMessages();
+            final ImmutableList.Builder<NotificationCompat.MessagingStyle.Message> messageListBuilder = ImmutableList.builder();
+            for (final String message : messages) {
+                messageListBuilder.add(
+                        new NotificationCompat.MessagingStyle.Message(
+                                message, lineNotification.getTimestamp(), lineNotification.getSender())
+                );
+            }
+            return messageListBuilder.build();
         }
 
         return ImmutableList.of(

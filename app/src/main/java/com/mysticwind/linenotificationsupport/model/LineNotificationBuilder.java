@@ -29,7 +29,7 @@ public class LineNotificationBuilder {
     public static final String DEFAULT_CHAT_ID = "default_chat_id";
 
     protected static final String CALL_CATEGORY = "call";
-    protected static final String MESSAGE_CATEGORY = "msg";
+    public static final String MESSAGE_CATEGORY = "msg";
     protected static final String MISSED_CALL_TAG = "NOTIFICATION_TAG_MISSED_CALL";
     public static final String GENERAL_NOTIFICATION_CHANNEL = "jp.naver.line.android.notification.GeneralNotifications";
     protected static final String DEFAULT_SENDER_NAME = "?";
@@ -156,13 +156,9 @@ public class LineNotificationBuilder {
                 .build();
     }
 
-    private boolean isMessage(StatusBarNotification statusBarNotification) {
-        return MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category);
-    }
-
     private List<Notification.Action> extractActions(final StatusBarNotification statusBarNotification,
                                                      final LineNotification.CallState callState) {
-        if(isMessage(statusBarNotification)) {
+        if(isMessage(statusBarNotification, callState)) {
             // mute and reply buttons
             // the mute button doesn't seem very useful
             return extractActionsOfIndices(statusBarNotification, 1);
@@ -187,6 +183,13 @@ public class LineNotificationBuilder {
             default:
                 return Collections.EMPTY_LIST;
         }
+    }
+
+    private boolean isMessage(StatusBarNotification statusBarNotification, LineNotification.CallState callState) {
+        if (callState != null) {
+            return false;
+        }
+        return MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category);
     }
 
     private List<Notification.Action> extractActionsOfIndices(final StatusBarNotification notificationFromLine,

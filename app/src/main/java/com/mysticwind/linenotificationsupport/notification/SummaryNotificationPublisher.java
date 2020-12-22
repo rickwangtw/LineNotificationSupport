@@ -42,7 +42,7 @@ public class SummaryNotificationPublisher {
         this.groupIdResolver = groupIdResolver;
     }
 
-    public void updateSummary(final String group) {
+    public void updateSummaryWhenNotificationsPublished(final String group) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return;
         }
@@ -88,6 +88,10 @@ public class SummaryNotificationPublisher {
 
         final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(groupId, groupNotification);
+    }
+
+    public void updateSummaryWhenNotificationsDismissed(final String group) {
+        // TODO implement this. Do nothing right now due to unnecessary vibrations and occasionally weird summaries to be sent out
     }
 
 }

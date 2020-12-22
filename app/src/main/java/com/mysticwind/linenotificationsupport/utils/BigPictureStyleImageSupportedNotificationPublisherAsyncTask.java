@@ -11,6 +11,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
@@ -19,6 +20,7 @@ import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -100,18 +102,32 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
             return new NotificationCompat.BigPictureStyle()
                     .bigPicture(downloadedImage)
                     .setSummaryText(lineNotification.getMessage());
-        }  else if (lineNotification.getSender().getName().equals(lineNotification.getTitle())) {
-            // this is usually the case if you're talking to a single person.
-            // Don't set the conversation title in this case.
-            return new NotificationCompat.MessagingStyle(lineNotification.getSender())
-                    .addMessage(lineNotification.getMessage(),
-                            lineNotification.getTimestamp(), lineNotification.getSender());
-        }  else {
-            return new NotificationCompat.MessagingStyle(lineNotification.getSender())
-                    .setConversationTitle(lineNotification.getTitle())
-                    .addMessage(lineNotification.getMessage(),
-                            lineNotification.getTimestamp(), lineNotification.getSender());
         }
+
+        final NotificationCompat.MessagingStyle messagingStyle = new NotificationCompat.MessagingStyle(lineNotification.getSender());
+
+        buildMessages(lineNotification).forEach(message ->
+                messagingStyle.addMessage(message)
+        );
+
+        if (!lineNotification.getSender().getName().equals(lineNotification.getTitle())) {
+            // Don't set the conversation title for single person chat
+            messagingStyle.setConversationTitle(lineNotification.getTitle());
+        }
+        return messagingStyle;
+    }
+
+    private List<NotificationCompat.MessagingStyle.Message> buildMessages(final LineNotification lineNotification) {
+        final List<String> messages = CollectionUtils.isEmpty(lineNotification.getMessages()) ?
+                ImmutableList.of(lineNotification.getMessage()) : lineNotification.getMessages();
+        final ImmutableList.Builder<NotificationCompat.MessagingStyle.Message> messageListBuilder = ImmutableList.builder();
+        for (final String message : messages) {
+            messageListBuilder.add(
+                    new NotificationCompat.MessagingStyle.Message(
+                            message, lineNotification.getTimestamp(), lineNotification.getSender())
+            );
+        }
+        return messageListBuilder.build();
     }
 
     private void addActionInNotification(Notification notification) {

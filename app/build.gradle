@@ -9,8 +9,8 @@ android {
         applicationId "com.mysticwind.linenotificationsupport.donate"
         minSdkVersion 26
         targetSdkVersion 29
-        versionCode 10
-        versionName "1.6.2"
+        versionCode 11
+        versionName "1.7"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,6 +38,7 @@ dependencies {
 
     implementation 'com.google.guava:guava:30.0-android'
     implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'org.apache.commons:commons-collections4:4.4'
     implementation 'com.jakewharton.timber:timber:4.7.1'
 
     compileOnly 'org.projectlombok:lombok:1.18.16'

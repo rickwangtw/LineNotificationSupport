@@ -101,7 +101,7 @@ public class LineNotificationBuilderTest {
 
     @Test
     public void testInACallWithFirstAction() {
-        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, null, null, LineNotificationBuilder.GENERAL_NOTIFICATION_CHANNEL, false));
+        LineNotification lineNotification = classUnderTest.from(buildNotification(CHAT_ID, LineNotificationBuilder.MESSAGE_CATEGORY, null, LineNotificationBuilder.GENERAL_NOTIFICATION_CHANNEL, false));
 
         assertEquals(ImmutableList.of(action1), lineNotification.getActions());
     }

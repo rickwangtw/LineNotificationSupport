@@ -31,6 +31,7 @@ import com.mysticwind.linenotificationsupport.model.AutoIncomingCallNotification
 import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStrategy;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
+import com.mysticwind.linenotificationsupport.notification.BigNotificationSplittingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
@@ -42,6 +43,7 @@ import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
+import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
@@ -97,34 +99,36 @@ public class NotificationListenerService
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String preferenceKey) {
             if (PreferenceProvider.MAX_NOTIFICATION_WORKAROUND_PREFERENCE_KEY.equals(preferenceKey)) {
                 NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
+            } else if (PreferenceProvider.USE_MESSAGE_SPLITTER_PREFERENCE_KEY.equals(preferenceKey)) {
+                NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
             }
         }
     };
 
     private NotificationPublisher buildNotificationPublisher() {
-        return buildNotificationPublisher(getPreferenceProvider().shouldExecuteMaxNotificationWorkaround());
-    }
-
-    private NotificationPublisher buildNotificationPublisher(boolean handleMaxNotificationAndroidLimit) {
-        final SimpleNotificationPublisher simpleNotificationPublisher =
+        NotificationPublisher notificationPublisher =
                 new SimpleNotificationPublisher(this, getPackageName(),
                         GROUP_ID_RESOLVER, getPreferenceProvider());
 
-        if (!handleMaxNotificationAndroidLimit) {
-            return simpleNotificationPublisher;
+        if (getPreferenceProvider().shouldExecuteMaxNotificationWorkaround()) {
+            notificationPublisher = new MaxNotificationHandlingNotificationPublisherDecorator(
+                    handler, notificationPublisher, notificationCounter);
         }
 
-        return new MaxNotificationHandlingNotificationPublisherDecorator(
-                handler, simpleNotificationPublisher, notificationCounter);
+        if (getPreferenceProvider().shouldUseMessageSplitter()) {
+             notificationPublisher = new BigNotificationSplittingNotificationPublisherDecorator(
+                    notificationPublisher,
+                    getPreferenceProvider());
+        }
+
+        return notificationPublisher;
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         this.notificationCounter = new NotificationCounter((int) getMaxNotificationsPerApp());
 
-        this.notificationPublisher = buildNotificationPublisher(
-                getPreferenceProvider().shouldExecuteMaxNotificationWorkaround()
-        );
+        this.notificationPublisher = buildNotificationPublisher();
 
         new NotificationGroupCreator(
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
@@ -186,6 +190,10 @@ public class NotificationListenerService
         notificationHistoryManager.record(statusBarNotification, getLineAppVersion());
 
         sendNotification(statusBarNotification);
+
+        if (getPreferenceProvider().shouldManageLineMessageNotifications()) {
+            dismissLineNotification(statusBarNotification);
+        }
     }
 
     private boolean shouldIgnoreNotification(final StatusBarNotification statusBarNotification) {
@@ -389,6 +397,43 @@ public class NotificationListenerService
         }, delayInMillis);
     }
 
+    private void dismissLineNotification(StatusBarNotification statusBarNotification) {
+        // we only dismiss notifications that are in the message category
+        if (!LineNotificationBuilder.MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category)) {
+            Timber.d("LINE notification not message category but [%s]: [%s]",
+                    statusBarNotification.getNotification().category, statusBarNotification.getNotification().tickerText);
+            return;
+        }
+
+        final Optional<String> summaryKey = findLineNotificationSummary(statusBarNotification.getNotification().getGroup());
+        summaryKey.ifPresent(
+                key -> {
+                    Timber.d("Cancelling LINE summary: [%s]", key);
+                    cancelNotification(key);
+                }
+        );
+
+        Timber.d("Dismiss LINE notification: key[%s] tag[%s] id[%d]",
+                statusBarNotification.getKey(), statusBarNotification.getTag(), statusBarNotification.getId());
+        cancelNotification(statusBarNotification.getKey());
+    }
+
+    private Optional<String> findLineNotificationSummary(String group) {
+        return Arrays.stream(getActiveNotifications())
+                .filter(notification -> notification.getPackageName().equals(LINE_PACKAGE_NAME))
+                .peek(notification -> Timber.d("LINE notification key [%s] category [%s] group [%s] isSummary [%s] title [%s] message [%s]",
+                        notification.getKey(), notification.getNotification().category,
+                        notification.getNotification().getGroup(),
+                        StatusBarNotificationExtractor.isSummary(notification),
+                        NotificationExtractor.getTitle(notification.getNotification()),
+                        NotificationExtractor.getMessage(notification.getNotification())))
+                .filter(notification -> LineNotificationBuilder.MESSAGE_CATEGORY.equals(notification.getNotification().category))
+                .filter(notification -> StatusBarNotificationExtractor.isSummary(notification))
+                .filter(notification -> StringUtils.equals(group, notification.getNotification().getGroup()))
+                .map(notification -> notification.getKey())
+                .findFirst();
+    }
+
     @Override
     public void onNotificationRemoved(StatusBarNotification statusBarNotification) {
         super.onNotificationRemoved(statusBarNotification);
@@ -408,18 +453,13 @@ public class NotificationListenerService
             this.autoIncomingCallNotificationState.cancel();
         }
 
-        if (shouldAutoDismissLineNotificationSupportNotifications()) {
+        if (getPreferenceProvider().shouldAutoDismissLineNotificationSupportNotifications()) {
             dismissLineNotificationSupportNotifications(dismissedLineNotification.getChatId());
         }
     }
 
     private PreferenceProvider getPreferenceProvider() {
         return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
-    }
-
-    private boolean shouldAutoDismissLineNotificationSupportNotifications() {
-        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        return preferences.getBoolean("auto_dismiss_line_notification_support_messages", true);
     }
 
     private void dismissLineNotificationSupportNotifications(final String groupId) {
@@ -450,7 +490,7 @@ public class NotificationListenerService
             notificationCounter.notified(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
         }
         if (summaryNotificationPublisher != null) {
-            summaryNotificationPublisher.updateSummary(statusBarNotification.getNotification().getGroup());
+            summaryNotificationPublisher.updateSummaryWhenNotificationsPublished(statusBarNotification.getNotification().getGroup());
         }
     }
 
@@ -465,7 +505,7 @@ public class NotificationListenerService
             notificationCounter.dismissed(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
         }
         if (summaryNotificationPublisher != null) {
-            summaryNotificationPublisher.updateSummary(statusBarNotification.getNotification().getGroup());
+            summaryNotificationPublisher.updateSummaryWhenNotificationsDismissed(statusBarNotification.getNotification().getGroup());
         }
         notificationPublisher.updateNotificationDismissed(statusBarNotification);
     }
