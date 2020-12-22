@@ -30,6 +30,14 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
     private final NotificationPublisher notificationPublisher;
     private final NotificationCounter notificationCounter;
 
+    private Runnable republishEventsIfSlotsAvailableRunnable =
+            new Runnable() {
+                @Override
+                public void run() {
+                    republishIfSlotsAvailable();
+                }
+            };
+
     // TODO should we just have this class implemented and shared??
     @Value
     class QueueItem {
@@ -119,13 +127,11 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
     }
 
     private void scheduleSlotCheck(final long delayInMillis) {
+        Timber.d("Cancelling scheduled slot checks ...");
+        handler.removeCallbacks(republishEventsIfSlotsAvailableRunnable);
+
         Timber.d("Scheduling slot checks ...");
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                republishIfSlotsAvailable();
-            }
-        }, delayInMillis);
+        handler.postDelayed(republishEventsIfSlotsAvailableRunnable, delayInMillis);
     }
 
     private void republishIfSlotsAvailable() {
