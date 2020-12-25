@@ -68,6 +68,7 @@ public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
 
     private static final String GROUP_MESSAGE_GROUP_KEY = "NOTIFICATION_GROUP_MESSAGE";
+    private static final long LINE_NOTIFICATION_DISMISS_RETRY_TIMEOUT = 500L;
 
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
@@ -193,6 +194,15 @@ public class NotificationListenerService
 
         if (getPreferenceProvider().shouldManageLineMessageNotifications()) {
             dismissLineNotification(statusBarNotification);
+
+            // there are situations where LINE messages are not dismissed, do this again
+            handler.postDelayed(
+                    () -> {
+                        Timber.d("Retry dismissing LINE notifications again: key [%s] message [%s]",
+                                statusBarNotification.getKey(), statusBarNotification.getNotification().tickerText);
+                        dismissLineNotification(statusBarNotification);
+                    },
+                    LINE_NOTIFICATION_DISMISS_RETRY_TIMEOUT);
         }
     }
 
