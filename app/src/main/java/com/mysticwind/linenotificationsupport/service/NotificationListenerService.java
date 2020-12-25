@@ -70,6 +70,7 @@ public class NotificationListenerService
     private static final String GROUP_MESSAGE_GROUP_KEY = "NOTIFICATION_GROUP_MESSAGE";
     private static final long LINE_NOTIFICATION_DISMISS_RETRY_TIMEOUT = 500L;
     private static final long PRINT_LINE_NOTIFICATION_WAIT_TIME = 200L;
+    private static final long EMPTY_LINE_NOTIFICATION_RETRY_TIMEOUT = 200L;
 
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
@@ -191,6 +192,16 @@ public class NotificationListenerService
         NOTIFICATION_PRINTER.print("Received", statusBarNotification);
         notificationHistoryManager.record(statusBarNotification, getLineAppVersion());
 
+        if (StringUtils.equals(LineNotificationBuilder.MESSAGE_CATEGORY, statusBarNotification.getNotification().category) &&
+                statusBarNotification.getNotification().actions == null) {
+            Timber.d("Detected potential new message without content: key [%s] title [%s] message [%s]",
+                    statusBarNotification.getKey(), NotificationExtractor.getTitle(statusBarNotification.getNotification()),
+                    statusBarNotification.getNotification().tickerText);
+            scheduleRetryEmptyNotification(statusBarNotification, 0);
+            // early return;
+            return;
+        }
+
         sendNotification(statusBarNotification);
 
         if (getPreferenceProvider().shouldManageLineMessageNotifications()) {
@@ -205,6 +216,50 @@ public class NotificationListenerService
                     },
                     LINE_NOTIFICATION_DISMISS_RETRY_TIMEOUT);
         }
+    }
+
+    private void scheduleRetryEmptyNotification(final StatusBarNotification statusBarNotification, final int retryCount) {
+        Timber.d("Schedule retrying empty notification [%s] retryCount [%d]",
+                statusBarNotification.getKey(), retryCount);
+        handler.postDelayed(
+                () -> retryEmptyNotification(statusBarNotification, retryCount + 1),
+                EMPTY_LINE_NOTIFICATION_RETRY_TIMEOUT);
+    }
+
+    private void retryEmptyNotification(final StatusBarNotification statusBarNotification, final int retryCount) {
+        // stop condition
+        if (retryCount > 3) {
+            // TODO this is obviously a workaround - we should have extracted the method out instead
+            statusBarNotification.getNotification().actions = new Notification.Action[]{};
+            onNotificationPosted(statusBarNotification);
+            return;
+        }
+        // check if the content is updated
+        final Optional<StatusBarNotification> currentStatusBarNotification = Arrays.stream(getActiveNotifications())
+                .filter(notification -> StringUtils.equals(statusBarNotification.getKey(), notification.getKey()))
+                .findFirst();
+
+        // if the notification is already dismissed or replaced
+        if (!currentStatusBarNotification.isPresent()) {
+            // TODO this is obviously a workaround - we should have extracted the method out instead
+            currentStatusBarNotification.get().getNotification().actions = new Notification.Action[]{};
+            onNotificationPosted(currentStatusBarNotification.get());
+            return;
+        }
+
+        NOTIFICATION_PRINTER.print(
+                String.format("Re-fetched status bar notification [%d] [%s]", retryCount, statusBarNotification.getKey()),
+                currentStatusBarNotification.get());
+
+        // TODO what is the right way to detect an update to the notification??
+        // would it be possible the actions are always empty even after an update?
+        if (statusBarNotification.getNotification().actions != null) {
+            onNotificationPosted(statusBarNotification);
+            return;
+        }
+
+        // need to retry again
+        scheduleRetryEmptyNotification(statusBarNotification, retryCount);
     }
 
     private boolean shouldIgnoreNotification(final StatusBarNotification statusBarNotification) {
