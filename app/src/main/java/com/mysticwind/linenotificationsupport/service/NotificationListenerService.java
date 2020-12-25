@@ -69,6 +69,7 @@ public class NotificationListenerService
 
     private static final String GROUP_MESSAGE_GROUP_KEY = "NOTIFICATION_GROUP_MESSAGE";
     private static final long LINE_NOTIFICATION_DISMISS_RETRY_TIMEOUT = 500L;
+    private static final long PRINT_LINE_NOTIFICATION_WAIT_TIME = 200L;
 
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
@@ -407,7 +408,7 @@ public class NotificationListenerService
         }, delayInMillis);
     }
 
-    private void dismissLineNotification(StatusBarNotification statusBarNotification) {
+    private void dismissLineNotification(final StatusBarNotification statusBarNotification) {
         // we only dismiss notifications that are in the message category
         if (!LineNotificationBuilder.MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category)) {
             Timber.d("LINE notification not message category but [%s]: [%s]",
@@ -426,6 +427,10 @@ public class NotificationListenerService
         Timber.d("Dismiss LINE notification: key[%s] tag[%s] id[%d]",
                 statusBarNotification.getKey(), statusBarNotification.getTag(), statusBarNotification.getId());
         cancelNotification(statusBarNotification.getKey());
+
+        handler.postDelayed(
+                () -> printLineNotifications(statusBarNotification.getNotification().getGroup()),
+                PRINT_LINE_NOTIFICATION_WAIT_TIME);
     }
 
     private Optional<String> findLineNotificationSummary(String group) {
@@ -442,6 +447,20 @@ public class NotificationListenerService
                 .filter(notification -> StringUtils.equals(group, notification.getNotification().getGroup()))
                 .map(notification -> notification.getKey())
                 .findFirst();
+    }
+
+    private void printLineNotifications(final String groupThatShouldBeDismissed) {
+        Arrays.stream(getActiveNotifications())
+                .filter(notification -> notification.getPackageName().equals(LINE_PACKAGE_NAME))
+                .forEach(notification -> {
+                    Timber.d("%sPrint LINE notification that are not dismissed key [%s] category [%s] group [%s] isSummary [%s] title [%s] message [%s]",
+                            StringUtils.equals(notification.getNotification().getGroup(), groupThatShouldBeDismissed) ? "[SHOULD_DISMISS] " : "",
+                            notification.getKey(), notification.getNotification().category,
+                            notification.getNotification().getGroup(),
+                            StatusBarNotificationExtractor.isSummary(notification),
+                            NotificationExtractor.getTitle(notification.getNotification()),
+                            NotificationExtractor.getMessage(notification.getNotification()));
+                });
     }
 
     @Override
