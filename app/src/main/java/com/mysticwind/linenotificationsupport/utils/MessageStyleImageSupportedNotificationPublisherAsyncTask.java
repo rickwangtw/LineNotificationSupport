@@ -98,6 +98,11 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
                 .build();
 
         addActionInNotification(singleNotification);
+        if (lineNotification.getMessages().size() > 1) {
+            Timber.w("Multi-messages, override the tickerText to be the first page [%s]",
+                    lineNotification.getMessages().get(0));
+            singleNotification.extras.putString(Notification.EXTRA_TEXT, lineNotification.getMessages().get(0));
+        }
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(notificationId, singleNotification);

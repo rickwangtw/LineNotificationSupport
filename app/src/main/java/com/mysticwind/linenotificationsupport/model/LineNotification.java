@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 
 import androidx.core.app.Person;
 
+import java.util.Collections;
 import java.util.List;
 
 import lombok.Builder;
@@ -34,5 +35,12 @@ public class LineNotification {
     @Singular
     private final List<Notification.Action> actions;
     private final Bitmap icon;
+
+    public List<String> getMessages() {
+        if (messages == null) {
+            return Collections.emptyList();
+        }
+        return messages;
+    }
 
 }
