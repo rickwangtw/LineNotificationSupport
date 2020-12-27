@@ -529,7 +529,7 @@ public class NotificationListenerService
         Arrays.stream(getActiveNotifications())
                 .filter(notification -> notification.getPackageName().equals(LINE_PACKAGE_NAME))
                 .forEach(notification -> {
-                    Timber.d("%sPrint LINE notification that are not dismissed key [%s] category [%s] group [%s] isSummary [%s] isClearable [%s] title [%s] message [%s]",
+                    Timber.w("%sPrint LINE notification that are not dismissed key [%s] category [%s] group [%s] isSummary [%s] isClearable [%s] title [%s] message [%s]",
                             StringUtils.equals(notification.getNotification().getGroup(), groupThatShouldBeDismissed) ? "[SHOULD_DISMISS] " : "",
                             notification.getKey(), notification.getNotification().category,
                             notification.getNotification().getGroup(),
