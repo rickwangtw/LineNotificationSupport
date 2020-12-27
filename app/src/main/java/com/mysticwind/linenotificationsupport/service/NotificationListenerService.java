@@ -71,6 +71,7 @@ public class NotificationListenerService
     private static final long LINE_NOTIFICATION_DISMISS_RETRY_TIMEOUT = 500L;
     private static final long PRINT_LINE_NOTIFICATION_WAIT_TIME = 200L;
     private static final long EMPTY_LINE_NOTIFICATION_RETRY_TIMEOUT = 200L;
+    private static final int EMPTY_LINE_NOTIFICATION_RETRY_COUNT = 10;
 
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
@@ -219,17 +220,19 @@ public class NotificationListenerService
     }
 
     private void scheduleRetryEmptyNotification(final StatusBarNotification statusBarNotification, final int retryCount) {
+        final int nextRetryCount = retryCount + 1;
         Timber.d("Schedule retrying empty notification [%s] retryCount [%d]",
-                statusBarNotification.getKey(), retryCount);
+                statusBarNotification.getKey(), nextRetryCount);
         handler.postDelayed(
-                () -> retryEmptyNotification(statusBarNotification, retryCount + 1),
+                () -> retryEmptyNotification(statusBarNotification, nextRetryCount),
                 EMPTY_LINE_NOTIFICATION_RETRY_TIMEOUT);
     }
 
     private void retryEmptyNotification(final StatusBarNotification statusBarNotification, final int retryCount) {
         // stop condition
-        if (retryCount > 3) {
+        if (retryCount > EMPTY_LINE_NOTIFICATION_RETRY_COUNT) {
             // TODO this is obviously a workaround - we should have extracted the method out instead
+            Timber.d("Used up all retries [%d] for key [%s]", retryCount, statusBarNotification.getKey());
             statusBarNotification.getNotification().actions = new Notification.Action[]{};
             onNotificationPosted(statusBarNotification);
             return;
@@ -241,6 +244,7 @@ public class NotificationListenerService
 
         // if the notification is already dismissed or replaced
         if (!currentStatusBarNotification.isPresent()) {
+            Timber.d("Notification (key [%s]) not longer present", statusBarNotification.getKey());
             // TODO this is obviously a workaround - we should have extracted the method out instead
             currentStatusBarNotification.get().getNotification().actions = new Notification.Action[]{};
             onNotificationPosted(currentStatusBarNotification.get());
@@ -253,13 +257,17 @@ public class NotificationListenerService
 
         // TODO what is the right way to detect an update to the notification??
         // would it be possible the actions are always empty even after an update?
-        if (statusBarNotification.getNotification().actions != null) {
-            onNotificationPosted(statusBarNotification);
+        if (currentStatusBarNotification.get().getNotification().actions != null) {
+            Timber.d("Notification (key [%s]) identified with update: message [%s]",
+                    currentStatusBarNotification.get().getKey(), currentStatusBarNotification.get().getNotification().tickerText);
+            final String newMessage = "[Re-fetched] " + NotificationExtractor.getMessage(currentStatusBarNotification.get().getNotification());
+            currentStatusBarNotification.get().getNotification().extras.putString(Notification.EXTRA_TEXT, newMessage);
+            onNotificationPosted(currentStatusBarNotification.get());
             return;
         }
 
         // need to retry again
-        scheduleRetryEmptyNotification(statusBarNotification, retryCount);
+        scheduleRetryEmptyNotification(statusBarNotification /* use the original status bar notification here */, retryCount);
     }
 
     private boolean shouldIgnoreNotification(final StatusBarNotification statusBarNotification) {
