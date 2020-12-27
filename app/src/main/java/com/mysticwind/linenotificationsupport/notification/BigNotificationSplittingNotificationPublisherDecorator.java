@@ -137,6 +137,12 @@ public class BigNotificationSplittingNotificationPublisherDecorator implements N
     }
 
     @Override
+    public void republishNotification(LineNotification lineNotification, int notificationId) {
+        // do nothing
+        notificationPublisher.republishNotification(lineNotification, notificationId);
+    }
+
+    @Override
     public void updateNotificationDismissed(StatusBarNotification statusBarNotification) {
         // do nothing
         notificationPublisher.updateNotificationDismissed(statusBarNotification);

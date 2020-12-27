@@ -36,6 +36,7 @@ import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandli
 import com.mysticwind.linenotificationsupport.notification.NotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.ResendUnsentNotificationsNotificationSentListener;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
@@ -58,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import timber.log.Timber;
@@ -72,6 +74,7 @@ public class NotificationListenerService
     private static final long PRINT_LINE_NOTIFICATION_WAIT_TIME = 200L;
     private static final long EMPTY_LINE_NOTIFICATION_RETRY_TIMEOUT = 200L;
     private static final int EMPTY_LINE_NOTIFICATION_RETRY_COUNT = 10;
+    private static final long VERIFY_NOTIFICATION_SENT_TIMEOUT = 1_000L;
 
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
@@ -97,6 +100,7 @@ public class NotificationListenerService
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
     private NotificationCounter notificationCounter;
     private SummaryNotificationPublisher summaryNotificationPublisher;
+    private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
 
     private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -111,8 +115,8 @@ public class NotificationListenerService
 
     private NotificationPublisher buildNotificationPublisher() {
         NotificationPublisher notificationPublisher =
-                new SimpleNotificationPublisher(this, getPackageName(),
-                        GROUP_ID_RESOLVER, getPreferenceProvider());
+                new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER,
+                        getPreferenceProvider(), resendUnsentNotificationsNotificationSentListener);
 
         if (getPreferenceProvider().shouldExecuteMaxNotificationWorkaround()) {
             notificationPublisher = new MaxNotificationHandlingNotificationPublisherDecorator(
@@ -131,6 +135,15 @@ public class NotificationListenerService
     @Override
     public IBinder onBind(Intent intent) {
         this.notificationCounter = new NotificationCounter((int) getMaxNotificationsPerApp());
+
+        this.resendUnsentNotificationsNotificationSentListener = new ResendUnsentNotificationsNotificationSentListener(
+                handler,
+                new Supplier<NotificationPublisher>() {
+                    @Override
+                    public NotificationPublisher get() {
+                        return notificationPublisher;
+                    }
+                });
 
         this.notificationPublisher = buildNotificationPublisher();
 
@@ -584,6 +597,9 @@ public class NotificationListenerService
         }
         if (summaryNotificationPublisher != null) {
             summaryNotificationPublisher.updateSummaryWhenNotificationsPublished(statusBarNotification.getNotification().getGroup());
+        }
+        if (resendUnsentNotificationsNotificationSentListener != null) {
+            resendUnsentNotificationsNotificationSentListener.notificationReceived(statusBarNotification.getId());
         }
     }
 

@@ -7,9 +7,11 @@ import com.mysticwind.linenotificationsupport.model.LineNotification;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Consumer;
 
 import lombok.Value;
 import timber.log.Timber;
@@ -21,7 +23,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
     private static final long NOTIFICATION_CHECK_PERIOD_IN_MILLIS = 500L;
 
     // tracks the messages that has not been sent
-    private static final ConcurrentLinkedQueue<QueueItem> QUEUE_ITEMS = new ConcurrentLinkedQueue<>();
+    private static final ConcurrentLinkedDeque<QueueItem> QUEUE_ITEMS = new ConcurrentLinkedDeque<>();
 
     // this is to make sure we have sufficient cool down for each chat after it being dismissed
     private static final Map<String, Instant> CHAT_ID_TO_LAST_DISMISSED_INSTANT_MAP = new ConcurrentHashMap<>();
@@ -55,9 +57,23 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
 
     @Override
     public void publishNotification(final LineNotification lineNotification, final int notificationId) {
+        Objects.requireNonNull(lineNotification);
+
+        publishNotification(lineNotification, notificationId, item -> QUEUE_ITEMS.add(item));
+    }
+
+    @Override
+    public void republishNotification(final LineNotification lineNotification, final int notificationId) {
+        Objects.requireNonNull(lineNotification);
+
+        publishNotification(lineNotification, notificationId, item -> QUEUE_ITEMS.addFirst(item));
+    }
+
+    public void publishNotification(final LineNotification lineNotification, final int notificationId, Consumer<QueueItem> itemAddingFunction) {
         if (!notificationCounter.hasSlot(lineNotification.getChatId())) {
             Timber.d("Reached maximum notifications, add to queue: " + notificationId);
             QUEUE_ITEMS.add(new QueueItem(lineNotification, notificationId));
+            itemAddingFunction.accept(new QueueItem(lineNotification, notificationId));
             return;
         }
         if (QUEUE_ITEMS.isEmpty()) {
@@ -65,7 +81,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
             publish(lineNotification, notificationId);
             return;
         }
-        QUEUE_ITEMS.add(new QueueItem(lineNotification, notificationId));
+        itemAddingFunction.accept(new QueueItem(lineNotification, notificationId));
 
         final Optional<QueueItem> firstItem = getFirstItem();
         if (!firstItem.isPresent()) {
