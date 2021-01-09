@@ -46,6 +46,7 @@ import com.mysticwind.linenotificationsupport.notification.NullNotificationPubli
 import com.mysticwind.linenotificationsupport.notification.ResendUnsentNotificationsNotificationSentListener;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificationCounter;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -145,7 +146,7 @@ public class NotificationListenerService
 
     @Override
     public IBinder onBind(Intent intent) {
-        this.notificationCounter = new NotificationCounter((int) getMaxNotificationsPerApp());
+        this.notificationCounter = new SmartNotificationCounter((int) getMaxNotificationsPerApp());
 
         this.resendUnsentNotificationsNotificationSentListener = new ResendUnsentNotificationsNotificationSentListener(
                 handler,
