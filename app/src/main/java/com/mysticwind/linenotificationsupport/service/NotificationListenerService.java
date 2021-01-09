@@ -202,7 +202,17 @@ public class NotificationListenerService
 
     @Override
     public void onNotificationPosted(StatusBarNotification statusBarNotification) {
+        try {
+            onNotificationPostedUnsafe(statusBarNotification);
+        } catch (final Exception e) {
+            Timber.e(e, "[ERROR] onNotificationPosted failed to handle exception [%s]", e.getMessage());
+            if (DEBUG_MODE_PROVIDER.isDebugMode()) {
+                Toast.makeText(this, "[ERROR] LNS onNotificationPosted", Toast.LENGTH_SHORT);
+            }
+        }
+    }
 
+    public void onNotificationPostedUnsafe(final StatusBarNotification statusBarNotification) {
         handleSelfNotificationPublished(statusBarNotification);
 
         // ignore messages from ourselves
@@ -597,6 +607,17 @@ public class NotificationListenerService
 
     @Override
     public void onNotificationRemoved(StatusBarNotification statusBarNotification) {
+        try {
+            onNotificationRemovedUnsafe(statusBarNotification);
+        } catch (final Exception e) {
+            Timber.e(e, "[ERROR] onNotificationRemoved failed to handle exception [%s]", e.getMessage());
+            if (DEBUG_MODE_PROVIDER.isDebugMode()) {
+                Toast.makeText(this, "[ERROR] LNS onNotificationRemoved", Toast.LENGTH_SHORT);
+            }
+        }
+    }
+
+    public void onNotificationRemovedUnsafe(final StatusBarNotification statusBarNotification) {
         super.onNotificationRemoved(statusBarNotification);
 
         handleSelfNotificationDismissed(statusBarNotification);
