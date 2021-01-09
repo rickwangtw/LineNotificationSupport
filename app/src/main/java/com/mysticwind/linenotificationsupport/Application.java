@@ -1,5 +1,10 @@
 package com.mysticwind.linenotificationsupport;
 
+import android.util.Log;
+
+import net.yslibrary.historian.Historian;
+import net.yslibrary.historian.tree.HistorianTree;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,6 +27,13 @@ public class Application extends android.app.Application {
                     return "LNS-" + tag;
                 }
             });
+            Historian historian = Historian.builder(this)
+                    .size(100_000)
+                    .logLevel(Log.DEBUG)
+                    .debug(true)
+                    .build();
+            historian.initialize();
+            Timber.plant(HistorianTree.with(historian));
         }
 
     }

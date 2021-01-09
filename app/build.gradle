@@ -54,6 +54,10 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:4.11.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
+    def historian_version = "0.3.1"
+    implementation "net.yslibrary.historian:historian-core:$historian_version"
+    implementation "net.yslibrary.historian:historian-tree:$historian_version"
+
     // Required -- JUnit 4 framework
     testImplementation 'junit:junit:4.12'
     // Optional -- Robolectric environment
