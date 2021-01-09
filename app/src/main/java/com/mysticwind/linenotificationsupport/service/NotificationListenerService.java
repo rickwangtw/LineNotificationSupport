@@ -241,31 +241,31 @@ public class NotificationListenerService
                 EMPTY_LINE_NOTIFICATION_RETRY_TIMEOUT);
     }
 
-    private void retryEmptyNotification(final StatusBarNotification statusBarNotification, final int retryCount) {
+    private void retryEmptyNotification(final StatusBarNotification previousStatusBarNotification, final int retryCount) {
         // stop condition
         if (retryCount > EMPTY_LINE_NOTIFICATION_RETRY_COUNT) {
             // TODO this is obviously a workaround - we should have extracted the method out instead
-            Timber.d("Used up all retries [%d] for key [%s]", retryCount, statusBarNotification.getKey());
-            statusBarNotification.getNotification().actions = new Notification.Action[]{};
-            onNotificationPosted(statusBarNotification);
+            Timber.d("Used up all retries [%d] for key [%s]", retryCount, previousStatusBarNotification.getKey());
+            previousStatusBarNotification.getNotification().actions = new Notification.Action[]{};
+            onNotificationPosted(previousStatusBarNotification);
             return;
         }
         // check if the content is updated
         final Optional<StatusBarNotification> currentStatusBarNotification = Arrays.stream(getActiveNotifications())
-                .filter(notification -> StringUtils.equals(statusBarNotification.getKey(), notification.getKey()))
+                .filter(notification -> StringUtils.equals(previousStatusBarNotification.getKey(), notification.getKey()))
                 .findFirst();
 
         // if the notification is already dismissed or replaced
         if (!currentStatusBarNotification.isPresent()) {
-            Timber.d("Notification (key [%s]) not longer present", statusBarNotification.getKey());
+            Timber.d("Notification (key [%s]) no longer present", previousStatusBarNotification.getKey());
             // TODO this is obviously a workaround - we should have extracted the method out instead
-            currentStatusBarNotification.get().getNotification().actions = new Notification.Action[]{};
-            onNotificationPosted(currentStatusBarNotification.get());
+            previousStatusBarNotification.getNotification().actions = new Notification.Action[]{};
+            onNotificationPosted(previousStatusBarNotification);
             return;
         }
 
         NOTIFICATION_PRINTER.print(
-                String.format("Re-fetched status bar notification [%d] [%s]", retryCount, statusBarNotification.getKey()),
+                String.format("Re-fetched status bar notification [%d] [%s]", retryCount, previousStatusBarNotification.getKey()),
                 currentStatusBarNotification.get());
 
         // TODO what is the right way to detect an update to the notification??
@@ -280,7 +280,7 @@ public class NotificationListenerService
         }
 
         // need to retry again
-        scheduleRetryEmptyNotification(statusBarNotification /* use the original status bar notification here */, retryCount);
+        scheduleRetryEmptyNotification(previousStatusBarNotification /* use the original status bar notification here */, retryCount);
     }
 
     private boolean shouldIgnoreNotification(final StatusBarNotification statusBarNotification) {
