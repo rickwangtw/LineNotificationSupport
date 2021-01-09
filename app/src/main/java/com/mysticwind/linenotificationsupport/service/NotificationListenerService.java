@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
+import android.widget.Toast;
 
 import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
@@ -268,13 +269,15 @@ public class NotificationListenerService
                 String.format("Re-fetched status bar notification [%d] [%s]", retryCount, previousStatusBarNotification.getKey()),
                 currentStatusBarNotification.get());
 
-        // TODO what is the right way to detect an update to the notification??
-        // would it be possible the actions are always empty even after an update?
         if (currentStatusBarNotification.get().getNotification().actions != null) {
             Timber.d("Notification (key [%s]) identified with update: message [%s]",
                     currentStatusBarNotification.get().getKey(), currentStatusBarNotification.get().getNotification().tickerText);
-            final String newMessage = "[Re-fetched] " + NotificationExtractor.getMessage(currentStatusBarNotification.get().getNotification());
-            currentStatusBarNotification.get().getNotification().extras.putString(Notification.EXTRA_TEXT, newMessage);
+            // TODO remove this debug information
+            if (DEBUG_MODE_PROVIDER.isDebugMode()) {
+                Toast.makeText(this, "Successfully re-fetched notification " + currentStatusBarNotification.get().getKey(), Toast.LENGTH_SHORT)
+                        .show();
+            }
+
             onNotificationPosted(currentStatusBarNotification.get());
             return;
         }
