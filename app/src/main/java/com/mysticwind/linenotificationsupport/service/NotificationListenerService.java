@@ -17,6 +17,12 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
 import androidx.room.Room;
 
+import com.github.rholder.retry.Attempt;
+import com.github.rholder.retry.RetryListener;
+import com.github.rholder.retry.Retryer;
+import com.github.rholder.retry.RetryerBuilder;
+import com.github.rholder.retry.StopStrategies;
+import com.github.rholder.retry.WaitStrategies;
 import com.google.common.collect.ImmutableMap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
@@ -50,16 +56,20 @@ import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -252,9 +262,10 @@ public class NotificationListenerService
             return;
         }
         // check if the content is updated
-        final Optional<StatusBarNotification> currentStatusBarNotification = Arrays.stream(getActiveNotifications())
-                .filter(notification -> StringUtils.equals(previousStatusBarNotification.getKey(), notification.getKey()))
-                .findFirst();
+        final Optional<StatusBarNotification> currentStatusBarNotification =
+                getActiveNotificationsFromAllAppsSafely().stream()
+                        .filter(notification -> StringUtils.equals(previousStatusBarNotification.getKey(), notification.getKey()))
+                        .findFirst();
 
         // if the notification is already dismissed or replaced
         if (!currentStatusBarNotification.isPresent()) {
@@ -513,7 +524,7 @@ public class NotificationListenerService
     }
 
     private Optional<String> findLineNotificationSummary(String group) {
-        return Arrays.stream(getActiveNotifications())
+        return getActiveNotificationsFromAllAppsSafely().stream()
                 .filter(notification -> notification.getPackageName().equals(LINE_PACKAGE_NAME))
                 .peek(notification -> Timber.d("LINE notification key [%s] category [%s] group [%s] isSummary [%s] title [%s] message [%s]",
                         notification.getKey(), notification.getNotification().category,
@@ -528,8 +539,49 @@ public class NotificationListenerService
                 .findFirst();
     }
 
+    private List<StatusBarNotification> getActiveNotificationsFromAllAppsSafely() {
+        final Callable<List<StatusBarNotification>> callable = new Callable<List<StatusBarNotification>>() {
+            @Override
+            public List<StatusBarNotification> call() {
+                final StatusBarNotification[] notifications = getActiveNotifications();
+                if (ArrayUtils.isEmpty(notifications)) {
+                    return Collections.EMPTY_LIST;
+                }
+                return Arrays.asList(notifications);
+            }
+        };
+
+        final RetryListener retryListener = new RetryListener() {
+            @Override
+            public <V> void onRetry(Attempt<V> attempt) {
+                if (attempt.hasException()) {
+                    Timber.w(attempt.getExceptionCause(),
+                            "Failed to fetch active notifications attempt [%d] error [%s]",
+                            attempt.getAttemptNumber(), attempt.getExceptionCause().getMessage());
+                }
+                if (attempt.hasResult() && attempt.getAttemptNumber() > 1) {
+                    Timber.w("Finally fetched active notifications after [%d] attempts", attempt.getAttemptNumber());
+                }
+            }
+        };
+
+        final Retryer<List<StatusBarNotification>> retryer = RetryerBuilder.<List<StatusBarNotification>>newBuilder()
+                .retryIfException()
+                .withWaitStrategy(WaitStrategies.fixedWait(100, TimeUnit.MILLISECONDS))
+                .withStopStrategy(StopStrategies.stopAfterAttempt(3))
+                .withRetryListener(retryListener)
+                .build();
+
+        try {
+            return retryer.call(callable);
+        } catch (final Exception e) {
+            Timber.w(e, "Unable to fetch active notifications after retries ... error message [%s]", e.getMessage());
+            return Collections.EMPTY_LIST;
+        }
+    }
+
     private void printLineNotifications(final String groupThatShouldBeDismissed) {
-        Arrays.stream(getActiveNotifications())
+        getActiveNotificationsFromAllAppsSafely().stream()
                 .filter(notification -> notification.getPackageName().equals(LINE_PACKAGE_NAME))
                 .forEach(notification -> {
                     Timber.w("%sPrint LINE notification that are not dismissed key [%s] category [%s] group [%s] isSummary [%s] isClearable [%s] title [%s] message [%s]",
