@@ -46,8 +46,10 @@ import com.mysticwind.linenotificationsupport.notification.ResendUnsentNotificat
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SlotAvailabilityChecker;
 import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SmartNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
@@ -109,8 +111,9 @@ public class NotificationListenerService
     );
 
     private final Handler handler = new Handler();
-    private final SmartNotificationCounter notificationCounter = new SmartNotificationCounter((int) getMaxNotificationsPerApp());
-    private final SlotAvailabilityChecker slotAvailabilityChecker = notificationCounter;
+    private final SmartNotificationCounter smartNotificationCounter = new SmartNotificationCounter((int) getMaxNotificationsPerApp());
+    private final DumbNotificationCounter dumbNotificationCounter = new DumbNotificationCounter((int) getMaxNotificationsPerApp());
+    private final SlotAvailabilityChecker slotAvailabilityChecker = dumbNotificationCounter;
 
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
@@ -154,10 +157,16 @@ public class NotificationListenerService
 
     @Override
     public IBinder onBind(Intent intent) {
+        // TODO remove this after testing the stability of the dumb version
         final SmartNotificationCounterNotificationReactor smartNotificationCounterNotificationReactor =
-                new SmartNotificationCounterNotificationReactor(getPackageName(), notificationCounter);
+                new SmartNotificationCounterNotificationReactor(getPackageName(), smartNotificationCounter);
         this.incomingNotificationReactors.add(smartNotificationCounterNotificationReactor);
         this.dismissedNotificationReactors.add(smartNotificationCounterNotificationReactor);
+
+        final DumbNotificationCounterNotificationReactor dumbNotificationCounterNotificationReactor =
+                new DumbNotificationCounterNotificationReactor(getPackageName(), dumbNotificationCounter);
+        this.incomingNotificationReactors.add(dumbNotificationCounterNotificationReactor);
+        this.dismissedNotificationReactors.add(dumbNotificationCounterNotificationReactor);
 
         this.resendUnsentNotificationsNotificationSentListener = new ResendUnsentNotificationsNotificationSentListener(
                 handler,
