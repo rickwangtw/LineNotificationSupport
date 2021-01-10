@@ -271,8 +271,7 @@ public class NotificationListenerService
         NOTIFICATION_PRINTER.print("Received", statusBarNotification);
         notificationHistoryManager.record(statusBarNotification, getLineAppVersion());
 
-        if (StringUtils.equals(LineNotificationBuilder.MESSAGE_CATEGORY, statusBarNotification.getNotification().category) &&
-                statusBarNotification.getNotification().actions == null) {
+        if (shouldScheduleRefetch(statusBarNotification)) {
             Timber.d("Detected potential new message without content: key [%s] title [%s] message [%s]",
                     statusBarNotification.getKey(), NotificationExtractor.getTitle(statusBarNotification.getNotification()),
                     statusBarNotification.getNotification().tickerText);
@@ -295,6 +294,16 @@ public class NotificationListenerService
                     },
                     LINE_NOTIFICATION_DISMISS_RETRY_TIMEOUT);
         }
+    }
+
+    private boolean shouldScheduleRefetch(final StatusBarNotification statusBarNotification) {
+        // There are notifications that will not have actions and don't need to retry.
+        // For example: notifications of someone added to a chat
+        if (StringUtils.isBlank(NotificationExtractor.getLineMessageId(statusBarNotification.getNotification()))) {
+            return false;
+        }
+        return StringUtils.equals(LineNotificationBuilder.MESSAGE_CATEGORY, statusBarNotification.getNotification().category) &&
+                statusBarNotification.getNotification().actions == null;
     }
 
     private void scheduleRetryEmptyNotification(final StatusBarNotification statusBarNotification, final int retryCount) {
