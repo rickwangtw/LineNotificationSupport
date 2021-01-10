@@ -339,6 +339,19 @@ public class NotificationListenerService
             return;
         }
 
+        final String previousLineMessageId =
+                NotificationExtractor.getLineMessageId(previousStatusBarNotification.getNotification());
+        final String currentLineMessageId =
+                NotificationExtractor.getLineMessageId(currentStatusBarNotification.get().getNotification());
+        if (!StringUtils.equals(previousLineMessageId, currentLineMessageId)) {
+            Timber.d("Notification (key [%s]) exists but LINE message ID [%s -> %s] has changed.",
+                    previousStatusBarNotification.getKey(), previousLineMessageId, currentLineMessageId);
+            // TODO this is obviously a workaround - we should have extracted the method out instead
+            previousStatusBarNotification.getNotification().actions = new Notification.Action[]{};
+            onNotificationPosted(previousStatusBarNotification);
+            return;
+        }
+
         NOTIFICATION_PRINTER.print(
                 String.format("Re-fetched status bar notification [%d] [%s]", retryCount, previousStatusBarNotification.getKey()),
                 currentStatusBarNotification.get());
