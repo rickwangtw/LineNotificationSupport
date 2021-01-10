@@ -30,13 +30,15 @@ public class SmartNotificationCounterNotificationReactor implements IncomingNoti
     }
 
     @Override
-    public void reactToIncomingNotification(StatusBarNotification statusBarNotification) {
+    public Reaction reactToIncomingNotification(StatusBarNotification statusBarNotification) {
         smartNotificationCounter.notified(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
+        return Reaction.NONE;
     }
 
     @Override
-    public void reactToDismissedNotification(StatusBarNotification statusBarNotification) {
+    public Reaction reactToDismissedNotification(StatusBarNotification statusBarNotification) {
         smartNotificationCounter.dismissed(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
+        return Reaction.NONE;
     }
 
 }

@@ -30,13 +30,15 @@ public class DumbNotificationCounterNotificationReactor implements IncomingNotif
     }
 
     @Override
-    public void reactToIncomingNotification(StatusBarNotification statusBarNotification) {
+    public Reaction reactToIncomingNotification(StatusBarNotification statusBarNotification) {
         dumbNotificationCounter.notified(statusBarNotification.getNotification().getGroup(), statusBarNotification.getKey());
+        return Reaction.NONE;
     }
 
     @Override
-    public void reactToDismissedNotification(StatusBarNotification statusBarNotification) {
+    public Reaction reactToDismissedNotification(StatusBarNotification statusBarNotification) {
         dumbNotificationCounter.dismissed(statusBarNotification.getNotification().getGroup(), statusBarNotification.getKey());
+        return Reaction.NONE;
     }
 
 }

@@ -8,6 +8,6 @@ public interface IncomingNotificationReactor {
 
     Collection<String> interestedPackages();
     boolean isInterestInNotificationGroup();
-    void reactToIncomingNotification(StatusBarNotification statusBarNotification);
+    Reaction reactToIncomingNotification(StatusBarNotification statusBarNotification);
 
 }

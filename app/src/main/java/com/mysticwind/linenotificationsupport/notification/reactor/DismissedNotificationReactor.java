@@ -8,6 +8,6 @@ public interface DismissedNotificationReactor {
 
     Collection<String> interestedPackages();
     boolean isInterestInNotificationGroup();
-    void reactToDismissedNotification(StatusBarNotification statusBarNotification);
+    Reaction reactToDismissedNotification(StatusBarNotification statusBarNotification);
 
 }

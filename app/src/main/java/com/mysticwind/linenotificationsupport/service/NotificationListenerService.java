@@ -51,6 +51,8 @@ import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificatio
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
+import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SmartNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
@@ -168,6 +170,8 @@ public class NotificationListenerService
         this.incomingNotificationReactors.add(dumbNotificationCounterNotificationReactor);
         this.dismissedNotificationReactors.add(dumbNotificationCounterNotificationReactor);
 
+        this.incomingNotificationReactors.add(new SameLineMessageIdFilterIncomingNotificationReactor());
+
         this.resendUnsentNotificationsNotificationSentListener = new ResendUnsentNotificationsNotificationSentListener(
                 handler,
                 new Supplier<NotificationPublisher>() {
@@ -238,8 +242,14 @@ public class NotificationListenerService
 
                 Timber.d("Processing IncomingNotificationReactor [%s] for notification key [%s]",
                         reactor.getClass().getSimpleName(), statusBarNotification.getKey());
-                reactor.reactToIncomingNotification(statusBarNotification);
+                final Reaction reaction = reactor.reactToIncomingNotification(statusBarNotification);
 
+                // TODO how do we deal with legacy actions e.g. auto dismisses?
+                if (reaction == Reaction.STOP_FURTHER_PROCESSING) {
+                    Timber.d("IncomingNotificationReactor [%s] requested to [%s] after processing notification key [%s]",
+                            reactor.getClass().getSimpleName(), reaction, statusBarNotification.getKey());
+                    return;
+                }
             } catch (Exception e) {
                 Timber.e(e, "[ERROR] Failed to process IncomingNotificationReactor [%s]: error [%s] message [%s]",
                         reactor.getClass().getSimpleName(), e.getClass().getSimpleName(), e.getMessage());
@@ -383,12 +393,6 @@ public class NotificationListenerService
 
         // ignore summaries
         if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
-            return true;
-        }
-
-        // don't know why, but this seems to filter out some duplicated messages
-        if (LineNotificationBuilder.GENERAL_NOTIFICATION_CHANNEL.equals(statusBarNotification.getNotification().getChannelId()) &&
-                GROUP_MESSAGE_GROUP_KEY.equals(statusBarNotification.getNotification().getGroup())) {
             return true;
         }
 
@@ -685,8 +689,13 @@ public class NotificationListenerService
 
                 Timber.d("Processing DismissedNotificationReactor [%s] for notification key [%s]",
                         reactor.getClass().getSimpleName(), statusBarNotification.getKey());
-                reactor.reactToDismissedNotification(statusBarNotification);
+                final Reaction reaction = reactor.reactToDismissedNotification(statusBarNotification);
 
+                if (reaction == Reaction.STOP_FURTHER_PROCESSING) {
+                    Timber.d("DismissedNotificationReactor [%s] requested to [%s] after processing notification key [%s]",
+                            reactor.getClass().getSimpleName(), reaction, statusBarNotification.getKey());
+                    return;
+                }
             } catch (Exception e) {
                 Timber.e(e, "[ERROR] Failed to process DismissedNotificationReactor [%s]: error [%s] message [%s]",
                         reactor.getClass().getSimpleName(), e.getClass().getSimpleName(), e.getMessage());
