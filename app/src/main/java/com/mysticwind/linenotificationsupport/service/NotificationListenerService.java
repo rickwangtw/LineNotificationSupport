@@ -54,6 +54,7 @@ import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotif
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
 import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SmartNotificationCounterNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -121,7 +122,6 @@ public class NotificationListenerService
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
-    private SummaryNotificationPublisher summaryNotificationPublisher;
     private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
 
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
@@ -170,6 +170,12 @@ public class NotificationListenerService
         this.incomingNotificationReactors.add(dumbNotificationCounterNotificationReactor);
         this.dismissedNotificationReactors.add(dumbNotificationCounterNotificationReactor);
 
+        final SummaryNotificationPublisher summaryNotificationPublisher = new SummaryNotificationPublisher(
+                this, (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
+                getPackageName(), GROUP_ID_RESOLVER);
+        this.incomingNotificationReactors.add(
+                new SummaryNotificationPublisherIncomingNotificationReactor(getPackageName(), summaryNotificationPublisher));
+
         this.incomingNotificationReactors.add(new SameLineMessageIdFilterIncomingNotificationReactor());
 
         this.resendUnsentNotificationsNotificationSentListener = new ResendUnsentNotificationsNotificationSentListener(
@@ -198,8 +204,6 @@ public class NotificationListenerService
             this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
         }
 
-        this.summaryNotificationPublisher = new SummaryNotificationPublisher(this,
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE), getPackageName(), GROUP_ID_RESOLVER);
 
         return super.onBind(intent);
     }
@@ -223,7 +227,6 @@ public class NotificationListenerService
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
         this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
-        this.summaryNotificationPublisher = null;
 
         return super.onUnbind(intent);
     }
@@ -763,9 +766,6 @@ public class NotificationListenerService
         if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
             return;
         }
-        if (summaryNotificationPublisher != null) {
-            summaryNotificationPublisher.updateSummaryWhenNotificationsPublished(statusBarNotification.getNotification().getGroup());
-        }
         if (resendUnsentNotificationsNotificationSentListener != null) {
             resendUnsentNotificationsNotificationSentListener.notificationReceived(statusBarNotification.getId());
         }
@@ -777,9 +777,6 @@ public class NotificationListenerService
         }
         if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
             return;
-        }
-        if (summaryNotificationPublisher != null) {
-            summaryNotificationPublisher.updateSummaryWhenNotificationsDismissed(statusBarNotification.getNotification().getGroup());
         }
         notificationPublisher.updateNotificationDismissed(statusBarNotification);
     }
