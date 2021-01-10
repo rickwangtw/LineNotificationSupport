@@ -30,7 +30,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
 
     private final Handler handler;
     private final NotificationPublisher notificationPublisher;
-    private final NotificationCounter notificationCounter;
+    private final SlotAvailabilityChecker slotAvailabilityChecker;
 
     private Runnable republishEventsIfSlotsAvailableRunnable =
             new Runnable() {
@@ -49,10 +49,10 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
 
     public MaxNotificationHandlingNotificationPublisherDecorator(final Handler handler,
                                                                  final NotificationPublisher notificationPublisher,
-                                                                 final NotificationCounter notificationCounter) {
+                                                                 final SlotAvailabilityChecker slotAvailabilityChecker) {
         this.handler = handler;
         this.notificationPublisher = notificationPublisher;
-        this.notificationCounter = notificationCounter;
+        this.slotAvailabilityChecker = slotAvailabilityChecker;
     }
 
     @Override
@@ -70,7 +70,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
     }
 
     public void publishNotification(final LineNotification lineNotification, final int notificationId, Consumer<QueueItem> itemAddingFunction) {
-        if (!notificationCounter.hasSlot(lineNotification.getChatId())) {
+        if (!slotAvailabilityChecker.hasSlot(lineNotification.getChatId())) {
             Timber.d("Reached maximum notifications, add to queue: " + notificationId);
             QUEUE_ITEMS.add(new QueueItem(lineNotification, notificationId));
             itemAddingFunction.accept(new QueueItem(lineNotification, notificationId));
@@ -101,7 +101,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
 
         final String chatId = statusBarNotification.getNotification().getGroup();
 
-        if (!notificationCounter.hasSlot(chatId)) {
+        if (!slotAvailabilityChecker.hasSlot(chatId)) {
             return;
         }
 
@@ -156,7 +156,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
         if (item == null) {
             return;
         }
-        if (notificationCounter.hasSlot(item.getLineNotification().getChatId())) {
+        if (slotAvailabilityChecker.hasSlot(item.getLineNotification().getChatId())) {
             QUEUE_ITEMS.remove(item);
 
             final long delayInMillis = calculateDelayInMillis(item.getLineNotification().getChatId());

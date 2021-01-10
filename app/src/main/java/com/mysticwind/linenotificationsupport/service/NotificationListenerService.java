@@ -40,13 +40,16 @@ import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.notification.BigNotificationSplittingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
-import com.mysticwind.linenotificationsupport.notification.NotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.ResendUnsentNotificationsNotificationSentListener;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.SlotAvailabilityChecker;
 import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificationCounter;
+import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.SmartNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -106,13 +109,18 @@ public class NotificationListenerService
     );
 
     private final Handler handler = new Handler();
+    private final SmartNotificationCounter notificationCounter = new SmartNotificationCounter((int) getMaxNotificationsPerApp());
+    private final SlotAvailabilityChecker slotAvailabilityChecker = notificationCounter;
 
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
-    private NotificationCounter notificationCounter;
+
     private SummaryNotificationPublisher summaryNotificationPublisher;
     private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
+
+    private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
+    private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
 
     private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -132,7 +140,7 @@ public class NotificationListenerService
 
         if (getPreferenceProvider().shouldExecuteMaxNotificationWorkaround()) {
             notificationPublisher = new MaxNotificationHandlingNotificationPublisherDecorator(
-                    handler, notificationPublisher, notificationCounter);
+                    handler, notificationPublisher, slotAvailabilityChecker);
         }
 
         if (getPreferenceProvider().shouldUseMessageSplitter()) {
@@ -146,7 +154,10 @@ public class NotificationListenerService
 
     @Override
     public IBinder onBind(Intent intent) {
-        this.notificationCounter = new SmartNotificationCounter((int) getMaxNotificationsPerApp());
+        final SmartNotificationCounterNotificationReactor smartNotificationCounterNotificationReactor =
+                new SmartNotificationCounterNotificationReactor(getPackageName(), notificationCounter);
+        this.incomingNotificationReactors.add(smartNotificationCounterNotificationReactor);
+        this.dismissedNotificationReactors.add(smartNotificationCounterNotificationReactor);
 
         this.resendUnsentNotificationsNotificationSentListener = new ResendUnsentNotificationsNotificationSentListener(
                 handler,
@@ -190,6 +201,9 @@ public class NotificationListenerService
 
     @Override
     public boolean onUnbind(Intent intent) {
+        this.incomingNotificationReactors.clear();
+        this.dismissedNotificationReactors.clear();
+
         this.notificationPublisher = NullNotificationPublisher.INSTANCE;
 
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -203,6 +217,26 @@ public class NotificationListenerService
 
     @Override
     public void onNotificationPosted(StatusBarNotification statusBarNotification) {
+
+        for (final IncomingNotificationReactor reactor : incomingNotificationReactors) {
+            try {
+                if (!reactor.interestedPackages().contains(statusBarNotification.getPackageName())) {
+                    continue;
+                }
+                if (StatusBarNotificationExtractor.isSummary(statusBarNotification) && !reactor.isInterestInNotificationGroup()) {
+                    continue;
+                }
+
+                Timber.d("Processing IncomingNotificationReactor [%s] for notification key [%s]",
+                        reactor.getClass().getSimpleName(), statusBarNotification.getKey());
+                reactor.reactToIncomingNotification(statusBarNotification);
+
+            } catch (Exception e) {
+                Timber.e(e, "[ERROR] Failed to process IncomingNotificationReactor [%s]: error [%s] message [%s]",
+                        reactor.getClass().getSimpleName(), e.getClass().getSimpleName(), e.getMessage());
+            }
+        }
+
         try {
             onNotificationPostedUnsafe(statusBarNotification);
         } catch (final Exception e) {
@@ -608,6 +642,26 @@ public class NotificationListenerService
 
     @Override
     public void onNotificationRemoved(StatusBarNotification statusBarNotification) {
+
+        for (final DismissedNotificationReactor reactor : dismissedNotificationReactors) {
+            try {
+                if (!reactor.interestedPackages().contains(statusBarNotification.getPackageName())) {
+                    continue;
+                }
+                if (StatusBarNotificationExtractor.isSummary(statusBarNotification) && !reactor.isInterestInNotificationGroup()) {
+                    continue;
+                }
+
+                Timber.d("Processing DismissedNotificationReactor [%s] for notification key [%s]",
+                        reactor.getClass().getSimpleName(), statusBarNotification.getKey());
+                reactor.reactToDismissedNotification(statusBarNotification);
+
+            } catch (Exception e) {
+                Timber.e(e, "[ERROR] Failed to process DismissedNotificationReactor [%s]: error [%s] message [%s]",
+                        reactor.getClass().getSimpleName(), e.getClass().getSimpleName(), e.getMessage());
+            }
+        }
+
         try {
             onNotificationRemovedUnsafe(statusBarNotification);
         } catch (final Exception e) {
@@ -669,9 +723,6 @@ public class NotificationListenerService
         if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
             return;
         }
-        if (notificationCounter != null) {
-            notificationCounter.notified(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
-        }
         if (summaryNotificationPublisher != null) {
             summaryNotificationPublisher.updateSummaryWhenNotificationsPublished(statusBarNotification.getNotification().getGroup());
         }
@@ -686,9 +737,6 @@ public class NotificationListenerService
         }
         if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
             return;
-        }
-        if (notificationCounter != null) {
-            notificationCounter.dismissed(statusBarNotification.getNotification().getGroup(), statusBarNotification.getId());
         }
         if (summaryNotificationPublisher != null) {
             summaryNotificationPublisher.updateSummaryWhenNotificationsDismissed(statusBarNotification.getNotification().getGroup());
