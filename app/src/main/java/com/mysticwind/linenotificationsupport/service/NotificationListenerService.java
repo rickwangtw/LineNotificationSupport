@@ -51,6 +51,7 @@ import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificatio
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNotificationIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
 import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SmartNotificationCounterNotificationReactor;
@@ -90,8 +91,6 @@ public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
 
     private static final String GROUP_MESSAGE_GROUP_KEY = "NOTIFICATION_GROUP_MESSAGE";
-    private static final long LINE_NOTIFICATION_DISMISS_RETRY_TIMEOUT = 500L;
-    private static final long PRINT_LINE_NOTIFICATION_WAIT_TIME = 200L;
     private static final long EMPTY_LINE_NOTIFICATION_RETRY_TIMEOUT = 200L;
     private static final int EMPTY_LINE_NOTIFICATION_RETRY_COUNT = 10;
     private static final long VERIFY_NOTIFICATION_SENT_TIMEOUT = 1_000L;
@@ -175,6 +174,13 @@ public class NotificationListenerService
                 getPackageName(), GROUP_ID_RESOLVER);
         this.incomingNotificationReactors.add(
                 new SummaryNotificationPublisherIncomingNotificationReactor(getPackageName(), summaryNotificationPublisher));
+
+        this.incomingNotificationReactors.add(
+                new ManageLineNotificationIncomingNotificationReactor(
+                        getPreferenceProvider(),
+                        handler,
+                        () -> getActiveNotificationsFromAllAppsSafely(),
+                        key -> cancelNotification(key)));
 
         this.incomingNotificationReactors.add(new SameLineMessageIdFilterIncomingNotificationReactor());
 
@@ -294,19 +300,6 @@ public class NotificationListenerService
         }
 
         sendNotification(statusBarNotification);
-
-        if (getPreferenceProvider().shouldManageLineMessageNotifications()) {
-            dismissLineNotification(statusBarNotification);
-
-            // there are situations where LINE messages are not dismissed, do this again
-            handler.postDelayed(
-                    () -> {
-                        Timber.d("Retry dismissing LINE notifications again: key [%s] message [%s]",
-                                statusBarNotification.getKey(), statusBarNotification.getNotification().tickerText);
-                        dismissLineNotification(statusBarNotification);
-                    },
-                    LINE_NOTIFICATION_DISMISS_RETRY_TIMEOUT);
-        }
     }
 
     private boolean shouldScheduleRefetch(final StatusBarNotification statusBarNotification) {
@@ -581,47 +574,6 @@ public class NotificationListenerService
         }, delayInMillis);
     }
 
-    private void dismissLineNotification(final StatusBarNotification statusBarNotification) {
-        // we only dismiss notifications that are in the message category
-        if (!LineNotificationBuilder.MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category)) {
-            Timber.d("LINE notification not message category but [%s]: [%s]",
-                    statusBarNotification.getNotification().category, statusBarNotification.getNotification().tickerText);
-            return;
-        }
-
-        final Optional<String> summaryKey = findLineNotificationSummary(statusBarNotification.getNotification().getGroup());
-        summaryKey.ifPresent(
-                key -> {
-                    Timber.d("Cancelling LINE summary: [%s]", key);
-                    cancelNotification(key);
-                }
-        );
-
-        Timber.d("Dismiss LINE notification: key[%s] tag[%s] id[%d]",
-                statusBarNotification.getKey(), statusBarNotification.getTag(), statusBarNotification.getId());
-        cancelNotification(statusBarNotification.getKey());
-
-        handler.postDelayed(
-                () -> printLineNotifications(statusBarNotification.getNotification().getGroup()),
-                PRINT_LINE_NOTIFICATION_WAIT_TIME);
-    }
-
-    private Optional<String> findLineNotificationSummary(String group) {
-        return getActiveNotificationsFromAllAppsSafely().stream()
-                .filter(notification -> notification.getPackageName().equals(LINE_PACKAGE_NAME))
-                .peek(notification -> Timber.d("LINE notification key [%s] category [%s] group [%s] isSummary [%s] title [%s] message [%s]",
-                        notification.getKey(), notification.getNotification().category,
-                        notification.getNotification().getGroup(),
-                        StatusBarNotificationExtractor.isSummary(notification),
-                        NotificationExtractor.getTitle(notification.getNotification()),
-                        NotificationExtractor.getMessage(notification.getNotification())))
-                .filter(notification -> LineNotificationBuilder.MESSAGE_CATEGORY.equals(notification.getNotification().category))
-                .filter(notification -> StatusBarNotificationExtractor.isSummary(notification))
-                .filter(notification -> StringUtils.equals(group, notification.getNotification().getGroup()))
-                .map(notification -> notification.getKey())
-                .findFirst();
-    }
-
     private List<StatusBarNotification> getActiveNotificationsFromAllAppsSafely() {
         final Callable<List<StatusBarNotification>> callable = new Callable<List<StatusBarNotification>>() {
             @Override
@@ -661,21 +613,6 @@ public class NotificationListenerService
             Timber.w(e, "Unable to fetch active notifications after retries ... error message [%s]", e.getMessage());
             return Collections.EMPTY_LIST;
         }
-    }
-
-    private void printLineNotifications(final String groupThatShouldBeDismissed) {
-        getActiveNotificationsFromAllAppsSafely().stream()
-                .filter(notification -> notification.getPackageName().equals(LINE_PACKAGE_NAME))
-                .forEach(notification -> {
-                    Timber.w("%sPrint LINE notification that are not dismissed key [%s] category [%s] group [%s] isSummary [%s] isClearable [%s] title [%s] message [%s]",
-                            StringUtils.equals(notification.getNotification().getGroup(), groupThatShouldBeDismissed) ? "[SHOULD_DISMISS] " : "",
-                            notification.getKey(), notification.getNotification().category,
-                            notification.getNotification().getGroup(),
-                            StatusBarNotificationExtractor.isSummary(notification),
-                            notification.isClearable(),
-                            NotificationExtractor.getTitle(notification.getNotification()),
-                            NotificationExtractor.getMessage(notification.getNotification()));
-                });
     }
 
     @Override
