@@ -9,6 +9,7 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableSet;
 import com.mysticwind.linenotificationsupport.line.Constants;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
+import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,6 +23,8 @@ import timber.log.Timber;
 public class SameLineMessageIdFilterIncomingNotificationReactor implements IncomingNotificationReactor {
 
     private static final Set<String> INTERESTED_PACKAGES = ImmutableSet.of(Constants.LINE_PACKAGE_NAME);
+
+    private final StatusBarNotificationPrinter statusBarNotificationPrinter = new StatusBarNotificationPrinter();
 
     private final Cache<String, StatusBarNotification> lineMessageIdToNotificationCache = CacheBuilder.newBuilder()
             .expireAfterWrite(1, TimeUnit.HOURS)
@@ -57,9 +60,15 @@ public class SameLineMessageIdFilterIncomingNotificationReactor implements Incom
             lineMessageIdToNotificationCache.put(lineMessageId, incomingStatusBarNotification);
             return Reaction.NONE;
         }
+        final String originalMessage = NotificationExtractor.getMessage(cachedStatusBarNotification.getNotification());
+        final String newMessage = NotificationExtractor.getMessage(incomingStatusBarNotification.getNotification());
         Timber.d("[STOP] Detected duplicated notifications: LINE message ID [%s] original [%s] -> new [%s]", lineMessageId,
-                NotificationExtractor.getMessage(cachedStatusBarNotification.getNotification()),
-                NotificationExtractor.getMessage(incomingStatusBarNotification.getNotification()));
+                originalMessage,
+                newMessage);
+
+        if (!StringUtils.equals(originalMessage, newMessage)) {
+            statusBarNotificationPrinter.print("Received updated notification", incomingStatusBarNotification);
+        }
 
         return Reaction.STOP_FURTHER_PROCESSING;
     }
