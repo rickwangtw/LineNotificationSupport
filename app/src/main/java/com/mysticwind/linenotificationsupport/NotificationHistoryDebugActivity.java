@@ -16,13 +16,16 @@ import com.mysticwind.linenotificationsupport.debug.history.ui.NotificationHisto
 
 public class NotificationHistoryDebugActivity extends AppCompatActivity {
 
+    private NotificationHistoryAdapter adapter;
+    private NotificationHistoryViewModel notificationHistoryViewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.debug_notification_history_view);
 
         final RecyclerView recyclerView = findViewById(R.id.notification_history_recyclerview);
-        final NotificationHistoryAdapter adapter = new NotificationHistoryAdapter(new NotificationHistoryAdapter.NotificationHistoryEntryDiff());
+        adapter = new NotificationHistoryAdapter(new NotificationHistoryAdapter.NotificationHistoryEntryDiff());
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -30,19 +33,24 @@ public class NotificationHistoryDebugActivity extends AppCompatActivity {
                 new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL);
         recyclerView.addItemDecoration(dividerItemDecoration);
 
-        final NotificationHistoryViewModel notificationHistoryViewModel =
+        notificationHistoryViewModel =
                 new ViewModelProvider(this).get(NotificationHistoryViewModel.class);
-
-        notificationHistoryViewModel.getNotificationHistory().observe(this,
-                notificationHistory -> adapter.submitList(notificationHistory)
-        );
-
     }
-
 
     @Override
     protected void onResume() {
         super.onResume();
+
+        notificationHistoryViewModel.getNotificationHistory().observe(this,
+                notificationHistory -> adapter.submitList(notificationHistory)
+        );
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        notificationHistoryViewModel.getNotificationHistory().removeObservers(this);
     }
 
     @Override
