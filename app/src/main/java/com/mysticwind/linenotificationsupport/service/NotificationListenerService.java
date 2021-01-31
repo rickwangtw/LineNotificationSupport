@@ -23,7 +23,9 @@ import com.github.rholder.retry.Retryer;
 import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
@@ -94,6 +96,7 @@ public class NotificationListenerService
     private static final long EMPTY_LINE_NOTIFICATION_RETRY_TIMEOUT = 200L;
     private static final int EMPTY_LINE_NOTIFICATION_RETRY_COUNT = 10;
     private static final long VERIFY_NOTIFICATION_SENT_TIMEOUT = 1_000L;
+    private static final long NOTIFICATION_COUNTER_CHECK_PERIOD = 60_000L;
 
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
@@ -210,6 +213,7 @@ public class NotificationListenerService
             this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
         }
 
+        scheduleNotificationCounterCheck();
 
         return super.onBind(intent);
     }
@@ -613,6 +617,22 @@ public class NotificationListenerService
             Timber.w(e, "Unable to fetch active notifications after retries ... error message [%s]", e.getMessage());
             return Collections.EMPTY_LIST;
         }
+    }
+
+    private void scheduleNotificationCounterCheck() {
+        handler.postDelayed(
+                () -> checkNotificationCounter(),
+                NOTIFICATION_COUNTER_CHECK_PERIOD);
+    }
+
+    private void checkNotificationCounter() {
+        final Multimap<String, String> groupToNotificationKeyMultimap = HashMultimap.create();
+        getActiveNotificationsFromAllAppsSafely().stream()
+                .filter(notification -> notification.getPackageName().equals(getPackageName()))
+                .forEach(notification -> groupToNotificationKeyMultimap.put(notification.getNotification().getGroup(), notification.getKey()));
+        dumbNotificationCounter.validateNotifications(groupToNotificationKeyMultimap);
+
+        scheduleNotificationCounterCheck();
     }
 
     @Override

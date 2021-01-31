@@ -49,4 +49,16 @@ public class DumbNotificationCounter implements SlotAvailabilityChecker {
         return slotsUsed;
     }
 
+    // This probably risks concurrency
+    public void validateNotifications(final Multimap<String, String> currentGroupToNotificationKeyMultimap) {
+        if (!groupToNotificationKeyMultimap.equals(currentGroupToNotificationKeyMultimap)) {
+            Timber.w("Notifications being tracked are different! Tracked [%s] Current [%s]",
+                    groupToNotificationKeyMultimap.values(), currentGroupToNotificationKeyMultimap.values());
+            groupToNotificationKeyMultimap.clear();
+            groupToNotificationKeyMultimap.putAll(currentGroupToNotificationKeyMultimap);
+        } else {
+            Timber.d("Verified notifications are the same");
+        }
+    }
+
 }
