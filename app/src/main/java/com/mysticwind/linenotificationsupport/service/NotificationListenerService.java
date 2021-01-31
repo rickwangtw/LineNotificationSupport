@@ -43,6 +43,7 @@ import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.notification.BigNotificationSplittingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.NotificationSentListener;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.ResendUnsentNotificationsNotificationSentListener;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
@@ -141,11 +142,22 @@ public class NotificationListenerService
     };
 
     private NotificationPublisher buildNotificationPublisher() {
+        final boolean shouldExecuteMaxNotificationWorkaround =
+                getPreferenceProvider().shouldExecuteMaxNotificationWorkaround();
+
+        final List<NotificationSentListener> notificationSentListeners = new ArrayList<>();
+        if (shouldExecuteMaxNotificationWorkaround) {
+            resendUnsentNotificationsNotificationSentListener = buildResendUnsentNotificationsNotificationSentListener();
+            notificationSentListeners.add(resendUnsentNotificationsNotificationSentListener);
+        } else {
+            resendUnsentNotificationsNotificationSentListener = null;
+        }
+
         NotificationPublisher notificationPublisher =
                 new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER,
-                        getPreferenceProvider(), resendUnsentNotificationsNotificationSentListener);
+                        getPreferenceProvider(), notificationSentListeners);
 
-        if (getPreferenceProvider().shouldExecuteMaxNotificationWorkaround()) {
+        if (shouldExecuteMaxNotificationWorkaround) {
             notificationPublisher = new MaxNotificationHandlingNotificationPublisherDecorator(
                     handler, notificationPublisher, slotAvailabilityChecker);
         }
@@ -157,6 +169,17 @@ public class NotificationListenerService
         }
 
         return notificationPublisher;
+    }
+
+    private ResendUnsentNotificationsNotificationSentListener buildResendUnsentNotificationsNotificationSentListener() {
+        return new ResendUnsentNotificationsNotificationSentListener(
+                handler,
+                new Supplier<NotificationPublisher>() {
+                    @Override
+                    public NotificationPublisher get() {
+                        return notificationPublisher;
+                    }
+                });
     }
 
     @Override
@@ -186,15 +209,6 @@ public class NotificationListenerService
                         key -> cancelNotification(key)));
 
         this.incomingNotificationReactors.add(new SameLineMessageIdFilterIncomingNotificationReactor());
-
-        this.resendUnsentNotificationsNotificationSentListener = new ResendUnsentNotificationsNotificationSentListener(
-                handler,
-                new Supplier<NotificationPublisher>() {
-                    @Override
-                    public NotificationPublisher get() {
-                        return notificationPublisher;
-                    }
-                });
 
         this.notificationPublisher = buildNotificationPublisher();
 
