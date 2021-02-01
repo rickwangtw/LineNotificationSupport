@@ -8,6 +8,7 @@ import android.service.notification.StatusBarNotification;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.Person;
 
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.line.LineLauncher;
@@ -63,11 +64,7 @@ public class SummaryNotificationPublisher {
             return;
         }
 
-        final NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle();
-        for (StatusBarNotification notification: notifications) {
-            style.addLine(NotificationExtractor.getMessage(notification.getNotification()));
-        }
-        style.setSummaryText(notifications.size() + " new notifications");
+        final NotificationCompat.MessagingStyle style = buildMessagingStyleFromHistory(notifications);
 
         final Notification lastNotification = notifications.get(notifications.size() - 1).getNotification();
         Timber.d("Last notification with message: [%s]", NotificationExtractor.getMessage(lastNotification));
@@ -90,6 +87,33 @@ public class SummaryNotificationPublisher {
 
         final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(groupId, groupNotification);
+    }
+
+    private NotificationCompat.MessagingStyle buildMessagingStyleFromHistory(List<StatusBarNotification> notifications) {
+        final Notification lastNotification = notifications.get(notifications.size() - 1).getNotification();
+        final NotificationCompat.MessagingStyle messagingStyle =
+                new NotificationCompat.MessagingStyle(buildPerson(lastNotification))
+                        .setConversationTitle(buildTitle(lastNotification));
+
+        for (final StatusBarNotification notification : notifications) {
+            messagingStyle.addMessage(
+                    new NotificationCompat.MessagingStyle.Message(
+                            NotificationExtractor.getMessage(notification.getNotification()),
+                            notification.getNotification().when, buildPerson(notification.getNotification())));
+        }
+
+        return messagingStyle;
+    }
+
+    private String buildTitle(Notification notification) {
+        return notification.extras.getString(Notification.EXTRA_CONVERSATION_TITLE);
+    }
+
+    private Person buildPerson(Notification notification) {
+        String senderName = notification.extras.getString(Notification.EXTRA_SELF_DISPLAY_NAME);
+        return new Person.Builder()
+                .setName(senderName)
+                .build();
     }
 
     public void updateSummaryWhenNotificationsDismissed(final String group) {
