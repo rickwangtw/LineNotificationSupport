@@ -85,7 +85,7 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
                 .setGroup(lineNotification.getChatId())
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(lineNotification.getIcon())
-                .setContentIntent(LINE_LAUNCHER.buildPendingIntent(context))
+                .setContentIntent(LINE_LAUNCHER.buildPendingIntent(context, lineNotification.getChatId()))
                 .setChannelId(channelId.orElse(null))
                 .setAutoCancel(true)
                 .setWhen(lineNotification.getTimestamp())

@@ -78,7 +78,7 @@ public class SummaryNotificationPublisher {
                 .setGroupSummary(true)
                 .setChannelId(lastNotification.getChannelId())
                 .setAutoCancel(true)
-                .setContentIntent(LINE_LAUNCHER.buildPendingIntent(context))
+                .setContentIntent(LINE_LAUNCHER.buildPendingIntent(context, lastNotification.getGroup()))
                 .build();
 
         groupNotification.actions = lastNotification.actions;
