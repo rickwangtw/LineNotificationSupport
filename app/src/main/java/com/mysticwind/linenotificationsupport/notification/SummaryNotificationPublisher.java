@@ -84,6 +84,8 @@ public class SummaryNotificationPublisher {
                 .setContentIntent(LINE_LAUNCHER.buildPendingIntent(context))
                 .build();
 
+        groupNotification.actions = lastNotification.actions;
+
         final int groupId = groupIdResolver.resolveGroupId(group);
 
         final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
