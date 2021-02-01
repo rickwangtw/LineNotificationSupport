@@ -27,6 +27,7 @@ public class LineNotification {
     // TODO migrate to use the list version of messages
     private final List<String> messages;
     private final String title;
+    private final String lineMessageId;
     private final String lineStickerUrl;
     private final String chatId;
     private final CallState callState;

@@ -62,14 +62,18 @@ public class SameLineMessageIdFilterIncomingNotificationReactor implements Incom
         }
         final String originalMessage = NotificationExtractor.getMessage(cachedStatusBarNotification.getNotification());
         final String newMessage = NotificationExtractor.getMessage(incomingStatusBarNotification.getNotification());
+
+        if (!StringUtils.equals(originalMessage, newMessage)) {
+            Timber.d("Detected duplicated notifications: LINE message ID [%s] original [%s] -> new [%s]", lineMessageId,
+                    originalMessage,
+                    newMessage);
+            statusBarNotificationPrinter.print("Received updated notification", incomingStatusBarNotification);
+            return Reaction.NONE;
+        }
+
         Timber.d("[STOP] Detected duplicated notifications: LINE message ID [%s] original [%s] -> new [%s]", lineMessageId,
                 originalMessage,
                 newMessage);
-
-        if (!StringUtils.equals(originalMessage, newMessage)) {
-            statusBarNotificationPrinter.print("Received updated notification", incomingStatusBarNotification);
-        }
-
         return Reaction.STOP_FURTHER_PROCESSING;
     }
 

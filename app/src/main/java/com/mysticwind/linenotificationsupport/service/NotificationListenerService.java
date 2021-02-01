@@ -42,6 +42,7 @@ import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.notification.BigNotificationSplittingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.notification.NotificationMergingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.NotificationSentListener;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
@@ -167,6 +168,8 @@ public class NotificationListenerService
                     notificationPublisher,
                     getPreferenceProvider());
         }
+
+        notificationPublisher = new NotificationMergingNotificationPublisherDecorator(notificationPublisher);
 
         return notificationPublisher;
     }
@@ -308,19 +311,17 @@ public class NotificationListenerService
         NOTIFICATION_PRINTER.print("Received", statusBarNotification);
         notificationHistoryManager.record(statusBarNotification, getLineAppVersion());
 
-        if (shouldScheduleRefetch(statusBarNotification)) {
+        if (isNewMesssageWithoutContent(statusBarNotification)) {
             Timber.d("Detected potential new message without content: key [%s] title [%s] message [%s]",
                     statusBarNotification.getKey(), NotificationExtractor.getTitle(statusBarNotification.getNotification()),
                     statusBarNotification.getNotification().tickerText);
-            scheduleRetryEmptyNotification(statusBarNotification, 0);
-            // early return;
-            return;
+            // we should get a notification update for this message
         }
 
         sendNotification(statusBarNotification);
     }
 
-    private boolean shouldScheduleRefetch(final StatusBarNotification statusBarNotification) {
+    private boolean isNewMesssageWithoutContent(final StatusBarNotification statusBarNotification) {
         // There are notifications that will not have actions and don't need to retry.
         // For example: notifications of someone added to a chat
         if (StringUtils.isBlank(NotificationExtractor.getLineMessageId(statusBarNotification.getNotification()))) {
@@ -328,73 +329,6 @@ public class NotificationListenerService
         }
         return StringUtils.equals(LineNotificationBuilder.MESSAGE_CATEGORY, statusBarNotification.getNotification().category) &&
                 statusBarNotification.getNotification().actions == null;
-    }
-
-    private void scheduleRetryEmptyNotification(final StatusBarNotification statusBarNotification, final int retryCount) {
-        final int nextRetryCount = retryCount + 1;
-        Timber.d("Schedule retrying empty notification [%s] retryCount [%d]",
-                statusBarNotification.getKey(), nextRetryCount);
-        handler.postDelayed(
-                () -> retryEmptyNotification(statusBarNotification, nextRetryCount),
-                EMPTY_LINE_NOTIFICATION_RETRY_TIMEOUT);
-    }
-
-    private void retryEmptyNotification(final StatusBarNotification previousStatusBarNotification, final int retryCount) {
-        // stop condition
-        if (retryCount > EMPTY_LINE_NOTIFICATION_RETRY_COUNT) {
-            // TODO this is obviously a workaround - we should have extracted the method out instead
-            Timber.d("Used up all retries [%d] for key [%s]", retryCount, previousStatusBarNotification.getKey());
-            previousStatusBarNotification.getNotification().actions = new Notification.Action[]{};
-            onNotificationPosted(previousStatusBarNotification);
-            return;
-        }
-        // check if the content is updated
-        final Optional<StatusBarNotification> currentStatusBarNotification =
-                getActiveNotificationsFromAllAppsSafely().stream()
-                        .filter(notification -> StringUtils.equals(previousStatusBarNotification.getKey(), notification.getKey()))
-                        .findFirst();
-
-        // if the notification is already dismissed or replaced
-        if (!currentStatusBarNotification.isPresent()) {
-            Timber.d("Notification (key [%s]) no longer present", previousStatusBarNotification.getKey());
-            // TODO this is obviously a workaround - we should have extracted the method out instead
-            previousStatusBarNotification.getNotification().actions = new Notification.Action[]{};
-            onNotificationPosted(previousStatusBarNotification);
-            return;
-        }
-
-        final String previousLineMessageId =
-                NotificationExtractor.getLineMessageId(previousStatusBarNotification.getNotification());
-        final String currentLineMessageId =
-                NotificationExtractor.getLineMessageId(currentStatusBarNotification.get().getNotification());
-        if (!StringUtils.equals(previousLineMessageId, currentLineMessageId)) {
-            Timber.d("Notification (key [%s]) exists but LINE message ID [%s -> %s] has changed.",
-                    previousStatusBarNotification.getKey(), previousLineMessageId, currentLineMessageId);
-            // TODO this is obviously a workaround - we should have extracted the method out instead
-            previousStatusBarNotification.getNotification().actions = new Notification.Action[]{};
-            onNotificationPosted(previousStatusBarNotification);
-            return;
-        }
-
-        NOTIFICATION_PRINTER.print(
-                String.format("Re-fetched status bar notification [%d] [%s]", retryCount, previousStatusBarNotification.getKey()),
-                currentStatusBarNotification.get());
-
-        if (currentStatusBarNotification.get().getNotification().actions != null) {
-            Timber.d("Notification (key [%s]) identified with update: message [%s]",
-                    currentStatusBarNotification.get().getKey(), currentStatusBarNotification.get().getNotification().tickerText);
-            // TODO remove this debug information
-            if (DEBUG_MODE_PROVIDER.isDebugMode()) {
-                Toast.makeText(this, "Successfully re-fetched notification " + currentStatusBarNotification.get().getKey(), Toast.LENGTH_SHORT)
-                        .show();
-            }
-
-            onNotificationPosted(currentStatusBarNotification.get());
-            return;
-        }
-
-        // need to retry again
-        scheduleRetryEmptyNotification(previousStatusBarNotification /* use the original status bar notification here */, retryCount);
     }
 
     private boolean shouldIgnoreNotification(final StatusBarNotification statusBarNotification) {

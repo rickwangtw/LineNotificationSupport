@@ -50,6 +50,7 @@ public class LineNotificationBuilder {
         final Pair<String, String> titleAndSender = chatTitleAndSenderResolver.resolveTitleAndSender(statusBarNotification);
         final String title = titleAndSender.getLeft();
         final String sender = titleAndSender.getRight();
+        final String lineMessageId = NotificationExtractor.getLineMessageId(statusBarNotification.getNotification());
         final Bitmap largeIconBitmap = getLargeIconBitmap(statusBarNotification);
         final Person senderPerson = buildPerson(sender, largeIconBitmap, statusBarNotification);
         final LineNotification.CallState callState = resolveCallState(statusBarNotification);
@@ -58,6 +59,7 @@ public class LineNotificationBuilder {
         final String message = NotificationExtractor.getMessage(statusBarNotification.getNotification());
         final String lineStickerUrl = getLineStickerUrl(statusBarNotification);
         return LineNotification.builder()
+                .lineMessageId(lineMessageId)
                 .title(title)
                 .message(message)
                 .sender(senderPerson)
