@@ -14,6 +14,11 @@ public enum NullNotificationPublisher implements NotificationPublisher {
     }
 
     @Override
+    public void republishNotification(LineNotification lineNotification, int notificationId) {
+        // do nothing
+    }
+
+    @Override
     public void updateNotificationDismissed(StatusBarNotification statusBarNotification) {
         // do nothing
     }

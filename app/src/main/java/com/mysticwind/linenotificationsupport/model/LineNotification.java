@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 
 import androidx.core.app.Person;
 
+import java.util.Collections;
 import java.util.List;
 
 import lombok.Builder;
@@ -26,6 +27,7 @@ public class LineNotification {
     // TODO migrate to use the list version of messages
     private final List<String> messages;
     private final String title;
+    private final String lineMessageId;
     private final String lineStickerUrl;
     private final String chatId;
     private final CallState callState;
@@ -34,5 +36,12 @@ public class LineNotification {
     @Singular
     private final List<Notification.Action> actions;
     private final Bitmap icon;
+
+    public List<String> getMessages() {
+        if (messages == null) {
+            return Collections.emptyList();
+        }
+        return messages;
+    }
 
 }

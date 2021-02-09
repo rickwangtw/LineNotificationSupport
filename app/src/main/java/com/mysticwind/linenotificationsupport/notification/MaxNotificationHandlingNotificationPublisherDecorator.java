@@ -7,9 +7,11 @@ import com.mysticwind.linenotificationsupport.model.LineNotification;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.function.Consumer;
 
 import lombok.Value;
 import timber.log.Timber;
@@ -21,14 +23,22 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
     private static final long NOTIFICATION_CHECK_PERIOD_IN_MILLIS = 500L;
 
     // tracks the messages that has not been sent
-    private static final ConcurrentLinkedQueue<QueueItem> QUEUE_ITEMS = new ConcurrentLinkedQueue<>();
+    private static final ConcurrentLinkedDeque<QueueItem> QUEUE_ITEMS = new ConcurrentLinkedDeque<>();
 
     // this is to make sure we have sufficient cool down for each chat after it being dismissed
     private static final Map<String, Instant> CHAT_ID_TO_LAST_DISMISSED_INSTANT_MAP = new ConcurrentHashMap<>();
 
     private final Handler handler;
     private final NotificationPublisher notificationPublisher;
-    private final NotificationCounter notificationCounter;
+    private final SlotAvailabilityChecker slotAvailabilityChecker;
+
+    private Runnable republishEventsIfSlotsAvailableRunnable =
+            new Runnable() {
+                @Override
+                public void run() {
+                    republishIfSlotsAvailable();
+                }
+            };
 
     // TODO should we just have this class implemented and shared??
     @Value
@@ -39,17 +49,31 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
 
     public MaxNotificationHandlingNotificationPublisherDecorator(final Handler handler,
                                                                  final NotificationPublisher notificationPublisher,
-                                                                 final NotificationCounter notificationCounter) {
+                                                                 final SlotAvailabilityChecker slotAvailabilityChecker) {
         this.handler = handler;
         this.notificationPublisher = notificationPublisher;
-        this.notificationCounter = notificationCounter;
+        this.slotAvailabilityChecker = slotAvailabilityChecker;
     }
 
     @Override
     public void publishNotification(final LineNotification lineNotification, final int notificationId) {
-        if (!notificationCounter.hasSlot(lineNotification.getChatId())) {
+        Objects.requireNonNull(lineNotification);
+
+        publishNotification(lineNotification, notificationId, item -> QUEUE_ITEMS.add(item));
+    }
+
+    @Override
+    public void republishNotification(final LineNotification lineNotification, final int notificationId) {
+        Objects.requireNonNull(lineNotification);
+
+        publishNotification(lineNotification, notificationId, item -> QUEUE_ITEMS.addFirst(item));
+    }
+
+    public void publishNotification(final LineNotification lineNotification, final int notificationId, Consumer<QueueItem> itemAddingFunction) {
+        if (!slotAvailabilityChecker.hasSlot(lineNotification.getChatId())) {
             Timber.d("Reached maximum notifications, add to queue: " + notificationId);
             QUEUE_ITEMS.add(new QueueItem(lineNotification, notificationId));
+            itemAddingFunction.accept(new QueueItem(lineNotification, notificationId));
             return;
         }
         if (QUEUE_ITEMS.isEmpty()) {
@@ -57,7 +81,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
             publish(lineNotification, notificationId);
             return;
         }
-        QUEUE_ITEMS.add(new QueueItem(lineNotification, notificationId));
+        itemAddingFunction.accept(new QueueItem(lineNotification, notificationId));
 
         final Optional<QueueItem> firstItem = getFirstItem();
         if (!firstItem.isPresent()) {
@@ -77,7 +101,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
 
         final String chatId = statusBarNotification.getNotification().getGroup();
 
-        if (!notificationCounter.hasSlot(chatId)) {
+        if (!slotAvailabilityChecker.hasSlot(chatId)) {
             return;
         }
 
@@ -119,13 +143,11 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
     }
 
     private void scheduleSlotCheck(final long delayInMillis) {
+        Timber.d("Cancelling scheduled slot checks ...");
+        handler.removeCallbacks(republishEventsIfSlotsAvailableRunnable);
+
         Timber.d("Scheduling slot checks ...");
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                republishIfSlotsAvailable();
-            }
-        }, delayInMillis);
+        handler.postDelayed(republishEventsIfSlotsAvailableRunnable, delayInMillis);
     }
 
     private void republishIfSlotsAvailable() {
@@ -134,7 +156,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
         if (item == null) {
             return;
         }
-        if (notificationCounter.hasSlot(item.getLineNotification().getChatId())) {
+        if (slotAvailabilityChecker.hasSlot(item.getLineNotification().getChatId())) {
             QUEUE_ITEMS.remove(item);
 
             final long delayInMillis = calculateDelayInMillis(item.getLineNotification().getChatId());

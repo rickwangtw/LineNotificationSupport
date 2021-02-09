@@ -85,13 +85,18 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
                 .setGroup(lineNotification.getChatId())
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(lineNotification.getIcon())
-                .setContentIntent(LINE_LAUNCHER.buildPendingIntent(context))
+                .setContentIntent(LINE_LAUNCHER.buildPendingIntent(context, lineNotification.getChatId()))
                 .setChannelId(channelId.orElse(null))
                 .setAutoCancel(true)
                 .setWhen(lineNotification.getTimestamp())
                 .build();
 
         addActionInNotification(singleNotification);
+        if (lineNotification.getMessages().size() > 1) {
+            Timber.w("Multi-messages, override the tickerText to be the first page [%s]",
+                    lineNotification.getMessages().get(0));
+            singleNotification.extras.putString(Notification.EXTRA_TEXT, lineNotification.getMessages().get(0));
+        }
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(notificationId, singleNotification);

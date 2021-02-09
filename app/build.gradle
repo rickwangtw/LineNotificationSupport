@@ -9,8 +9,8 @@ android {
         applicationId "com.mysticwind.linenotificationsupport.donate"
         minSdkVersion 26
         targetSdkVersion 29
-        versionCode 11
-        versionName "1.7"
+        versionCode 12
+        versionName "1.8"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -37,6 +37,8 @@ dependencies {
     implementation 'androidx.preference:preference:1.1.1'
 
     implementation 'com.google.guava:guava:30.0-android'
+    implementation 'tech.huffman.re-retrying:re-retrying:3.0.0'
+
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'org.apache.commons:commons-collections4:4.4'
     implementation 'com.jakewharton.timber:timber:4.7.1'
@@ -53,6 +55,10 @@ dependencies {
 
     compile 'com.github.bumptech.glide:glide:4.11.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+
+    def historian_version = "0.3.1"
+    implementation "net.yslibrary.historian:historian-core:$historian_version"
+    implementation "net.yslibrary.historian:historian-tree:$historian_version"
 
     // Required -- JUnit 4 framework
     testImplementation 'junit:junit:4.12'
