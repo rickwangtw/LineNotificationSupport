@@ -11,6 +11,7 @@ import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.time.Instant;
 import java.util.Set;
 
 public class LineLauncher {
@@ -29,6 +30,8 @@ public class LineLauncher {
                     "jp.naver.line.android.activity.shortcut.ShortcutLauncherActivity"));
             intent.putExtra("shortcutType", "chatmid");
             intent.putExtra("shortcutTargetId", chatId);
+            // https://stackoverflow.com/questions/3168484/pendingintent-works-correctly-for-the-first-notification-but-incorrectly-for-the
+            intent.setAction(chatId + Instant.now());
         } else {
             intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse("https://line.me/R/nv/chat"));
