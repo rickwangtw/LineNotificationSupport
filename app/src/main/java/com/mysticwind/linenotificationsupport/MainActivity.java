@@ -1,5 +1,9 @@
 package com.mysticwind.linenotificationsupport;
 
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.app.RemoteInput;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.Menu;
@@ -56,6 +60,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private PreferenceProvider getPreferenceProvider() {
+        return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
+    }
+
     private void sendNotification(final String message, final String url) {
         final String groupKey = "message-group";
         int notificationId = (int) (System.currentTimeMillis() / 1000);
@@ -74,12 +82,26 @@ public class MainActivity extends AppCompatActivity {
                 .sender(sender)
                 .timestamp(timestamp)
                 .icon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round))
+                .action(buildRemoteInputAction())
                 .build();
         notificationPublisher.publishNotification(lineNotification, notificationId);
     }
 
-    private PreferenceProvider getPreferenceProvider() {
-        return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
+    private Notification.Action buildRemoteInputAction() {
+        final int requestCode = 1;
+        final Intent messageReplyIntent = new Intent(this, MainActivity.class);
+        final PendingIntent actionIntent =
+                PendingIntent.getBroadcast(getApplicationContext(),
+                        requestCode,
+                        messageReplyIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+        return new Notification.Action.Builder(
+                android.R.drawable.btn_default, "Reply", actionIntent)
+                .addRemoteInput(
+                        new RemoteInput.Builder("quick_reply")
+                                .setLabel("Quick reply")
+                                .build())
+                .build();
     }
 
     @Override
