@@ -19,6 +19,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.notification.DismissActionInjectorNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.notification.LinkActionInjectorNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
@@ -40,8 +41,11 @@ public class MainActivity extends AppCompatActivity {
 
         notificationPublisher =
                 new DismissActionInjectorNotificationPublisherDecorator(
-                        new SimpleNotificationPublisher(this, getPackageName(),
-                                GROUP_ID_RESOLVER, getPreferenceProvider()),
+                        new LinkActionInjectorNotificationPublisherDecorator(
+                                new SimpleNotificationPublisher(this, getPackageName(),
+                                        GROUP_ID_RESOLVER, getPreferenceProvider()),
+                                this
+                        ),
                         this
                 );
 
@@ -51,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                sendNotification("Message: " + Instant.now().toString(), null);
+                sendNotification("Message: " + Instant.now().toString() + " https://www.google.com/search?q=" + randomNumber(), null);
             }
         });
 
@@ -63,6 +67,10 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    private int randomNumber() {
+        return (int) (Math.random() * 100 % 10);
     }
 
     private PreferenceProvider getPreferenceProvider() {

@@ -42,6 +42,7 @@ import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.notification.BigNotificationSplittingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.DismissActionInjectorNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.notification.LinkActionInjectorNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationMergingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
@@ -156,11 +157,16 @@ public class NotificationListenerService
         }
 
         NotificationPublisher notificationPublisher =
+                new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER,
+                        getPreferenceProvider(), notificationSentListeners);
+
+        notificationPublisher =
+                new LinkActionInjectorNotificationPublisherDecorator(
+                        notificationPublisher, this);
+
+        notificationPublisher =
                 new DismissActionInjectorNotificationPublisherDecorator(
-                        new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER,
-                                getPreferenceProvider(), notificationSentListeners),
-                        this
-                );
+                        notificationPublisher, this);
 
         if (shouldExecuteMaxNotificationWorkaround) {
             notificationPublisher = new MaxNotificationHandlingNotificationPublisherDecorator(
