@@ -14,6 +14,9 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="title_activity_settings">SettingsActivity</string>
 
+    <!-- Notification actions -->
+    <string name="dismiss_button_text">Dismiss</string>
+
     <!-- Permission Dialog -->
     <string name="permission_request_dialog_message">You will need to grant permissions for this app to access Line notifications.</string>
 

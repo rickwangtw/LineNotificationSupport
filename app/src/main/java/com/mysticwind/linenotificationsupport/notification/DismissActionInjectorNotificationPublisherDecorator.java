@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.service.notification.StatusBarNotification;
 
 import com.mysticwind.linenotificationsupport.DismissNotificationBroadcastReceiver;
+import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 
 import java.util.Objects;
@@ -39,7 +40,8 @@ public class DismissActionInjectorNotificationPublisherDecorator implements Noti
                         0,
                         buttonIntent,
                         PendingIntent.FLAG_ONE_SHOT);
-        return new Notification.Action.Builder(android.R.drawable.btn_default, "Dismiss", actionIntent)
+        final String dismissButtonText = context.getString(R.string.dismiss_button_text);
+        return new Notification.Action.Builder(android.R.drawable.btn_default, dismissButtonText, actionIntent)
                 .build();
     }
 

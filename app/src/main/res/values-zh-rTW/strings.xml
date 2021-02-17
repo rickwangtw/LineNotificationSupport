@@ -5,6 +5,9 @@
 
     <string name="action_settings">設定</string>
 
+    <!-- Notification actions -->
+    <string name="dismiss_button_text">略過</string>
+
     <!-- Permission Dialog -->
     <string name="permission_request_dialog_message">您必須授與 LINE通知小幫手 存取 LINE 通知的權限。</string>
 
