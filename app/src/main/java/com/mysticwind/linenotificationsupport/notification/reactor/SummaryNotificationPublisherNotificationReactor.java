@@ -8,13 +8,13 @@ import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPu
 import java.util.Collection;
 import java.util.Set;
 
-public class SummaryNotificationPublisherIncomingNotificationReactor implements IncomingNotificationReactor {
+public class SummaryNotificationPublisherNotificationReactor implements IncomingNotificationReactor, DismissedNotificationReactor {
 
     private final Set<String> interestedPackages;
     private final SummaryNotificationPublisher summaryNotificationPublisher;
 
-    public SummaryNotificationPublisherIncomingNotificationReactor(final String thisPackageName,
-                                                                   final SummaryNotificationPublisher summaryNotificationPublisher) {
+    public SummaryNotificationPublisherNotificationReactor(final String thisPackageName,
+                                                           final SummaryNotificationPublisher summaryNotificationPublisher) {
         this.interestedPackages = ImmutableSet.of(thisPackageName);
         this.summaryNotificationPublisher = summaryNotificationPublisher;
     }
@@ -32,6 +32,12 @@ public class SummaryNotificationPublisherIncomingNotificationReactor implements 
     @Override
     public Reaction reactToIncomingNotification(final StatusBarNotification statusBarNotification) {
         summaryNotificationPublisher.updateSummaryWhenNotificationsPublished(statusBarNotification.getNotification().getGroup());
+        return Reaction.NONE;
+    }
+
+    @Override
+    public Reaction reactToDismissedNotification(StatusBarNotification statusBarNotification) {
+        summaryNotificationPublisher.updateSummaryWhenNotificationsDismissed(statusBarNotification.getNotification().getGroup());
         return Reaction.NONE;
     }
 

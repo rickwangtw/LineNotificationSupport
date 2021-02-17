@@ -60,7 +60,7 @@ import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNot
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
 import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SmartNotificationCounterNotificationReactor;
-import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherIncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -205,8 +205,10 @@ public class NotificationListenerService
         final SummaryNotificationPublisher summaryNotificationPublisher = new SummaryNotificationPublisher(
                 this, (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
                 getPackageName(), GROUP_ID_RESOLVER);
-        this.incomingNotificationReactors.add(
-                new SummaryNotificationPublisherIncomingNotificationReactor(getPackageName(), summaryNotificationPublisher));
+        final SummaryNotificationPublisherNotificationReactor summaryNotificationPublisherNotificationReactor =
+                new SummaryNotificationPublisherNotificationReactor(getPackageName(), summaryNotificationPublisher);
+        this.incomingNotificationReactors.add(summaryNotificationPublisherNotificationReactor);
+        this.dismissedNotificationReactors.add(summaryNotificationPublisherNotificationReactor);
 
         this.incomingNotificationReactors.add(
                 new ManageLineNotificationIncomingNotificationReactor(
