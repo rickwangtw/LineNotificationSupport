@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mysticwind.linenotificationsupport">
 
+    <queries>
+        <package android:name="jp.naver.line.android" />
+    </queries>
+
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
