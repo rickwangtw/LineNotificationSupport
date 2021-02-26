@@ -11,6 +11,7 @@ import android.service.notification.StatusBarNotification;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -32,7 +33,13 @@ public class LinkActionInjectorNotificationPublisherDecorator implements Notific
     }
 
     @Override
-    public void publishNotification(LineNotification lineNotification, int notificationId) {
+    public void publishNotification(final LineNotification lineNotification, final int notificationId) {
+        if (hasLinkAction(lineNotification)) {
+            Timber.i("Notification [%d] [%s] already has link action",
+                    notificationId, lineNotification.getMessage());
+            this.notificationPublisher.publishNotification(lineNotification, notificationId);
+            return;
+        }
         final Optional<String> url = findUrl(lineNotification.getMessage());
         if (!url.isPresent()) {
             this.notificationPublisher.publishNotification(lineNotification, notificationId);
@@ -40,6 +47,16 @@ public class LinkActionInjectorNotificationPublisherDecorator implements Notific
         }
 
         asyncFetchTitleAndPublish(lineNotification, notificationId, url.get());
+    }
+
+    private boolean hasLinkAction(final LineNotification lineNotification) {
+        final String buttonText = context.getString(R.string.link_button_text);
+
+        return lineNotification.getActions().stream()
+                .map(action -> action.title)
+                .filter(title -> StringUtils.equals(title, buttonText))
+                .findAny()
+                .isPresent();
     }
 
     private void asyncFetchTitleAndPublish(final LineNotification lineNotification,
