@@ -10,7 +10,11 @@ import com.mysticwind.linenotificationsupport.DismissNotificationBroadcastReceiv
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Objects;
+
+import timber.log.Timber;
 
 public class DismissActionInjectorNotificationPublisherDecorator implements NotificationPublisher {
 
@@ -24,10 +28,26 @@ public class DismissActionInjectorNotificationPublisherDecorator implements Noti
 
     @Override
     public void publishNotification(LineNotification lineNotification, int notificationId) {
+        if (hasDismissAction(lineNotification)) {
+            Timber.i("Notification [%d] [%s] already has dismiss action",
+                    notificationId, lineNotification.getMessage());
+            this.notificationPublisher.publishNotification(lineNotification, notificationId);
+            return;
+        }
         final LineNotification dismissActionInjectedLineNotification = lineNotification.toBuilder()
                 .action(buildDismissAction(notificationId))
                 .build();
         this.notificationPublisher.publishNotification(dismissActionInjectedLineNotification, notificationId);
+    }
+
+    private boolean hasDismissAction(final LineNotification lineNotification) {
+        final String dismissButtonText = context.getString(R.string.dismiss_button_text);
+
+        return lineNotification.getActions().stream()
+                .map(action -> action.title)
+                .filter(title -> StringUtils.equals(title, dismissButtonText))
+                .findAny()
+                .isPresent();
     }
 
     private Notification.Action buildDismissAction(final int notificationId) {
