@@ -8,6 +8,9 @@ import com.google.common.collect.Multimaps;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.NotificationHistoryEntry;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -28,19 +31,14 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
 
     @Override
     public void publishNotification(final LineNotification lineNotification, final int notificationId) {
+
+        insertOrUpdateHistory(lineNotification);
+
         final List<NotificationHistoryEntry> history = chatIdToHistoryMap.get(lineNotification.getChatId()).stream()
                 .sorted((entry1, entry2) -> (int)(entry1.getTimestamp() - entry2.getTimestamp()))
                 .collect(Collectors.toList());
 
-
-        // add new entry into history
-        chatIdToHistoryMap.put(lineNotification.getChatId(),
-                new NotificationHistoryEntry(
-                        lineNotification.getMessage(),
-                        lineNotification.getSender(),
-                        lineNotification.getTimestamp(),
-                        lineNotification.getLineStickerUrl())
-        );
+        history.remove(history.size() - 1);
 
         int selectedNotificationId =
                 chatIdToNotificationIdMap.computeIfAbsent(lineNotification.getChatId(), chatId -> notificationId);
@@ -50,6 +48,27 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
                         .history(history)
                         .build(),
                 selectedNotificationId);
+    }
+
+    private void insertOrUpdateHistory(LineNotification lineNotification) {
+        final Collection<NotificationHistoryEntry> history = chatIdToHistoryMap.get(lineNotification.getChatId());
+        // remove existing entry for the "New Message" use case
+        history.stream()
+                .filter(entry -> StringUtils.equals(entry.getLineMessageId(), lineNotification.getLineMessageId()))
+                .findAny()
+                .ifPresent(entry ->
+                        chatIdToHistoryMap.remove(lineNotification.getChatId(), entry)
+                );
+
+        // add new entry into history
+        chatIdToHistoryMap.put(lineNotification.getChatId(),
+                new NotificationHistoryEntry(
+                        lineNotification.getLineMessageId(),
+                        lineNotification.getMessage(),
+                        lineNotification.getSender(),
+                        lineNotification.getTimestamp(),
+                        lineNotification.getLineStickerUrl())
+        );
     }
 
     @Override
