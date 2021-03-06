@@ -161,6 +161,9 @@ public class NotificationListenerService
                 new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER,
                         getPreferenceProvider(), notificationSentListeners);
 
+        // add this so that link mutations are also persisted
+        notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher);
+
         notificationPublisher =
                 new LinkActionInjectorNotificationPublisherDecorator(
                         notificationPublisher, this);
@@ -179,8 +182,6 @@ public class NotificationListenerService
                     notificationPublisher,
                     getPreferenceProvider());
         }
-
-        notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher);
 
         notificationPublisher = new NotificationMergingNotificationPublisherDecorator(notificationPublisher);
 
