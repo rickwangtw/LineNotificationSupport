@@ -161,15 +161,16 @@ public class NotificationListenerService
                 new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER,
                         getPreferenceProvider(), notificationSentListeners);
 
+        // this should come after HistoryProvidingNotificationPublisherDecorator as it changes the notification ID
+        notificationPublisher =
+                new DismissActionInjectorNotificationPublisherDecorator(
+                        notificationPublisher, this);
+
         // add this so that link mutations are also persisted
         notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher);
 
         notificationPublisher =
                 new LinkActionInjectorNotificationPublisherDecorator(
-                        notificationPublisher, this);
-
-        notificationPublisher =
-                new DismissActionInjectorNotificationPublisherDecorator(
                         notificationPublisher, this);
 
         if (shouldExecuteMaxNotificationWorkaround) {

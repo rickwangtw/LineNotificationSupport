@@ -41,9 +41,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         notificationPublisher = new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER, getPreferenceProvider());
+        notificationPublisher = new DismissActionInjectorNotificationPublisherDecorator(notificationPublisher, this);
         notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher);
         notificationPublisher = new LinkActionInjectorNotificationPublisherDecorator(notificationPublisher, this);
-        notificationPublisher = new DismissActionInjectorNotificationPublisherDecorator(notificationPublisher, this);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
