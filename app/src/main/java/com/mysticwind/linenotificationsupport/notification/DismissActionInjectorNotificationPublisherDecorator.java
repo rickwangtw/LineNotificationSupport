@@ -6,12 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.service.notification.StatusBarNotification;
 
+import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.DismissNotificationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import timber.log.Timber;
@@ -34,10 +37,27 @@ public class DismissActionInjectorNotificationPublisherDecorator implements Noti
             this.notificationPublisher.publishNotification(lineNotification, notificationId);
             return;
         }
+
+        List<Notification.Action> actions = buildActions(lineNotification.getActions(), notificationId);
+
         final LineNotification dismissActionInjectedLineNotification = lineNotification.toBuilder()
-                .action(buildDismissAction(notificationId))
+                .clearActions()
+                .actions(actions)
                 .build();
         this.notificationPublisher.publishNotification(dismissActionInjectedLineNotification, notificationId);
+    }
+
+    // ideally ordered by: reply -> dismiss -> others (e.g. website)
+    private List<Notification.Action> buildActions(List<Notification.Action> actions, int notificationId) {
+        final Notification.Action dismissAction = buildDismissAction(notificationId);
+
+        final List<Notification.Action> actionsToReturn = new ArrayList<>(actions);
+        if (actionsToReturn.isEmpty()) {
+            actionsToReturn.add(dismissAction);
+        } else {
+            actionsToReturn.add(1, dismissAction);
+        }
+        return ImmutableList.copyOf(actionsToReturn);
     }
 
     private boolean hasDismissAction(final LineNotification lineNotification) {
