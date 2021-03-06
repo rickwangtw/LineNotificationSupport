@@ -42,6 +42,7 @@ import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.notification.BigNotificationSplittingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.DismissActionInjectorNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.notification.HistoryProvidingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.LinkActionInjectorNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationMergingNotificationPublisherDecorator;
@@ -178,6 +179,8 @@ public class NotificationListenerService
                     notificationPublisher,
                     getPreferenceProvider());
         }
+
+        notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher);
 
         notificationPublisher = new NotificationMergingNotificationPublisherDecorator(notificationPublisher);
 

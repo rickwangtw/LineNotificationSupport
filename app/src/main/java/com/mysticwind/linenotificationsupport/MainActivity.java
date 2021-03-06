@@ -19,6 +19,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.notification.DismissActionInjectorNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.notification.HistoryProvidingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.LinkActionInjectorNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
@@ -40,13 +41,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         notificationPublisher =
-                new DismissActionInjectorNotificationPublisherDecorator(
-                        new LinkActionInjectorNotificationPublisherDecorator(
-                                new SimpleNotificationPublisher(this, getPackageName(),
-                                        GROUP_ID_RESOLVER, getPreferenceProvider()),
+                new HistoryProvidingNotificationPublisherDecorator(
+                        new DismissActionInjectorNotificationPublisherDecorator(
+                                new LinkActionInjectorNotificationPublisherDecorator(
+                                        new SimpleNotificationPublisher(this, getPackageName(),
+                                                GROUP_ID_RESOLVER, getPreferenceProvider()),
+                                        this
+                                ),
                                 this
-                        ),
-                        this
+                        )
                 );
 
         FloatingActionButton fab = findViewById(R.id.fab);

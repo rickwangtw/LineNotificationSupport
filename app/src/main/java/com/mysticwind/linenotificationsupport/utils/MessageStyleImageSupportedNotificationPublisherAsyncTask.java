@@ -20,6 +20,7 @@ import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.line.LineLauncher;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
+import com.mysticwind.linenotificationsupport.model.NotificationHistoryEntry;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
@@ -33,7 +34,7 @@ import java.util.Optional;
 
 import timber.log.Timber;
 
-public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends AsyncTask<String, Void, Uri> {
+public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends AsyncTask<String, Void, NotificationCompat.Style> {
 
     private static final LineLauncher LINE_LAUNCHER = new LineLauncher();
 
@@ -53,14 +54,77 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
     }
 
     @Override
-    protected Uri doInBackground(String... params) {
-        if (StringUtils.isBlank(lineNotification.getLineStickerUrl())) {
-            return null;
+    protected NotificationCompat.Style doInBackground(String... params) {
+        final String conversationTitle;
+        if (lineNotification.getSender().getName().equals(lineNotification.getTitle())) {
+            // this is usually the case if you're talking to a single person.
+            // Don't set the conversation title in this case.
+            conversationTitle = null;
+        } else {
+            conversationTitle = lineNotification.getTitle();
         }
+
+        final NotificationCompat.MessagingStyle messagingStyle =
+                new NotificationCompat.MessagingStyle(lineNotification.getSender())
+                        .setConversationTitle(conversationTitle);
+
+        final List<NotificationCompat.MessagingStyle.Message> messages = buildMessages();
+        for (final NotificationCompat.MessagingStyle.Message message : messages) {
+            messagingStyle.addMessage(message);
+        }
+        return messagingStyle;
+    }
+
+    private List<NotificationCompat.MessagingStyle.Message> buildMessages() {
+        final ImmutableList.Builder<NotificationCompat.MessagingStyle.Message> messageListBuilder = ImmutableList.builder();
+        for (final NotificationHistoryEntry entry : lineNotification.getHistory()) {
+
+            final NotificationCompat.MessagingStyle.Message message =
+                    new NotificationCompat.MessagingStyle.Message(
+                            entry.getMessage(), entry.getTimestamp(), entry.getSender());
+
+            entry.getLineStickerUrl().ifPresent(url ->
+                    getLineStickerUri(url).ifPresent(uri ->
+                            message.setData("image/", uri)
+                    )
+            );
+
+            messageListBuilder.add(message);
+        }
+
+        if (isNewMessageModeEnabled()) {
+            final NotificationCompat.MessagingStyle.Message message = new NotificationCompat.MessagingStyle.Message(
+                    lineNotification.getMessage(), lineNotification.getTimestamp(), lineNotification.getSender());
+            if (StringUtils.isNotBlank(lineNotification.getLineStickerUrl())) {
+                getLineStickerUri(lineNotification.getLineStickerUrl()).ifPresent(uri ->
+                        message.setData("image/", uri)
+                );
+            }
+            messageListBuilder.add(message);
+        } else {
+            List<String> messages = CollectionUtils.isEmpty(lineNotification.getMessages()) ?
+                    ImmutableList.of(lineNotification.getMessage()) : lineNotification.getMessages();
+            for (final String message : messages) {
+                messageListBuilder.add(
+                        new NotificationCompat.MessagingStyle.Message(
+                                message, lineNotification.getTimestamp(), lineNotification.getSender())
+                );
+            }
+        }
+
+        return messageListBuilder.build();
+    }
+
+    private boolean isNewMessageModeEnabled() {
+        // TODO implement this
+        return true;
+    }
+
+    private Optional<Uri> getLineStickerUri(final String lineStickerUrl) {
         // Glide auto-caches
         final FutureTarget<File> target = Glide.with(context)
                 .downloadOnly()
-                .load(lineNotification.getLineStickerUrl())
+                .load(lineStickerUrl)
                 .submit(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
 
         // https://stackoverflow.com/questions/63988424/show-an-image-in-messagingstyle-notification-in-android
@@ -68,24 +132,22 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
             final File file = target.get(); // needs to be called on background thread
             final Uri uri = FileProvider.getUriForFile(context, AUTHORITY, file);
             Timber.i("URL %s downloaded at: %s", lineNotification.getLineStickerUrl(), uri);
-            return uri;
+            return Optional.of(uri);
         } catch (Exception e) {
             Timber.e(e, String.format("Failed to download image %s: %s",
                     lineNotification.getLineStickerUrl(), e.getMessage()));
-            return null;
+            return Optional.empty();
         }
     }
 
     @Override
-    protected void onPostExecute(Uri downloadedImageUri) {
-        super.onPostExecute(downloadedImageUri);
-
-        final NotificationCompat.Style style = buildMessageStyle(downloadedImageUri);
+    protected void onPostExecute(NotificationCompat.Style notificationStyle) {
+        super.onPostExecute(notificationStyle);
 
         final Optional<String> channelId = createNotificationChannel();
 
-        Notification singleNotification = new NotificationCompat.Builder(context, lineNotification.getChatId())
-                .setStyle(style)
+        final Notification singleNotification = new NotificationCompat.Builder(context, lineNotification.getChatId())
+                .setStyle(notificationStyle)
                 .setContentTitle(lineNotification.getTitle())
                 .setContentText(lineNotification.getMessage())
                 .setGroup(lineNotification.getChatId())
@@ -106,51 +168,6 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(notificationId, singleNotification);
-    }
-
-    private NotificationCompat.Style buildMessageStyle(final Uri downloadedImageUri) {
-        final String conversationTitle;
-        if (lineNotification.getSender().getName().equals(lineNotification.getTitle())) {
-            // this is usually the case if you're talking to a single person.
-            // Don't set the conversation title in this case.
-            conversationTitle = null;
-        } else {
-            conversationTitle = lineNotification.getTitle();
-        }
-
-        final NotificationCompat.MessagingStyle messagingStyle =
-                new NotificationCompat.MessagingStyle(lineNotification.getSender())
-                        .setConversationTitle(conversationTitle);
-
-        final List<NotificationCompat.MessagingStyle.Message> messages = buildMessages(lineNotification, downloadedImageUri);
-        for (final NotificationCompat.MessagingStyle.Message message : messages) {
-            messagingStyle.addMessage(message);
-        }
-        return messagingStyle;
-    }
-
-    private List<NotificationCompat.MessagingStyle.Message> buildMessages(final LineNotification lineNotification,
-                                                                          final Uri downloadedImageUri) {
-        if (downloadedImageUri == null) {
-            List<String> messages = CollectionUtils.isEmpty(lineNotification.getMessages()) ?
-                    ImmutableList.of(lineNotification.getMessage()) : lineNotification.getMessages();
-            final ImmutableList.Builder<NotificationCompat.MessagingStyle.Message> messageListBuilder = ImmutableList.builder();
-            for (final String message : messages) {
-                messageListBuilder.add(
-                        new NotificationCompat.MessagingStyle.Message(
-                                message, lineNotification.getTimestamp(), lineNotification.getSender())
-                );
-            }
-            return messageListBuilder.build();
-        }
-
-        return ImmutableList.of(
-                new NotificationCompat.MessagingStyle.Message(
-                        lineNotification.getMessage(), lineNotification.getTimestamp(), lineNotification.getSender())
-                        .setData("image/", downloadedImageUri),
-                new NotificationCompat.MessagingStyle.Message(
-                        lineNotification.getMessage(), lineNotification.getTimestamp(), lineNotification.getSender())
-        );
     }
 
     private void addActionInNotification(Notification notification) {

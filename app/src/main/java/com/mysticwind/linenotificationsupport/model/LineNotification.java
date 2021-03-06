@@ -36,6 +36,7 @@ public class LineNotification {
     @Singular
     private final List<Notification.Action> actions;
     private final Bitmap icon;
+    private final List<NotificationHistoryEntry> history;
 
     public List<String> getMessages() {
         if (messages == null) {
