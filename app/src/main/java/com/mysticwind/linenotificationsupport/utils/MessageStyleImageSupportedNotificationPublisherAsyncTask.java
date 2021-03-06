@@ -92,7 +92,10 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
             messageListBuilder.add(message);
         }
 
-        if (isNewMessageModeEnabled()) {
+        final List<String> splitMessages = CollectionUtils.isEmpty(lineNotification.getMessages()) ?
+                ImmutableList.of(lineNotification.getMessage()) : lineNotification.getMessages();
+
+        if (splitMessages.isEmpty()) {
             final NotificationCompat.MessagingStyle.Message message = new NotificationCompat.MessagingStyle.Message(
                     lineNotification.getMessage(), lineNotification.getTimestamp(), lineNotification.getSender());
             if (StringUtils.isNotBlank(lineNotification.getLineStickerUrl())) {
@@ -102,9 +105,9 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
             }
             messageListBuilder.add(message);
         } else {
-            List<String> messages = CollectionUtils.isEmpty(lineNotification.getMessages()) ?
-                    ImmutableList.of(lineNotification.getMessage()) : lineNotification.getMessages();
-            for (final String message : messages) {
+            // this also means we don't support attaching the sticker to split messages. We probably
+            // don't need to support that.
+            for (final String message : splitMessages) {
                 messageListBuilder.add(
                         new NotificationCompat.MessagingStyle.Message(
                                 message, lineNotification.getTimestamp(), lineNotification.getSender())
@@ -113,11 +116,6 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
         }
 
         return messageListBuilder.build();
-    }
-
-    private boolean isNewMessageModeEnabled() {
-        // TODO implement this
-        return true;
     }
 
     private Optional<Uri> getLineStickerUri(final String lineStickerUrl) {
