@@ -62,6 +62,9 @@
     <string name="merge_message_notification_channel_title">Merge message notification channels</string>
     <string name="merge_message_notification_channel_summary_on">Single notification channel for messages. Calls will have a separate notification channel. Useful if you\'d like to set the same notification sound for all messages.</string>
     <string name="merge_message_notification_channel_summary_off">Multiple notification channels for messages. You can set different notification sounds for each chat and even mute the ones you don\'t really care.</string>
+    <string name="single_notification_with_history_title">Use a single notification for each conversation</string>
+    <string name="single_notification_with_history_summary_on">A conversation can contain up to 10 previous messages. Easier to see the conversation history and also supports long messages without splitting. Highly recommend Samsung watches to try this option.</string>
+    <string name="single_notification_with_history_summary_off">Use the traditional notification mechanism where each message will have a new notification.</string>
     <string name="max_notification_workaround_title">[BETA] Workaround Android notification limit. Android 10 has a limit of 25 notifications per app while older Android versions have a limit of 50.</string>
     <string name="max_notification_workaround_summary_on">This option holds notifications when exceeding the limit and resends them when slots are available after notifications being dismissed. This is a new feature and may have bugs. Please keep your active notification count low if possible.</string>
     <string name="max_notification_workaround_summary_off">This is the default Android behavior. You will not receive any notifications from this app if you exceed the limit.</string>
