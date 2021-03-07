@@ -1,5 +1,9 @@
 package com.mysticwind.linenotificationsupport;
 
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.app.RemoteInput;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.view.Menu;
@@ -14,6 +18,9 @@ import androidx.preference.PreferenceManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
+import com.mysticwind.linenotificationsupport.notification.DismissActionInjectorNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.notification.HistoryProvidingNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.notification.LinkActionInjectorNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
@@ -33,8 +40,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        notificationPublisher = new SimpleNotificationPublisher(this, getPackageName(),
-                GROUP_ID_RESOLVER, getPreferenceProvider());
+        notificationPublisher = new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER, getPreferenceProvider());
+        notificationPublisher = new DismissActionInjectorNotificationPublisherDecorator(notificationPublisher, this);
+        notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher);
+        notificationPublisher = new LinkActionInjectorNotificationPublisherDecorator(notificationPublisher, this);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -42,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                sendNotification("Message: " + Instant.now().toString(), null);
+                sendNotification("Message: " + Instant.now().toString() + " https://www.google.com/search?q=" + randomNumber(), null);
             }
         });
 
@@ -54,6 +63,14 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    private int randomNumber() {
+        return (int) (Math.random() * 100 % 10);
+    }
+
+    private PreferenceProvider getPreferenceProvider() {
+        return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
     }
 
     private void sendNotification(final String message, final String url) {
@@ -74,12 +91,26 @@ public class MainActivity extends AppCompatActivity {
                 .sender(sender)
                 .timestamp(timestamp)
                 .icon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round))
+                .action(buildRemoteInputAction())
                 .build();
         notificationPublisher.publishNotification(lineNotification, notificationId);
     }
 
-    private PreferenceProvider getPreferenceProvider() {
-        return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
+    private Notification.Action buildRemoteInputAction() {
+        final int requestCode = 1;
+        final Intent messageReplyIntent = new Intent(this, MainActivity.class);
+        final PendingIntent actionIntent =
+                PendingIntent.getBroadcast(getApplicationContext(),
+                        requestCode,
+                        messageReplyIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+        return new Notification.Action.Builder(
+                android.R.drawable.btn_default, "Reply", actionIntent)
+                .addRemoteInput(
+                        new RemoteInput.Builder("quick_reply")
+                                .setLabel("Quick reply")
+                                .build())
+                .build();
     }
 
     @Override

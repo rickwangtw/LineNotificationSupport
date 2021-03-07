@@ -12,6 +12,7 @@ public class PreferenceProvider {
     public static final String USE_MESSAGE_SPLITTER_PREFERENCE_KEY = "use_big_message_splitter";
     public static final String MESSAGE_SIZE_LIMIT_PREFERENCE_KEY = "message_size_limit";
     public static final String SPLIT_MESSAGE_MAX_PAGES_KEY = "split_message_max_pages";
+    public static final String SINGLE_NOTIFICATION_CONVERSATIONS_KEY = "single_notification_with_history";
 
     private final SharedPreferences sharedPreferences;
 
@@ -35,23 +36,46 @@ public class PreferenceProvider {
     }
 
     public boolean shouldExecuteMaxNotificationWorkaround() {
+        if (shouldUseSingleNotificationForConversations()) {
+            return false;
+        }
         return sharedPreferences.getBoolean(MAX_NOTIFICATION_WORKAROUND_PREFERENCE_KEY, true);
     }
 
     public boolean shouldUseLegacyStickerLoader() {
+        if (shouldUseSingleNotificationForConversations()) {
+            return false;
+        }
         return sharedPreferences.getBoolean(USE_LEGACY_STICKER_LOADER_PREFERENCE_KEY, false);
     }
 
     public boolean shouldUseMessageSplitter() {
+        if (shouldUseSingleNotificationForConversations()) {
+            return false;
+        }
         return sharedPreferences.getBoolean(USE_MESSAGE_SPLITTER_PREFERENCE_KEY, true);
     }
 
     public int getMessageSizeLimit() {
+        if (!shouldUseMessageSplitter() || shouldUseSingleNotificationForConversations()) {
+            throw new IllegalArgumentException(
+                    String.format("Should not need message size limit. Use message splitter [%s] Use single notification [%]",
+                            shouldUseMessageSplitter(), shouldUseSingleNotificationForConversations()));
+        }
         return sharedPreferences.getInt(MESSAGE_SIZE_LIMIT_PREFERENCE_KEY, 60);
     }
 
     public int getMaxPageCount() {
+        if (!shouldUseMessageSplitter() || shouldUseSingleNotificationForConversations()) {
+            throw new IllegalArgumentException(
+                    String.format("Should not need max page count. Use message splitter [%s] Use single notification [%]",
+                            shouldUseMessageSplitter(), shouldUseSingleNotificationForConversations()));
+        }
         return sharedPreferences.getInt(SPLIT_MESSAGE_MAX_PAGES_KEY, 5);
+    }
+
+    public boolean shouldUseSingleNotificationForConversations() {
+        return sharedPreferences.getBoolean(SINGLE_NOTIFICATION_CONVERSATIONS_KEY, false);
     }
 
 }

@@ -25,6 +25,7 @@ import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
@@ -41,6 +42,9 @@ import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStra
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.notification.BigNotificationSplittingNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.notification.DismissActionInjectorNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.notification.HistoryProvidingNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.notification.LinkActionInjectorNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationMergingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
@@ -59,7 +63,7 @@ import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNot
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
 import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SmartNotificationCounterNotificationReactor;
-import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherIncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -117,6 +121,12 @@ public class NotificationListenerService
             IdenticalMessageHandlingStrategy.SEND_AS_IS, AS_IS_IDENTICAL_MESSAGE_HANDLER
     );
 
+    private static final Set<String> PREFERENCE_KEYS_THAT_TRIGGER_REBUILDING_NOTIFICATION_PUBLISHER = ImmutableSet.of(
+            PreferenceProvider.MAX_NOTIFICATION_WORKAROUND_PREFERENCE_KEY,
+            PreferenceProvider.USE_MESSAGE_SPLITTER_PREFERENCE_KEY,
+            PreferenceProvider.SINGLE_NOTIFICATION_CONVERSATIONS_KEY
+    );
+
     private final Handler handler = new Handler();
     private final SmartNotificationCounter smartNotificationCounter = new SmartNotificationCounter((int) getMaxNotificationsPerApp());
     private final DumbNotificationCounter dumbNotificationCounter = new DumbNotificationCounter((int) getMaxNotificationsPerApp());
@@ -134,9 +144,7 @@ public class NotificationListenerService
     private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String preferenceKey) {
-            if (PreferenceProvider.MAX_NOTIFICATION_WORKAROUND_PREFERENCE_KEY.equals(preferenceKey)) {
-                NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
-            } else if (PreferenceProvider.USE_MESSAGE_SPLITTER_PREFERENCE_KEY.equals(preferenceKey)) {
+            if (PREFERENCE_KEYS_THAT_TRIGGER_REBUILDING_NOTIFICATION_PUBLISHER.contains(preferenceKey)) {
                 NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
             }
         }
@@ -147,6 +155,8 @@ public class NotificationListenerService
                 getPreferenceProvider().shouldExecuteMaxNotificationWorkaround();
 
         final List<NotificationSentListener> notificationSentListeners = new ArrayList<>();
+        // don't enable this for single notification conversations just yet because we may still
+        // exceed 25 chats
         if (shouldExecuteMaxNotificationWorkaround) {
             resendUnsentNotificationsNotificationSentListener = buildResendUnsentNotificationsNotificationSentListener();
             notificationSentListeners.add(resendUnsentNotificationsNotificationSentListener);
@@ -157,6 +167,21 @@ public class NotificationListenerService
         NotificationPublisher notificationPublisher =
                 new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER,
                         getPreferenceProvider(), notificationSentListeners);
+
+        // this should come after HistoryProvidingNotificationPublisherDecorator as it changes the notification ID
+        notificationPublisher =
+                new DismissActionInjectorNotificationPublisherDecorator(
+                        notificationPublisher, this);
+
+        if (getPreferenceProvider().shouldUseSingleNotificationForConversations()) {
+            // do this before LinkActionInjectorNotificationPublisherDecorator
+            // so that link mutations are also persisted
+            notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher);
+        }
+
+        notificationPublisher =
+                new LinkActionInjectorNotificationPublisherDecorator(
+                        notificationPublisher, this);
 
         if (shouldExecuteMaxNotificationWorkaround) {
             notificationPublisher = new MaxNotificationHandlingNotificationPublisherDecorator(
@@ -201,8 +226,10 @@ public class NotificationListenerService
         final SummaryNotificationPublisher summaryNotificationPublisher = new SummaryNotificationPublisher(
                 this, (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
                 getPackageName(), GROUP_ID_RESOLVER);
-        this.incomingNotificationReactors.add(
-                new SummaryNotificationPublisherIncomingNotificationReactor(getPackageName(), summaryNotificationPublisher));
+        final SummaryNotificationPublisherNotificationReactor summaryNotificationPublisherNotificationReactor =
+                new SummaryNotificationPublisherNotificationReactor(getPackageName(), summaryNotificationPublisher);
+        this.incomingNotificationReactors.add(summaryNotificationPublisherNotificationReactor);
+        this.dismissedNotificationReactors.add(summaryNotificationPublisherNotificationReactor);
 
         this.incomingNotificationReactors.add(
                 new ManageLineNotificationIncomingNotificationReactor(

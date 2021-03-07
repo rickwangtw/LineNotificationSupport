@@ -87,6 +87,8 @@ public class SummaryNotificationPublisher {
 
         final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(groupId, groupNotification);
+
+        Timber.d("Created/Updated summary group: " + groupId);
     }
 
     private NotificationCompat.MessagingStyle buildMessagingStyleFromHistory(List<StatusBarNotification> notifications) {
@@ -117,7 +119,29 @@ public class SummaryNotificationPublisher {
     }
 
     public void updateSummaryWhenNotificationsDismissed(final String group) {
-        // TODO implement this. Do nothing right now due to unnecessary vibrations and occasionally weird summaries to be sent out
+        final List<StatusBarNotification> notifications = Arrays.stream(notificationManager.getActiveNotifications())
+                .filter(statusBarNotification -> StringUtils.equals(packageName , statusBarNotification.getPackageName()))
+                .filter(statusBarNotification -> StringUtils.equals(group, statusBarNotification.getNotification().getGroup()))
+                .collect(Collectors.toList());
+
+        final long nonSummaryNotificationCount = notifications.stream()
+                .filter(notification -> !StatusBarNotificationExtractor.isSummary(notification))
+                .count();
+
+        if (nonSummaryNotificationCount > 0) {
+            // do nothing if the summary should still exist (we should show even there is only one notification)
+            return;
+        }
+
+        // cancel the group summary
+        notifications.stream()
+                .filter(notification -> StatusBarNotificationExtractor.isSummary(notification))
+                .forEach(notification -> {
+                            Timber.d("Notification group [%s] remaining [%d] dismissing group [%d]",
+                                    group, nonSummaryNotificationCount, notification.getId());
+                            notificationManager.cancel(notification.getId());
+                        }
+                );
     }
 
 }

@@ -5,12 +5,13 @@ import android.graphics.Bitmap;
 
 import androidx.core.app.Person;
 
-import java.util.Collections;
 import java.util.List;
 
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
+
+import static java.util.Collections.EMPTY_LIST;
 
 @Value
 @Builder(toBuilder = true)
@@ -36,12 +37,20 @@ public class LineNotification {
     @Singular
     private final List<Notification.Action> actions;
     private final Bitmap icon;
+    private final List<NotificationHistoryEntry> history;
 
     public List<String> getMessages() {
         if (messages == null) {
-            return Collections.emptyList();
+            return EMPTY_LIST;
         }
         return messages;
+    }
+
+    public List<NotificationHistoryEntry> getHistory() {
+        if (history == null) {
+            return EMPTY_LIST;
+        }
+        return history;
     }
 
 }

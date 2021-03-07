@@ -5,6 +5,10 @@
 
     <string name="action_settings">設定</string>
 
+    <!-- Notification actions -->
+    <string name="dismiss_button_text">略過</string>
+    <string name="link_button_text">網站</string>
+
     <!-- Permission Dialog -->
     <string name="permission_request_dialog_message">您必須授與 LINE通知小幫手 存取 LINE 通知的權限。</string>
 
@@ -49,6 +53,9 @@
     <string name="merge_message_notification_channel_title">單一訊息通知設定</string>
     <string name="merge_message_notification_channel_summary_on">所有訊息通知皆使用相同設定。您可以輕易的將所有的訊息設定同一個鈴聲。</string>
     <string name="merge_message_notification_channel_summary_off">個人或群組皆有分開的通知設定。您可以對每個群組使用不同的通知音效，您也可以選則忽略特定群組的通知。</string>
+    <string name="single_notification_with_history_title">一個群組使用一個通知</string>
+    <string name="single_notification_with_history_summary_on">這個選項啟用時可以在一個通知裡顯示最多十則歷史訊息。更方便閱讀訊息而且不用切割長訊息。建議三星手錶使用者嘗試這個設定。</string>
+    <string name="single_notification_with_history_summary_off">使用往常的訊息機制，一則訊息會有一個通知。</string>
     <string name="max_notification_workaround_title">[測試中]解決安卓通知的系統限制。安卓10限制一個 app 只能有25則通知。安卓10之前的限制為50則通知。</string>
     <string name="max_notification_workaround_summary_on">這個選項會在超過通知限制時暫存通知。在舊的通知被取消時，暫存的通知會再次被傳送。這是個測試中的新功能。如果發現問題，請盡量減少顯示中的通知數量。</string>
     <string name="max_notification_workaround_summary_off">這個選項是預設的安卓體驗。在超過限制時您不會收到任何新的訊息。</string>

@@ -14,44 +14,6 @@
             app:title="@string/identical_messages_title"
             app:useSimpleSummaryProvider="true" />
 
-        <SwitchPreferenceCompat
-            app:iconSpaceReserved="false"
-            app:key="use_legacy_sticker_loader"
-            app:title="@string/use_legacy_sticker_loader_title"
-            app:defaultValue="false"
-            app:summaryOff="@string/use_legacy_sticker_loader_summary_off"
-            app:summaryOn="@string/use_legacy_sticker_loader_summary_on" />
-
-        <SwitchPreferenceCompat
-            app:iconSpaceReserved="false"
-            app:key="use_big_message_splitter"
-            app:title="@string/use_big_message_splitter_title"
-            app:defaultValue="true"
-            app:summaryOff="@string/use_big_message_splitter_summary_off"
-            app:summaryOn="@string/use_big_message_splitter_summary_on" />
-
-        <SeekBarPreference
-            app:iconSpaceReserved="false"
-            app:key="message_size_limit"
-            app:dependency="use_big_message_splitter"
-            app:title="@string/message_size_limit_title"
-            app:showSeekBarValue="true"
-            app:defaultValue="60"
-            app:seekBarIncrement="1"
-            app:min="20"
-            android:max="150" />
-
-        <SeekBarPreference
-            app:iconSpaceReserved="false"
-            app:key="split_message_max_pages"
-            app:dependency="use_big_message_splitter"
-            app:title="@string/split_message_max_pages_title"
-            app:showSeekBarValue="true"
-            app:defaultValue="5"
-            app:seekBarIncrement="1"
-            app:min="2"
-            android:max="20" />
-
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/calls_header"
@@ -129,9 +91,60 @@
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
             app:singleLineTitle="false"
+            app:key="single_notification_with_history"
+            app:title="@string/single_notification_with_history_title"
+            app:defaultValue="false"
+            android:disableDependentsState="true"
+            app:summaryOff="@string/single_notification_with_history_summary_off"
+            app:summaryOn="@string/single_notification_with_history_summary_on" />
+
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="use_legacy_sticker_loader"
+            app:title="@string/use_legacy_sticker_loader_title"
+            app:defaultValue="false"
+            app:dependency="single_notification_with_history"
+            app:summaryOff="@string/use_legacy_sticker_loader_summary_off"
+            app:summaryOn="@string/use_legacy_sticker_loader_summary_on" />
+
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="use_big_message_splitter"
+            app:title="@string/use_big_message_splitter_title"
+            app:defaultValue="true"
+            app:dependency="single_notification_with_history"
+            app:summaryOff="@string/use_big_message_splitter_summary_off"
+            app:summaryOn="@string/use_big_message_splitter_summary_on" />
+
+        <SeekBarPreference
+            app:iconSpaceReserved="false"
+            app:key="message_size_limit"
+            app:dependency="use_big_message_splitter"
+            app:title="@string/message_size_limit_title"
+            app:showSeekBarValue="true"
+            app:defaultValue="60"
+            app:seekBarIncrement="1"
+            app:min="20"
+            android:max="150" />
+
+        <SeekBarPreference
+            app:iconSpaceReserved="false"
+            app:key="split_message_max_pages"
+            app:dependency="use_big_message_splitter"
+            app:title="@string/split_message_max_pages_title"
+            app:showSeekBarValue="true"
+            app:defaultValue="5"
+            app:seekBarIncrement="1"
+            app:min="2"
+            android:max="20" />
+
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
             app:key="max_notification_workaround"
             app:title="@string/max_notification_workaround_title"
             app:defaultValue="true"
+            app:dependency="single_notification_with_history"
             app:summaryOff="@string/max_notification_workaround_summary_off"
             app:summaryOn="@string/max_notification_workaround_summary_on" />
 
