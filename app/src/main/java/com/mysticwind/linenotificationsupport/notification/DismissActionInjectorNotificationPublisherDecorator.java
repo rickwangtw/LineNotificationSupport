@@ -38,6 +38,12 @@ public class DismissActionInjectorNotificationPublisherDecorator implements Noti
             return;
         }
 
+        // don't add dismiss button for incoming call state
+        if (lineNotification.getCallState() == LineNotification.CallState.INCOMING) {
+            this.notificationPublisher.publishNotification(lineNotification, notificationId);
+            return;
+        }
+
         List<Notification.Action> actions = buildActions(lineNotification.getActions(), notificationId);
 
         final LineNotification dismissActionInjectedLineNotification = lineNotification.toBuilder()
