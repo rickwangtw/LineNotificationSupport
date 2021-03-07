@@ -129,11 +129,11 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
         try {
             final File file = target.get(); // needs to be called on background thread
             final Uri uri = FileProvider.getUriForFile(context, AUTHORITY, file);
-            Timber.i("URL %s downloaded at: %s", lineNotification.getLineStickerUrl(), uri);
+            Timber.i("URL %s downloaded at: %s", lineStickerUrl, uri);
             return Optional.of(uri);
         } catch (Exception e) {
             Timber.e(e, String.format("Failed to download image %s: %s",
-                    lineNotification.getLineStickerUrl(), e.getMessage()));
+                    lineStickerUrl, e.getMessage()));
             return Optional.empty();
         }
     }
