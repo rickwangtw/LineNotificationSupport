@@ -53,6 +53,9 @@
     <string name="merge_message_notification_channel_title">单一信息通知设置</string>
     <string name="merge_message_notification_channel_summary_on">所有信息通知皆使用相同设置。您可以轻易的将所有的信息设定为同一个响铃。</string>
     <string name="merge_message_notification_channel_summary_off">个人或群皆有分开的通知设置。您可以对每个群使用不同的通知音效，您也可以选则忽略特定群的通知。</string>
+    <string name="single_notification_with_history_title">一个群使用一个通知</string>
+    <string name="single_notification_with_history_summary_on">这个选项启用时可以在一个通知裡显示最多十则历史信息。更方便阅读信息而且不用切割长信息。建议三星手錶使用者尝试这个设定。</string>
+    <string name="single_notification_with_history_summary_off">使用往常的信息机制，一则信息会有一个通知。</string>
     <string name="max_notification_workaround_title">[测试中]解决安卓通知的系统限制。安卓10限制一个应用只能有25则通知。安卓10之前的限制为50则通知。</string>
     <string name="max_notification_workaround_summary_on">这个选项会在超过通知限制时暂存通知。在旧的通知被取消时，暂存的通知会再次被传送。这是个测试中的新功能。如果發现问题，请尽量减少显示中的通知数量。</string>
     <string name="max_notification_workaround_summary_off">这个选项是预设的安卓体验。在超过限制时您不会收到任何新的讯息。</string>
