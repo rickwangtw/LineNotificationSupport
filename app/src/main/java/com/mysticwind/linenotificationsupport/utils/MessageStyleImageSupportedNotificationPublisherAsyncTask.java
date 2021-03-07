@@ -34,6 +34,8 @@ import java.util.Optional;
 
 import timber.log.Timber;
 
+import static java.util.Collections.EMPTY_LIST;
+
 public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends AsyncTask<String, Void, NotificationCompat.Style> {
 
     private static final LineLauncher LINE_LAUNCHER = new LineLauncher();
@@ -93,8 +95,9 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
         }
 
         final List<String> splitMessages = CollectionUtils.isEmpty(lineNotification.getMessages()) ?
-                ImmutableList.of(lineNotification.getMessage()) : lineNotification.getMessages();
+                EMPTY_LIST : lineNotification.getMessages();
 
+        // TODO we should be able to drastically reduce duplicated code by compiling the messages first
         if (splitMessages.isEmpty()) {
             final NotificationCompat.MessagingStyle.Message message = new NotificationCompat.MessagingStyle.Message(
                     lineNotification.getMessage(), lineNotification.getTimestamp(), lineNotification.getSender());
