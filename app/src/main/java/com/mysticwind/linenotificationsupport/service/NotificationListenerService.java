@@ -533,6 +533,10 @@ public class NotificationListenerService
     }
 
     private void cancelIncomingCallNotification(final Set<Integer> notificationIdsToCancel) {
+        if (getPreferenceProvider().shouldUseSingleNotificationForConversations()) {
+            // so that we don't accidentally dismiss "call in progress" notifications
+            return;
+        }
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(NotificationListenerService.this);
         for (final int notificationId : notificationIdsToCancel) {
             try {
