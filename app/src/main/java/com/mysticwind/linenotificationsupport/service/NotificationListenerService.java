@@ -25,6 +25,7 @@ import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
@@ -120,6 +121,12 @@ public class NotificationListenerService
             IdenticalMessageHandlingStrategy.SEND_AS_IS, AS_IS_IDENTICAL_MESSAGE_HANDLER
     );
 
+    private static final Set<String> PREFERENCE_KEYS_THAT_TRIGGER_REBUILDING_NOTIFICATION_PUBLISHER = ImmutableSet.of(
+            PreferenceProvider.MAX_NOTIFICATION_WORKAROUND_PREFERENCE_KEY,
+            PreferenceProvider.USE_MESSAGE_SPLITTER_PREFERENCE_KEY,
+            PreferenceProvider.SINGLE_NOTIFICATION_CONVERSATIONS_KEY
+    );
+
     private final Handler handler = new Handler();
     private final SmartNotificationCounter smartNotificationCounter = new SmartNotificationCounter((int) getMaxNotificationsPerApp());
     private final DumbNotificationCounter dumbNotificationCounter = new DumbNotificationCounter((int) getMaxNotificationsPerApp());
@@ -137,9 +144,7 @@ public class NotificationListenerService
     private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String preferenceKey) {
-            if (PreferenceProvider.MAX_NOTIFICATION_WORKAROUND_PREFERENCE_KEY.equals(preferenceKey)) {
-                NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
-            } else if (PreferenceProvider.USE_MESSAGE_SPLITTER_PREFERENCE_KEY.equals(preferenceKey)) {
+            if (PREFERENCE_KEYS_THAT_TRIGGER_REBUILDING_NOTIFICATION_PUBLISHER.contains(preferenceKey)) {
                 NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
             }
         }
@@ -150,6 +155,8 @@ public class NotificationListenerService
                 getPreferenceProvider().shouldExecuteMaxNotificationWorkaround();
 
         final List<NotificationSentListener> notificationSentListeners = new ArrayList<>();
+        // don't enable this for single notification conversations just yet because we may still
+        // exceed 25 chats
         if (shouldExecuteMaxNotificationWorkaround) {
             resendUnsentNotificationsNotificationSentListener = buildResendUnsentNotificationsNotificationSentListener();
             notificationSentListeners.add(resendUnsentNotificationsNotificationSentListener);
@@ -166,8 +173,11 @@ public class NotificationListenerService
                 new DismissActionInjectorNotificationPublisherDecorator(
                         notificationPublisher, this);
 
-        // add this so that link mutations are also persisted
-        notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher);
+        if (getPreferenceProvider().shouldUseSingleNotificationForConversations()) {
+            // do this before LinkActionInjectorNotificationPublisherDecorator
+            // so that link mutations are also persisted
+            notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher);
+        }
 
         notificationPublisher =
                 new LinkActionInjectorNotificationPublisherDecorator(
