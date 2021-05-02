@@ -60,6 +60,7 @@ import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNameP
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.LoggingDismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNotificationIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
 import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
@@ -215,6 +216,8 @@ public class NotificationListenerService
     public IBinder onBind(Intent intent) {
         this.incomingNotificationReactors.add(
                 new ChatRoomNamePersistenceIncomingNotificationReactor(CHAT_TITLE_AND_SENDER_RESOLVER));
+
+        this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
 
         // TODO remove this after testing the stability of the dumb version
         final SmartNotificationCounterNotificationReactor smartNotificationCounterNotificationReactor =
