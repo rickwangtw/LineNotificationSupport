@@ -56,6 +56,7 @@ import com.mysticwind.linenotificationsupport.notification.SlotAvailabilityCheck
 import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificationCounter;
+import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNamePersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
@@ -212,6 +213,9 @@ public class NotificationListenerService
 
     @Override
     public IBinder onBind(Intent intent) {
+        this.incomingNotificationReactors.add(
+                new ChatRoomNamePersistenceIncomingNotificationReactor(CHAT_TITLE_AND_SENDER_RESOLVER));
+
         // TODO remove this after testing the stability of the dumb version
         final SmartNotificationCounterNotificationReactor smartNotificationCounterNotificationReactor =
                 new SmartNotificationCounterNotificationReactor(getPackageName(), smartNotificationCounter);

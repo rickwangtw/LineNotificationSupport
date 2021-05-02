@@ -35,7 +35,7 @@ public class ChatTitleAndSenderResolver {
         final String sender = getAndroidTitle(statusBarNotification);
 
         // just use the sender if not chat (e.g. calls)
-        String chatId = getChatId(statusBarNotification);
+        final String chatId = NotificationExtractor.getLineChatId(statusBarNotification.getNotification());
         if (StringUtils.isBlank(chatId)) {
             return Pair.of(sender, sender);
         }
@@ -58,16 +58,21 @@ public class ChatTitleAndSenderResolver {
         return StringUtils.isNotBlank(title);
     }
 
-    private void cacheGroupTitle(final StatusBarNotification statusBarNotification, final String groupName) {
-        final String chatId = getChatId(statusBarNotification);
-        if (StringUtils.isNotBlank(chatId)) {
-            chatIdToChatRoomNameMap.put(chatId, groupName);
+    public void addChatIdToChatNameMap(final String chatId, final String chatName) {
+        if (StringUtils.isBlank(chatId) || StringUtils.isBlank(chatName)) {
+            return;
         }
+        chatIdToChatRoomNameMap.put(chatId, chatName);
+    }
+
+    private void cacheGroupTitle(final StatusBarNotification statusBarNotification, final String groupName) {
+        final String chatId = NotificationExtractor.getLineChatId(statusBarNotification.getNotification());
+        addChatIdToChatNameMap(chatId, groupName);
     }
 
     private String getGroupChatTitle(final StatusBarNotification statusBarNotification) {
         // chat groups will have a conversationTitle (but not groups of people)
-        return statusBarNotification.getNotification().extras.getString("android.conversationTitle");
+        return NotificationExtractor.getConversationTitle(statusBarNotification.getNotification());
     }
 
     private String calculateGroupSender(StatusBarNotification statusBarNotification) {
@@ -98,10 +103,6 @@ public class ChatTitleAndSenderResolver {
 
     private String getAndroidTitle(final StatusBarNotification statusBarNotification) {
         return NotificationExtractor.getTitle(statusBarNotification.getNotification());
-    }
-
-    private String getChatId(final StatusBarNotification statusBarNotification) {
-        return statusBarNotification.getNotification().extras.getString("line.chat.id");
     }
 
     private String sortAndMerge(Set<String> senders) {
