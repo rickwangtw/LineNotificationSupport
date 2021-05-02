@@ -168,6 +168,12 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
         }
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        Timber.d("Publishing notification id [%d] channel [%s] group [%s] text [%s] timestamp [%d]",
+                notificationId,
+                singleNotification.getChannelId(),
+                singleNotification.getGroup(),
+                singleNotification.tickerText,
+                singleNotification.when);
         notificationManager.notify(notificationId, singleNotification);
     }
 
