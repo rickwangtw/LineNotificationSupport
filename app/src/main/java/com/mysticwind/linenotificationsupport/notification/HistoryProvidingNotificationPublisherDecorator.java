@@ -38,13 +38,18 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
                 .sorted((entry1, entry2) -> (int)(entry1.getTimestamp() - entry2.getTimestamp()))
                 .collect(Collectors.toList());
 
-        history.remove(history.size() - 1);
+        final NotificationHistoryEntry lastNotificationEntry = history.remove(history.size() - 1);
 
         int selectedNotificationId =
                 chatIdToNotificationIdMap.computeIfAbsent(lineNotification.getChatId(), chatId -> notificationId);
 
         this.notificationPublisher.publishNotification(
                 lineNotification.toBuilder()
+                        .lineMessageId(lastNotificationEntry.getLineMessageId())
+                        .message(lastNotificationEntry.getMessage())
+                        .sender(lastNotificationEntry.getSender())
+                        .timestamp(lastNotificationEntry.getTimestamp())
+                        .lineStickerUrl(lastNotificationEntry.getLineStickerUrl().orElse(null))
                         .history(history)
                         .build(),
                 selectedNotificationId);
@@ -67,8 +72,7 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
                         lineNotification.getMessage(),
                         lineNotification.getSender(),
                         lineNotification.getTimestamp(),
-                        lineNotification.getLineStickerUrl())
-        );
+                        lineNotification.getLineStickerUrl()));
     }
 
     @Override
