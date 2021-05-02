@@ -88,7 +88,11 @@ public class SummaryNotificationPublisher {
         final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(groupId, groupNotification);
 
-        Timber.d("Created/Updated summary group: " + groupId);
+        Timber.d("Created/Updated summary group id [%d] channel [%s] group [%s] text [%s]",
+                groupId,
+                groupNotification.getChannelId(),
+                groupNotification.getGroup(),
+                groupNotification.tickerText);
     }
 
     private NotificationCompat.MessagingStyle buildMessagingStyleFromHistory(List<StatusBarNotification> notifications) {
