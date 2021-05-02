@@ -16,10 +16,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LineNotificationSupport">
+
         <receiver
             android:name=".DismissNotificationBroadcastReceiver"
             android:enabled="true"
-            android:exported="false"></receiver>
+            android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -41,14 +42,17 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".NotificationSettingsLauncherActivity"
+            android:exported="false" />
+        <activity
             android:name=".SettingsActivity"
-            android:label="@string/action_settings"></activity>
+            android:label="@string/action_settings" />
         <activity
             android:name=".NotificationHistoryDebugActivity"
-            android:label="@string/action_debug"></activity>
+            android:label="@string/action_debug" />
         <activity
             android:name=".MainActivity"
-            android:label="@string/action_test_notifications"></activity>
+            android:label="@string/action_test_notifications" />
 
         <service
             android:name=".service.NotificationListenerService"

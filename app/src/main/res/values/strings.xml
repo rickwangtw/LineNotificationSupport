@@ -53,6 +53,8 @@
     <string name="call_notification_action_reverse_summary_off">Show "Answer" then "Decline". Use this option when you tend to answer calls more often.</string>
 
     <!-- Notification Preferences -->
+    <string name="notification_settings_title">Manage Notification Settings</string>
+    <string name="notification_settings_summary">Change settings such as sound, vibration, and pop-ups.</string>
     <string name="manage_line_message_notifications_title">[BETA] Manage LINE notifications</string>
     <string name="manage_line_message_notifications_summary_on">Use LINE Notification Support to handle LINE messages. LINE messages will be automatically dismissed.</string>
     <string name="manage_line_message_notifications_summary_off">Do not mess with LINE notifications</string>

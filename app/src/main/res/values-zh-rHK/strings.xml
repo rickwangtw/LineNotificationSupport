@@ -43,6 +43,8 @@
     <string name="call_notification_action_reverse_summary_off">先『拒絕』再『接聽』。使用這個選項如果您較常選擇拒絕。</string>
 
     <!-- Notification Preferences -->
+    <string name="notification_settings_title">LINE 通知小幫手通知設定</string>
+    <string name="notification_settings_summary">設定音效、震動、以及彈出視窗。</string>
     <string name="manage_line_message_notifications_title">[測試中]管理 LINE 通知</string>
     <string name="manage_line_message_notifications_summary_on">使用 LINE通知小幫手 管理LINE通知。LINE通知會自動被取消。</string>
     <string name="manage_line_message_notifications_summary_off">不自動取消來自 LINE 的通知。</string>

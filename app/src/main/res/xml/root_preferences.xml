@@ -61,6 +61,16 @@
     <PreferenceCategory app:title="@string/notifications_header"
         app:iconSpaceReserved="false" >
 
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="lns_notification_settings"
+            app:title="@string/notification_settings_title"
+            app:summary="@string/notification_settings_summary">
+            <intent
+                android:targetPackage="com.mysticwind.linenotificationsupport"
+                android:targetClass="com.mysticwind.linenotificationsupport.NotificationSettingsLauncherActivity"/>
+        </Preference>
+
         <SwitchPreferenceCompat
             android:disableDependentsState="true"
             app:iconSpaceReserved="false"

@@ -44,6 +44,8 @@
     <string name="call_notification_action_reverse_summary_off">先『应答』再『拒绝』。使用这个选项如果您较常选择应答来电。</string>
 
     <!-- Notification Preferences -->
+    <string name="notification_settings_title">LINE 提示助手通知设置</string>
+    <string name="notification_settings_summary">设置声音、振动、以及弹出窗口。</string>
     <string name="manage_line_message_notifications_title">[测试中]管理 LINE 通知</string>
     <string name="manage_line_message_notifications_summary_on">使用 LINE提示助手 管理LINE通知。LINE通知会自动被取消。</string>
     <string name="manage_line_message_notifications_summary_off">不自动取消来自 LINE 的通知。</string>
