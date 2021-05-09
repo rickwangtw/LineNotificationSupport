@@ -214,6 +214,8 @@ public class NotificationListenerService
 
     @Override
     public IBinder onBind(Intent intent) {
+        Timber.d("NotificationListenerService onBind");
+
         this.incomingNotificationReactors.add(
                 new ChatRoomNamePersistenceIncomingNotificationReactor(CHAT_TITLE_AND_SENDER_RESOLVER));
 
@@ -279,6 +281,8 @@ public class NotificationListenerService
 
     @Override
     public boolean onUnbind(Intent intent) {
+        Timber.w("NotificationListenerService onUnbind");
+
         this.incomingNotificationReactors.clear();
         this.dismissedNotificationReactors.clear();
 
