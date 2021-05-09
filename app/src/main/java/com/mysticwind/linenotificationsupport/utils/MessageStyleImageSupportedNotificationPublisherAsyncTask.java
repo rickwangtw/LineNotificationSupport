@@ -172,7 +172,7 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
                 notificationId,
                 singleNotification.getChannelId(),
                 singleNotification.getGroup(),
-                singleNotification.tickerText,
+                NotificationExtractor.getMessage(singleNotification),
                 singleNotification.when);
         notificationManager.notify(notificationId, singleNotification);
     }
