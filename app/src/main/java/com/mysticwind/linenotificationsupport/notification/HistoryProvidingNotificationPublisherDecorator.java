@@ -17,6 +17,8 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import timber.log.Timber;
+
 public class HistoryProvidingNotificationPublisherDecorator implements NotificationPublisher {
 
     private final Multimap<String, NotificationHistoryEntry> chatIdToHistoryMap =
@@ -42,6 +44,12 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
 
         int selectedNotificationId =
                 chatIdToNotificationIdMap.computeIfAbsent(lineNotification.getChatId(), chatId -> notificationId);
+
+        Timber.d("Publishing notification with history: id [%s] chat ID [%s] history size [%d] latest message [%s]",
+                selectedNotificationId,
+                lineNotification.getChatId(),
+                history.size(),
+                lastNotificationEntry.getMessage());
 
         this.notificationPublisher.publishNotification(
                 lineNotification.toBuilder()
@@ -83,8 +91,11 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
 
     @Override
     public void updateNotificationDismissed(StatusBarNotification statusBarNotification) {
+        final String group = statusBarNotification.getNotification().getGroup();
         // clean cache
-        chatIdToHistoryMap.removeAll(statusBarNotification.getNotification().getGroup());
+        Timber.d("Cleaning notification history with group [%s], number of items [%d]",
+                group, chatIdToHistoryMap.get(group).size());
+        chatIdToHistoryMap.removeAll(group);
 
         notificationPublisher.updateNotificationDismissed(statusBarNotification);
     }
