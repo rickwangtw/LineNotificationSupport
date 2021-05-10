@@ -212,9 +212,12 @@ public class NotificationListenerService
                 });
     }
 
+
     @Override
-    public IBinder onBind(Intent intent) {
-        Timber.d("NotificationListenerService onBind");
+    public void onCreate() {
+        super.onCreate();
+
+        Timber.d("NotificationListenerService onCreate - initializing service");
 
         this.incomingNotificationReactors.add(
                 new ChatRoomNamePersistenceIncomingNotificationReactor(CHAT_TITLE_AND_SENDER_RESOLVER));
@@ -267,8 +270,20 @@ public class NotificationListenerService
         }
 
         scheduleNotificationCounterCheck();
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        Timber.d("NotificationListenerService onBind");
 
         return super.onBind(intent);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        Timber.w("NotificationListenerService onDestroy");
     }
 
     private long getMaxNotificationsPerApp() {
@@ -660,6 +675,20 @@ public class NotificationListenerService
                 Toast.makeText(this, "[ERROR] LNS onNotificationRemoved", Toast.LENGTH_SHORT);
             }
         }
+    }
+
+    @Override
+    public void onListenerConnected() {
+        super.onListenerConnected();
+
+        Timber.w("NotificationListenerService onListenerConnected");
+    }
+
+    @Override
+    public void onListenerDisconnected() {
+        super.onListenerDisconnected();
+
+        Timber.w("NotificationListenerService onListenerDisconnected");
     }
 
     public void onNotificationRemovedUnsafe(final StatusBarNotification statusBarNotification) {
