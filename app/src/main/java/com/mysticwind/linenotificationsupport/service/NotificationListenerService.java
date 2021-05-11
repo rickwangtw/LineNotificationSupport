@@ -78,6 +78,7 @@ import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.Instant;
@@ -142,6 +143,7 @@ public class NotificationListenerService
 
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
+    private final MutableBoolean isInitialized = new MutableBoolean(false);
 
     private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -217,6 +219,11 @@ public class NotificationListenerService
     public void onCreate() {
         super.onCreate();
 
+        if (isInitialized.booleanValue()) {
+            Timber.d("NotificationListenerService has already been initialized");
+            return;
+        }
+
         Timber.d("NotificationListenerService onCreate - initializing service");
 
         this.incomingNotificationReactors.add(
@@ -270,6 +277,9 @@ public class NotificationListenerService
         }
 
         scheduleNotificationCounterCheck();
+
+        isInitialized.setTrue();
+        Timber.d("Service completed initialization");
     }
 
     @Override
@@ -307,6 +317,8 @@ public class NotificationListenerService
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
 
         this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
+
+        isInitialized.setFalse();
 
         return super.onUnbind(intent);
     }
