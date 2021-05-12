@@ -23,7 +23,8 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
 
     private final Multimap<String, NotificationHistoryEntry> chatIdToHistoryMap =
             Multimaps.synchronizedSetMultimap(HashMultimap.create());
-    private final Map<String, Integer> chatIdToNotificationIdMap = new ConcurrentHashMap<>();
+    private final Map<Integer, String> notificationToChatIdMap = new ConcurrentHashMap<>();
+    private final Map<String, Integer> fallbackChatIdToNotificationIdMap = new ConcurrentHashMap<>();
 
     private final NotificationPublisher notificationPublisher;
 
@@ -42,8 +43,7 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
 
         final NotificationHistoryEntry lastNotificationEntry = history.remove(history.size() - 1);
 
-        int selectedNotificationId =
-                chatIdToNotificationIdMap.computeIfAbsent(lineNotification.getChatId(), chatId -> notificationId);
+        int selectedNotificationId = resolveNotificationId(lineNotification.getChatId(), notificationId);
 
         Timber.d("Publishing notification with history: id [%s] chat ID [%s] history size [%d] latest message [%s]",
                 selectedNotificationId,
@@ -61,6 +61,24 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
                         .history(history)
                         .build(),
                 selectedNotificationId);
+    }
+
+    private int resolveNotificationId(final String chatId, final int notificationId) {
+        int hashCode = chatId.hashCode();
+        final String storedChatId = notificationToChatIdMap.get(hashCode);
+        if (storedChatId == null) {
+            notificationToChatIdMap.put(hashCode, chatId);
+            return hashCode;
+        } else if (chatId.equals(storedChatId)) {
+            return hashCode;
+        } else {
+            // fallback that should almost never happen
+            final int selectedNotificationId = fallbackChatIdToNotificationIdMap.computeIfAbsent(chatId, id -> notificationId);
+            // TODO what if there is a clash with the notification IDs and the hash codes?
+            Timber.w("Chat ID [%s] hash [%d] has been used, using notification ID [%d] instead",
+                    chatId, hashCode, selectedNotificationId);
+            return selectedNotificationId;
+        }
     }
 
     private void insertOrUpdateHistory(LineNotification lineNotification) {

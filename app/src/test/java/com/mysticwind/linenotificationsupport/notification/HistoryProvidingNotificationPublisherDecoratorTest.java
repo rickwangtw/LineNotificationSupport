@@ -21,6 +21,7 @@ public class HistoryProvidingNotificationPublisherDecoratorTest {
     private static final int NOTIFICATION_ID_2 = 2;
     private static final int NOTIFICATION_ID_3 = 3;
     private static final String CHAT_ID = "chatId";
+    private static final int NOTIFICATION_ID_FROM_CHAT_ID = CHAT_ID.hashCode();
     private static final String LINE_MESSAGE_ID = "messageId";
     private static final String LINE_MESSAGE_ID_2 = "messageId2";
     private static final String MESSAGE = "message";
@@ -57,7 +58,7 @@ public class HistoryProvidingNotificationPublisherDecoratorTest {
                         .timestamp(1L)
                         .history(Collections.EMPTY_LIST)
                         .build(),
-                NOTIFICATION_ID);
+                NOTIFICATION_ID_FROM_CHAT_ID);
 
         // updates the first message
         classUnderTest.publishNotification(
@@ -77,7 +78,7 @@ public class HistoryProvidingNotificationPublisherDecoratorTest {
                         .timestamp(2L)
                         .history(Collections.EMPTY_LIST)
                         .build(),
-                NOTIFICATION_ID);
+                NOTIFICATION_ID_FROM_CHAT_ID);
 
         // adds a second message
         classUnderTest.publishNotification(
@@ -100,7 +101,7 @@ public class HistoryProvidingNotificationPublisherDecoratorTest {
                                 new NotificationHistoryEntry(LINE_MESSAGE_ID, UPDATED_MESSAGE, null, 2L, null)
                         ))
                         .build(),
-                NOTIFICATION_ID);
+                NOTIFICATION_ID_FROM_CHAT_ID);
 
         // updates the second message again
         classUnderTest.publishNotification(
@@ -122,7 +123,7 @@ public class HistoryProvidingNotificationPublisherDecoratorTest {
                                 new NotificationHistoryEntry(LINE_MESSAGE_ID, UPDATED_MESSAGE, null, 2L, null)
                         ))
                         .build(),
-                NOTIFICATION_ID);
+                NOTIFICATION_ID_FROM_CHAT_ID);
 
         // updates the first message again
         classUnderTest.publishNotification(
@@ -144,7 +145,7 @@ public class HistoryProvidingNotificationPublisherDecoratorTest {
                                 new NotificationHistoryEntry(LINE_MESSAGE_ID, UPDATED_MESSAGE_2, null, 2L, null)
                         ))
                         .build(),
-                NOTIFICATION_ID);
+                NOTIFICATION_ID_FROM_CHAT_ID);
     }
 
 }
