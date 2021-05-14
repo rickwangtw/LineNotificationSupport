@@ -3,8 +3,8 @@ package com.mysticwind.linenotificationsupport.notification.reactor;
 import android.service.notification.StatusBarNotification;
 
 import com.google.common.collect.ImmutableSet;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.GroupChatNameDataAccessor;
 import com.mysticwind.linenotificationsupport.line.Constants;
-import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 
@@ -20,10 +20,10 @@ public class ChatRoomNamePersistenceIncomingNotificationReactor implements Incom
 
     private static final Set<String> INTERESTED_PACKAGES = ImmutableSet.of(Constants.LINE_PACKAGE_NAME);
 
-    private final ChatTitleAndSenderResolver chatTitleAndSenderResolver;
+    private final GroupChatNameDataAccessor groupChatNameDataAccessor;
 
-    public ChatRoomNamePersistenceIncomingNotificationReactor(final ChatTitleAndSenderResolver chatTitleAndSenderResolver) {
-        this.chatTitleAndSenderResolver = Objects.requireNonNull(chatTitleAndSenderResolver);
+    public ChatRoomNamePersistenceIncomingNotificationReactor(final GroupChatNameDataAccessor groupChatNameDataAccessor) {
+        this.groupChatNameDataAccessor = Objects.requireNonNull(groupChatNameDataAccessor);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class ChatRoomNamePersistenceIncomingNotificationReactor implements Incom
                     StatusBarNotificationExtractor.isSummary(statusBarNotification),
                     statusBarNotification.getPackageName());
 
-            chatTitleAndSenderResolver.addChatIdToChatNameMap(chatId, groupChatTitle);
+            groupChatNameDataAccessor.persistRelationship(chatId, groupChatTitle);
         }
         return Reaction.NONE;
     }

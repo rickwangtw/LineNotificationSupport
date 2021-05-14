@@ -28,6 +28,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
+import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.CachingGroupChatNameDataAccessorDecorator;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.CachingMultiPersonChatNameDataAccessorDecorator;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.GroupChatNameDataAccessor;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.MultiPersonChatNameDataAccessor;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomGroupChatNameDataAccessor;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomMultiPersonChatNameDataAccessor;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.debug.history.manager.impl.NullNotificationHistoryManager;
@@ -68,6 +75,7 @@ import com.mysticwind.linenotificationsupport.notification.reactor.SmartNotifica
 import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
+import com.mysticwind.linenotificationsupport.persistence.ChatGroupDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
@@ -109,7 +117,6 @@ public class NotificationListenerService
 
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
-    private static final ChatTitleAndSenderResolver CHAT_TITLE_AND_SENDER_RESOLVER = new ChatTitleAndSenderResolver();
     private static final StatusBarNotificationPrinter NOTIFICATION_PRINTER = new StatusBarNotificationPrinter();
     private static final DebugModeProvider DEBUG_MODE_PROVIDER = new DebugModeProvider();
 
@@ -141,6 +148,7 @@ public class NotificationListenerService
 
     private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
 
+
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
     private final MutableBoolean isInitialized = new MutableBoolean(false);
@@ -153,6 +161,8 @@ public class NotificationListenerService
             }
         }
     };
+
+    private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
 
     private NotificationPublisher buildNotificationPublisher() {
         final boolean shouldExecuteMaxNotificationWorkaround =
@@ -226,8 +236,21 @@ public class NotificationListenerService
 
         Timber.d("NotificationListenerService onCreate - initializing service");
 
+        final ChatGroupDatabase chatGroupDatabase = Room.databaseBuilder(getApplicationContext(),
+                ChatGroupDatabase.class, "chat_group_database.db")
+                .allowMainThreadQueries()
+                .build();
+        final GroupChatNameDataAccessor groupChatNameDataAccessor =
+                new CachingGroupChatNameDataAccessorDecorator(
+                        new RoomGroupChatNameDataAccessor(chatGroupDatabase));
+        final MultiPersonChatNameDataAccessor multiPersonChatNameDataAccessor =
+                new CachingMultiPersonChatNameDataAccessorDecorator(
+                        new RoomMultiPersonChatNameDataAccessor(chatGroupDatabase));
+        final ChatNameManager chatNameManager = new ChatNameManager(groupChatNameDataAccessor, multiPersonChatNameDataAccessor);
+        chatTitleAndSenderResolver = new ChatTitleAndSenderResolver(chatNameManager);
+
         this.incomingNotificationReactors.add(
-                new ChatRoomNamePersistenceIncomingNotificationReactor(CHAT_TITLE_AND_SENDER_RESOLVER));
+                new ChatRoomNamePersistenceIncomingNotificationReactor(groupChatNameDataAccessor));
 
         this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
 
@@ -427,7 +450,7 @@ public class NotificationListenerService
 
     private void sendNotification(StatusBarNotification notificationFromLine) {
         final LineNotification lineNotification = new LineNotificationBuilder(this,
-                CHAT_TITLE_AND_SENDER_RESOLVER, NOTIFICATION_PRINTER).from(notificationFromLine);
+                chatTitleAndSenderResolver, NOTIFICATION_PRINTER).from(notificationFromLine);
 
         int notificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
 
@@ -713,7 +736,7 @@ public class NotificationListenerService
         }
 
         final LineNotification dismissedLineNotification = new LineNotificationBuilder(
-                this, CHAT_TITLE_AND_SENDER_RESOLVER, NOTIFICATION_PRINTER)
+                this, chatTitleAndSenderResolver, NOTIFICATION_PRINTER)
                 .from(statusBarNotification);
 
         if (LineNotification.CallState.INCOMING == dismissedLineNotification.getCallState() &&
