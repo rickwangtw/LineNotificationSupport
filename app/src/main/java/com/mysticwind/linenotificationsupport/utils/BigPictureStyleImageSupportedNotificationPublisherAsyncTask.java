@@ -17,6 +17,7 @@ import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.line.LineLauncher;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
+import com.mysticwind.linenotificationsupport.model.NotificationExtraConstants;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
@@ -97,6 +98,9 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
                     lineNotification.getMessages().get(0));
             singleNotification.extras.putString(Notification.EXTRA_TEXT, lineNotification.getMessages().get(0));
         }
+        singleNotification.extras.putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
+        singleNotification.extras.putString(NotificationExtraConstants.MESSAGE_ID, lineNotification.getLineMessageId());
+        singleNotification.extras.putString(NotificationExtraConstants.STICKER_URL, lineNotification.getLineStickerUrl());
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(notificationId, singleNotification);
@@ -111,8 +115,12 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
 
         final NotificationCompat.MessagingStyle messagingStyle = new NotificationCompat.MessagingStyle(lineNotification.getSender());
 
-        buildMessages(lineNotification).forEach(message ->
-                messagingStyle.addMessage(message)
+        buildMessages(lineNotification).forEach(message -> {
+                    message.getExtras().putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
+                    message.getExtras().putString(NotificationExtraConstants.MESSAGE_ID, lineNotification.getLineMessageId());
+                    message.getExtras().putString(NotificationExtraConstants.STICKER_URL, lineNotification.getLineStickerUrl());
+                    messagingStyle.addMessage(message);
+                }
         );
 
         if (!lineNotification.getSender().getName().equals(lineNotification.getTitle())) {

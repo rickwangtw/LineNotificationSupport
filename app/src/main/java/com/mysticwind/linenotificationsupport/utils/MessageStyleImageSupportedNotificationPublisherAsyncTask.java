@@ -20,6 +20,7 @@ import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.line.LineLauncher;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
+import com.mysticwind.linenotificationsupport.model.NotificationExtraConstants;
 import com.mysticwind.linenotificationsupport.model.NotificationHistoryEntry;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -72,6 +73,9 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
 
         final List<NotificationCompat.MessagingStyle.Message> messages = buildMessages();
         for (final NotificationCompat.MessagingStyle.Message message : messages) {
+            message.getExtras().putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
+            message.getExtras().putString(NotificationExtraConstants.MESSAGE_ID, lineNotification.getLineMessageId());
+            message.getExtras().putString(NotificationExtraConstants.STICKER_URL, lineNotification.getLineStickerUrl());
             messagingStyle.addMessage(message);
         }
         return messagingStyle;
@@ -166,6 +170,9 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
                     lineNotification.getMessages().get(0));
             singleNotification.extras.putString(Notification.EXTRA_TEXT, lineNotification.getMessages().get(0));
         }
+        singleNotification.extras.putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
+        singleNotification.extras.putString(NotificationExtraConstants.MESSAGE_ID, lineNotification.getLineMessageId());
+        singleNotification.extras.putString(NotificationExtraConstants.STICKER_URL, lineNotification.getLineStickerUrl());
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         Timber.d("Publishing notification id [%d] channel [%s] group [%s] text [%s] timestamp [%d]",
