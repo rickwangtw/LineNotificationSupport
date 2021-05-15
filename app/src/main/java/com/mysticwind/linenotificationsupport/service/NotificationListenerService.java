@@ -165,6 +165,10 @@ public class NotificationListenerService
     private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
 
     private NotificationPublisher buildNotificationPublisher() {
+        return buildNotificationPublisherWithPreviousStateRestored(Collections.EMPTY_LIST);
+    }
+
+    private NotificationPublisher buildNotificationPublisherWithPreviousStateRestored(List<StatusBarNotification> existingNotifications) {
         final boolean shouldExecuteMaxNotificationWorkaround =
                 getPreferenceProvider().shouldExecuteMaxNotificationWorkaround();
 
@@ -190,7 +194,7 @@ public class NotificationListenerService
         if (getPreferenceProvider().shouldUseSingleNotificationForConversations()) {
             // do this before LinkActionInjectorNotificationPublisherDecorator
             // so that link mutations are also persisted
-            notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher);
+            notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher, existingNotifications);
         }
 
         notificationPublisher =
@@ -224,17 +228,44 @@ public class NotificationListenerService
                 });
     }
 
-
     @Override
     public void onCreate() {
         super.onCreate();
+
+        Timber.d("NotificationListenerService onCreate");
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        Timber.d("NotificationListenerService onBind");
+        return super.onBind(intent);
+    }
+
+    @Override
+    public void onListenerConnected() {
+        super.onListenerConnected();
+
+        Timber.w("NotificationListenerService onListenerConnected");
 
         if (isInitialized.booleanValue()) {
             Timber.d("NotificationListenerService has already been initialized");
             return;
         }
 
-        Timber.d("NotificationListenerService onCreate - initializing service");
+        // getting active notifications to restore previous state
+        final List<StatusBarNotification> existingNotifications = getActiveNotificationsFromAllAppsSafely().stream()
+                .filter(notification -> notification.getPackageName().equals(getPackageName()))
+                .collect(Collectors.toList());
+
+        if (!existingNotifications.isEmpty()) {
+            final String keys = existingNotifications.stream()
+                    .map(notification -> notification.getKey())
+                    .reduce((key1, key2) -> key1 + "," + key2)
+                    .orElse("N/A");
+            Timber.w("Existing notifications to restore [%s]", keys);
+        } else {
+            Timber.d("No existing notifications to restore");
+        }
 
         final ChatGroupDatabase chatGroupDatabase = Room.databaseBuilder(getApplicationContext(),
                 ChatGroupDatabase.class, "chat_group_database.db")
@@ -260,6 +291,8 @@ public class NotificationListenerService
         this.incomingNotificationReactors.add(smartNotificationCounterNotificationReactor);
         this.dismissedNotificationReactors.add(smartNotificationCounterNotificationReactor);
 
+        dumbNotificationCounter.updateStateFromExistingNotifications(existingNotifications);
+
         final DumbNotificationCounterNotificationReactor dumbNotificationCounterNotificationReactor =
                 new DumbNotificationCounterNotificationReactor(getPackageName(), dumbNotificationCounter);
         this.incomingNotificationReactors.add(dumbNotificationCounterNotificationReactor);
@@ -282,7 +315,7 @@ public class NotificationListenerService
 
         this.incomingNotificationReactors.add(new SameLineMessageIdFilterIncomingNotificationReactor());
 
-        this.notificationPublisher = buildNotificationPublisher();
+        this.notificationPublisher = buildNotificationPublisherWithPreviousStateRestored(existingNotifications);
 
         new NotificationGroupCreator(
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
@@ -306,15 +339,10 @@ public class NotificationListenerService
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        Timber.d("NotificationListenerService onBind");
-
-        return super.onBind(intent);
-    }
-
-    @Override
     public void onDestroy() {
         super.onDestroy();
+
+        isInitialized.setFalse();
 
         Timber.w("NotificationListenerService onDestroy");
     }
@@ -670,7 +698,13 @@ public class NotificationListenerService
         getActiveNotificationsFromAllAppsSafely().stream()
                 .filter(notification -> notification.getPackageName().equals(getPackageName()))
                 .forEach(notification -> groupToNotificationKeyMultimap.put(notification.getNotification().getGroup(), notification.getKey()));
-        dumbNotificationCounter.validateNotifications(groupToNotificationKeyMultimap);
+        boolean isValid = dumbNotificationCounter.validateNotifications(groupToNotificationKeyMultimap);
+
+        if (!isValid) {
+            // Reconnect TODO do we need to worry about scheduleNotificationCounterCheck() ?
+            Timber.w("Call onListenerConnected() to reinstate. Will we blow up?");
+            onListenerConnected();
+        }
 
         scheduleNotificationCounterCheck();
     }
@@ -710,13 +744,6 @@ public class NotificationListenerService
                 Toast.makeText(this, "[ERROR] LNS onNotificationRemoved", Toast.LENGTH_SHORT);
             }
         }
-    }
-
-    @Override
-    public void onListenerConnected() {
-        super.onListenerConnected();
-
-        Timber.w("NotificationListenerService onListenerConnected");
     }
 
     @Override

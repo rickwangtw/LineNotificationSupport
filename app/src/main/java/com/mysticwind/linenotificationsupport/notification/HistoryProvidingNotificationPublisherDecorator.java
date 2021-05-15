@@ -1,19 +1,28 @@
 package com.mysticwind.linenotificationsupport.notification;
 
+import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.os.Build;
 import android.service.notification.StatusBarNotification;
+
+import androidx.core.app.Person;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.NotificationHistoryEntry;
+import com.mysticwind.linenotificationsupport.utils.LineNotificationSupportMessageExtractor;
+import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -30,6 +39,62 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
 
     public HistoryProvidingNotificationPublisherDecorator(final NotificationPublisher notificationPublisher) {
         this.notificationPublisher = Objects.requireNonNull(notificationPublisher);
+    }
+
+    public HistoryProvidingNotificationPublisherDecorator(final NotificationPublisher notificationPublisher,
+                                                          final List<StatusBarNotification> existingNotifications) {
+        this.notificationPublisher = Objects.requireNonNull(notificationPublisher);
+        for (StatusBarNotification notification : existingNotifications) {
+            Timber.d("Existing notification to restore: group [%s] key [%s] chat ID [%s] message ID [%s]", notification.getNotification().getGroup(),
+                    notification.getKey(), NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification()),
+                    NotificationExtractor.getLineMessageId(notification.getNotification()));
+        }
+        existingNotifications.stream()
+                .filter(notification -> NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification()).isPresent())
+                .forEach(notification -> {
+                    final List<Notification.MessagingStyle.Message> messageHistory = getMessageHistory(notification.getNotification());
+                    Timber.i("Restoring history with message history [%s]", messageHistory);
+                    if (messageHistory.isEmpty()) {
+                        return;
+                    }
+                    for (final Notification.MessagingStyle.Message message : messageHistory) {
+                        if (!LineNotificationSupportMessageExtractor.getMessageId(message).isPresent()) {
+                            continue;
+                        }
+                        final Optional<String> chatId = LineNotificationSupportMessageExtractor.getChatId(message);
+                        if (!chatId.isPresent()) {
+                            continue;
+                        }
+                        final NotificationHistoryEntry historyEntry = new NotificationHistoryEntry(
+                                LineNotificationSupportMessageExtractor.getMessageId(message).get(),
+                                message.getText().toString(),
+                                getPerson(message),
+                                message.getTimestamp(),
+                                LineNotificationSupportMessageExtractor.getStickerUrl(message).orElse(null));
+                        Timber.i("Restore history chat ID [%s], history message ID [%s] message [%s]",
+                                chatId.get(), historyEntry.getLineMessageId(), historyEntry.getMessage());
+                        chatIdToHistoryMap.put(chatId.get(), historyEntry);
+                    }
+                });
+    }
+
+    @SuppressLint("RestrictedApi")
+    private Person getPerson(final Notification.MessagingStyle.Message message) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            return Person.fromAndroidPerson(message.getSenderPerson());
+        } else {
+            return new Person.Builder()
+                    .setName("?")
+                    .build();
+        }
+    }
+
+    private List<Notification.MessagingStyle.Message> getMessageHistory(final Notification notification) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return Notification.MessagingStyle.Message.getMessagesFromBundleArray(notification.extras.getParcelableArray("android.messages"));
+        } else {
+            return Collections.EMPTY_LIST;
+        }
     }
 
     @Override

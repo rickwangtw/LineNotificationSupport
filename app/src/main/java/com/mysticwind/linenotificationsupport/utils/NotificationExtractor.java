@@ -3,6 +3,9 @@ package com.mysticwind.linenotificationsupport.utils;
 import android.app.Notification;
 
 import com.mysticwind.linenotificationsupport.line.Constants;
+import com.mysticwind.linenotificationsupport.model.NotificationExtraConstants;
+
+import java.util.Optional;
 
 public class NotificationExtractor {
 
@@ -24,6 +27,18 @@ public class NotificationExtractor {
 
     public static String getLineChatId(Notification notification) {
         return notification.extras.getString(Constants.LINE_CHAT_ID_EXTRA_KEY);
+    }
+
+    public static Optional<String> getLineNotificationSupportMessageId(Notification notification) {
+        return Optional.ofNullable(notification.extras.getString(NotificationExtraConstants.MESSAGE_ID));
+    }
+
+    public static Optional<String> getLineNotificationSupportChatId(Notification notification) {
+        return Optional.ofNullable(notification.extras.getString(NotificationExtraConstants.CHAT_ID));
+    }
+
+    public static Optional<String> getLineNotificationSupportStickerUrl(Notification notification) {
+        return Optional.ofNullable(notification.extras.getString(NotificationExtraConstants.STICKER_URL));
     }
 
 }
