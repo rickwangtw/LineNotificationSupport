@@ -83,8 +83,10 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
             return Person.fromAndroidPerson(message.getSenderPerson());
         } else {
+            final String senderName = LineNotificationSupportMessageExtractor.getSender(message).orElse("?");
+            Timber.w("Using sender name [%s] for message text [%s]", senderName, message.getText());
             return new Person.Builder()
-                    .setName("?")
+                    .setName(senderName)
                     .build();
         }
     }

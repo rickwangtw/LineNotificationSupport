@@ -20,4 +20,8 @@ public class LineNotificationSupportMessageExtractor {
         return Optional.ofNullable(message.getExtras().getString(NotificationExtraConstants.STICKER_URL));
     }
 
+    public static Optional<String> getSender(Notification.MessagingStyle.Message message) {
+        return Optional.ofNullable(message.getExtras().getString(NotificationExtraConstants.SENDER_NAME));
+    }
+
 }
