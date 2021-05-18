@@ -54,7 +54,9 @@ public class SimpleNotificationPublisher implements NotificationPublisher {
             new BigPictureStyleImageSupportedNotificationPublisherAsyncTask(context, lineNotification, notificationId)
                     .execute();
         } else {
-            new MessageStyleImageSupportedNotificationPublisherAsyncTask(context, lineNotification, notificationId)
+            final boolean useSingleNotificationConversations = preferenceProvider.shouldUseSingleNotificationForConversations();
+            new MessageStyleImageSupportedNotificationPublisherAsyncTask(
+                    context, lineNotification, notificationId, useSingleNotificationConversations)
                     .execute();
         }
         notificationSentListeners.forEach(
