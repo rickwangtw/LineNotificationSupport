@@ -32,7 +32,13 @@ public class Application extends android.app.Application {
                     .logLevel(Log.DEBUG)
                     .debug(true)
                     .build();
-            historian.initialize();
+            try {
+                historian.initialize();
+            } catch (final Exception e) {
+                Timber.e(e, "Failed to initialize Historian: [%s]", e.getMessage());
+                historian.terminate();
+                historian.initialize();
+            }
             Timber.plant(HistorianTree.with(historian));
         }
 
