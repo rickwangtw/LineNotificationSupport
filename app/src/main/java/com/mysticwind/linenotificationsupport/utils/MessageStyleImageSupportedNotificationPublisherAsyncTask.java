@@ -73,9 +73,6 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
 
         final List<NotificationCompat.MessagingStyle.Message> messages = buildMessages();
         for (final NotificationCompat.MessagingStyle.Message message : messages) {
-            message.getExtras().putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
-            message.getExtras().putString(NotificationExtraConstants.MESSAGE_ID, lineNotification.getLineMessageId());
-            message.getExtras().putString(NotificationExtraConstants.STICKER_URL, lineNotification.getLineStickerUrl());
             messagingStyle.addMessage(message);
         }
         return messagingStyle;
@@ -94,6 +91,10 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
                             message.setData("image/", uri)
                     )
             );
+
+            message.getExtras().putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
+            message.getExtras().putString(NotificationExtraConstants.MESSAGE_ID, entry.getLineMessageId());
+            message.getExtras().putString(NotificationExtraConstants.STICKER_URL, entry.getLineStickerUrl().orElse(null));
 
             messageListBuilder.add(message);
         }
