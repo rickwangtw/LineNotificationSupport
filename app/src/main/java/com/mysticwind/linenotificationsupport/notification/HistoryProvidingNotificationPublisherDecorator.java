@@ -71,8 +71,8 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
                                 getPerson(message),
                                 message.getTimestamp(),
                                 LineNotificationSupportMessageExtractor.getStickerUrl(message).orElse(null));
-                        Timber.i("Restore history chat ID [%s], history message ID [%s] message [%s]",
-                                chatId.get(), historyEntry.getLineMessageId(), historyEntry.getMessage());
+                        Timber.i("Restore history chat ID [%s], history message ID [%s] message [%s] sticker [%s]",
+                                chatId.get(), historyEntry.getLineMessageId(), historyEntry.getMessage(), historyEntry.getLineStickerUrl());
                         chatIdToHistoryMap.put(chatId.get(), historyEntry);
                     }
                 });
