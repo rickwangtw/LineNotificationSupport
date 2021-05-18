@@ -778,14 +778,14 @@ public class NotificationListenerService
         return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
     }
 
-    private void dismissLineNotificationSupportNotifications(final String groupId) {
+    private void dismissLineNotificationSupportNotifications(final String chatId) {
         final NotificationManager notificationManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
 
         final Set<Integer> notificationIdsToCancel = Arrays.stream(notificationManager.getActiveNotifications())
                 // we're only clearing notifications from our package
                 .filter(notification -> notification.getPackageName().equals(this.getPackageName()))
                 // LINE only shows the last message for a chat, we'll dismiss all of the messages in the same chat ID
-                .filter(notification -> groupId.equals(notification.getNotification().getGroup()))
+                .filter(notification -> chatId.equals(NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification())))
                 .map(notification -> notification.getId())
                 .collect(Collectors.toSet());
 
