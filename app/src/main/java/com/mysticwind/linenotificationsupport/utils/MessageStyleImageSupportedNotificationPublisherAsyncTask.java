@@ -95,6 +95,7 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
             message.getExtras().putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
             message.getExtras().putString(NotificationExtraConstants.MESSAGE_ID, entry.getLineMessageId());
             message.getExtras().putString(NotificationExtraConstants.STICKER_URL, entry.getLineStickerUrl().orElse(null));
+            message.getExtras().putString(NotificationExtraConstants.SENDER_NAME, entry.getSender().getName().toString());
 
             messageListBuilder.add(message);
         }
@@ -174,6 +175,7 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
         singleNotification.extras.putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
         singleNotification.extras.putString(NotificationExtraConstants.MESSAGE_ID, lineNotification.getLineMessageId());
         singleNotification.extras.putString(NotificationExtraConstants.STICKER_URL, lineNotification.getLineStickerUrl());
+        singleNotification.extras.putString(NotificationExtraConstants.SENDER_NAME, lineNotification.getSender().getName().toString());
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         Timber.d("Publishing notification id [%d] channel [%s] group [%s] text [%s] timestamp [%d]",

@@ -101,6 +101,7 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
         singleNotification.extras.putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
         singleNotification.extras.putString(NotificationExtraConstants.MESSAGE_ID, lineNotification.getLineMessageId());
         singleNotification.extras.putString(NotificationExtraConstants.STICKER_URL, lineNotification.getLineStickerUrl());
+        singleNotification.extras.putString(NotificationExtraConstants.SENDER_NAME, lineNotification.getSender().getName().toString());
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(notificationId, singleNotification);
@@ -115,12 +116,8 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
 
         final NotificationCompat.MessagingStyle messagingStyle = new NotificationCompat.MessagingStyle(lineNotification.getSender());
 
-        buildMessages(lineNotification).forEach(message -> {
-                    message.getExtras().putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
-                    message.getExtras().putString(NotificationExtraConstants.MESSAGE_ID, lineNotification.getLineMessageId());
-                    message.getExtras().putString(NotificationExtraConstants.STICKER_URL, lineNotification.getLineStickerUrl());
-                    messagingStyle.addMessage(message);
-                }
+        buildMessages(lineNotification).forEach(message ->
+                messagingStyle.addMessage(message)
         );
 
         if (!lineNotification.getSender().getName().equals(lineNotification.getTitle())) {
@@ -135,10 +132,15 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
                 ImmutableList.of(lineNotification.getMessage()) : lineNotification.getMessages();
         final ImmutableList.Builder<NotificationCompat.MessagingStyle.Message> messageListBuilder = ImmutableList.builder();
         for (final String message : messages) {
-            messageListBuilder.add(
+            final NotificationCompat.MessagingStyle.Message messagingStyleMessage =
                     new NotificationCompat.MessagingStyle.Message(
-                            message, lineNotification.getTimestamp(), lineNotification.getSender())
-            );
+                            message, lineNotification.getTimestamp(), lineNotification.getSender());
+            messagingStyleMessage.getExtras().putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
+            messagingStyleMessage.getExtras().putString(NotificationExtraConstants.MESSAGE_ID, lineNotification.getLineMessageId());
+            messagingStyleMessage.getExtras().putString(NotificationExtraConstants.STICKER_URL, lineNotification.getLineStickerUrl());
+            messagingStyleMessage.getExtras().putString(NotificationExtraConstants.SENDER_NAME, lineNotification.getSender().getName().toString());
+
+            messageListBuilder.add(messagingStyleMessage);
         }
         return messageListBuilder.build();
     }
