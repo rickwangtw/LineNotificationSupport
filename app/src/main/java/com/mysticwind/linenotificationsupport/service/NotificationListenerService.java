@@ -701,9 +701,7 @@ public class NotificationListenerService
         boolean isValid = dumbNotificationCounter.validateNotifications(groupToNotificationKeyMultimap);
 
         if (!isValid) {
-            // Reconnect TODO do we need to worry about scheduleNotificationCounterCheck() ?
-            Timber.w("Call onListenerConnected() to reinstate. Will we blow up?");
-            onListenerConnected();
+            // TODO why would this happen outside of service being killed?
         }
 
         scheduleNotificationCounterCheck();
