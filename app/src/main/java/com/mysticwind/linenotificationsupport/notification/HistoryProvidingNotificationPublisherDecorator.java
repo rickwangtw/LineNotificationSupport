@@ -176,11 +176,14 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
 
     @Override
     public void updateNotificationDismissed(StatusBarNotification statusBarNotification) {
-        final String group = statusBarNotification.getNotification().getGroup();
-        // clean cache
-        Timber.d("Cleaning notification history with group [%s], number of items [%d]",
-                group, chatIdToHistoryMap.get(group).size());
-        chatIdToHistoryMap.removeAll(group);
+        final Optional<String> chatId = NotificationExtractor.getLineNotificationSupportChatId(statusBarNotification.getNotification());
+
+        if (chatId.isPresent()) {
+            // clean cache
+            Timber.d("Cleaning notification history with chatId [%s], number of items [%d]",
+                    chatId, chatIdToHistoryMap.get(chatId.get()).size());
+            chatIdToHistoryMap.removeAll(chatId.get());
+        }
 
         notificationPublisher.updateNotificationDismissed(statusBarNotification);
     }
