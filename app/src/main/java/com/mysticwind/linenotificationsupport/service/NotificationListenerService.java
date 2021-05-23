@@ -153,9 +153,10 @@ public class NotificationListenerService
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
     private final MutableBoolean isInitialized = new MutableBoolean(false);
 
-    private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+    private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String preferenceKey) {
+            Timber.d("onSharedPreferenceChangeListener: updated preference [%s]", preferenceKey);
             if (PREFERENCE_KEYS_THAT_TRIGGER_REBUILDING_NOTIFICATION_PUBLISHER.contains(preferenceKey)) {
                 NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
             }
@@ -324,6 +325,7 @@ public class NotificationListenerService
 
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+        Timber.d("Registered onSharedPreferenceChangeListener");
 
         if (DEBUG_MODE_PROVIDER.isDebugMode()) {
             AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
@@ -358,18 +360,6 @@ public class NotificationListenerService
     @Override
     public boolean onUnbind(Intent intent) {
         Timber.w("NotificationListenerService onUnbind");
-
-        this.incomingNotificationReactors.clear();
-        this.dismissedNotificationReactors.clear();
-
-        this.notificationPublisher = NullNotificationPublisher.INSTANCE;
-
-        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
-
-        this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
-
-        isInitialized.setFalse();
 
         return super.onUnbind(intent);
     }
@@ -749,6 +739,19 @@ public class NotificationListenerService
         super.onListenerDisconnected();
 
         Timber.w("NotificationListenerService onListenerDisconnected");
+
+        this.incomingNotificationReactors.clear();
+        this.dismissedNotificationReactors.clear();
+
+        this.notificationPublisher = NullNotificationPublisher.INSTANCE;
+
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+        Timber.d("Unregistered onSharedPreferenceChangeListener");
+
+        this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
+
+        isInitialized.setFalse();
     }
 
     public void onNotificationRemovedUnsafe(final StatusBarNotification statusBarNotification) {
