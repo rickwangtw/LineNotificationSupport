@@ -785,7 +785,8 @@ public class NotificationListenerService
                 // we're only clearing notifications from our package
                 .filter(notification -> notification.getPackageName().equals(this.getPackageName()))
                 // LINE only shows the last message for a chat, we'll dismiss all of the messages in the same chat ID
-                .filter(notification -> chatId.equals(NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification())))
+                .filter(notification -> NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification()).isPresent())
+                .filter(notification -> chatId.equals(NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification()).get()))
                 .map(notification -> notification.getId())
                 .collect(Collectors.toSet());
 
