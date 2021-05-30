@@ -50,3 +50,12 @@ LINE version tested:
 Please support my effort by either buying the donate version of my app, or donate through Paypal. Thanks!
 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CYC657N6DY3CJ&item_name=Support+LINE+Notification+Support%21&currency_code=USD)
+
+## FAQ
+
+### 1. What is the recommended settings for watches?
+You use a watch that is not on the list? Share your settings!
+
+#### Galaxy Watch / Tizen 5.5.0.1
+* [BETA] Manage LINE notificaions: true
+* Use a single notification for each conversation: true
