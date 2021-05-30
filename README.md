@@ -31,7 +31,9 @@ Supports all LINE languages (the app still has limited language support though -
 This app has been tested with Samsung Galaxy Watch Tizen 5.5.0.1 with Android 11.
 
 LINE version tested:
-
+* 11.8.3, 11.8.1, 11.8.0
+* 11.7.2, 11.7.1, 11.7.0
+* 11.6.5
 * 11.3.1
 * 11.2.1, 11.2.0
 * 11.1.1, 11.0.2
