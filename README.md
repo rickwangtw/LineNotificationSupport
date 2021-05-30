@@ -1,3 +1,5 @@
+[![zhtw](https://img.shields.io/badge/lang-zhtw-green.svg)](https://github.com/rickwangtw/LineNotificationSupport/blob/main/README.zh-tw.md)
+
 # LINE Notification Support
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CYC657N6DY3CJ&item_name=Support+LINE+Notification+Support%21&currency_code=USD)
 
@@ -17,7 +19,7 @@ This is the app for you!
 * You'll get messages when you get an incoming call. Worried that you may not get it? It will send messages continuously until you accept or reject.
 * You can configure each chat the way you want! You can choose to ignore notifications that come from some to focus on the critical messages!
 * LINE stickers will also be shown on your watch!
-* You *CAN* reply to your friends on your watch!
+* You **CAN** reply to your friends on your watch!
 
 Supports all LINE languages (the app still has limited language support though - translation contributions are always welcomed).
 
@@ -32,12 +34,16 @@ This app has been tested with Samsung Galaxy Watch Tizen 5.5.0.1 with Android 11
 
 LINE version tested:
 
+* 11.8.3, 11.8.1, 11.8.0
+* 11.7.2, 11.7.1, 11.7.0
+* 11.6.5
 * 11.3.1
 * 11.2.1, 11.2.0
 * 11.1.1, 11.0.2
 * 10.21.5, 10.21.4, 10.21.3
 * 10.20.1, 10.20.0
-* 10.19.3, 10.19.2, 10.19.1 (This LINE version does not provide the title of the chat group. Instead of showing the title of the chat group, this app will list out the users who previously responded as a mitigation. If not showing the title is a problem, please downgrade your LINE version.)
+* 10.19.3, 10.19.2
+* 10.19.1 (This LINE version does not provide the title of the chat group. Instead of showing the title of the chat group, this app will list out the users who previously responded as a mitigation. If not showing the title is a problem, please downgrade your LINE version.)
 * 10.18.2, 10.18.1
 
 ## Google Play
@@ -48,3 +54,12 @@ LINE version tested:
 Please support my effort by either buying the donate version of my app, or donate through Paypal. Thanks!
 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CYC657N6DY3CJ&item_name=Support+LINE+Notification+Support%21&currency_code=USD)
+
+## FAQ
+
+### <a name="recommended-settings"></a> 1. What are the recommended settings for watches?
+You use a watch that is not on the list? Share your settings!
+
+#### Galaxy Watch / Tizen 5.5.0.1
+* [BETA] Manage LINE notificaions: true
+* Use a single notification for each conversation: true

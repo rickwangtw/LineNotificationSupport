@@ -1,11 +1,14 @@
 package com.mysticwind.linenotificationsupport.notification.impl;
 
+import android.service.notification.StatusBarNotification;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.mysticwind.linenotificationsupport.notification.SlotAvailabilityChecker;
 
 import java.util.Collection;
+import java.util.List;
 
 import timber.log.Timber;
 
@@ -50,14 +53,26 @@ public class DumbNotificationCounter implements SlotAvailabilityChecker {
     }
 
     // This probably risks concurrency
-    public void validateNotifications(final Multimap<String, String> currentGroupToNotificationKeyMultimap) {
+    // returns whether or not it is valid (not changed)
+    public boolean validateNotifications(final Multimap<String, String> currentGroupToNotificationKeyMultimap) {
         if (!groupToNotificationKeyMultimap.equals(currentGroupToNotificationKeyMultimap)) {
             Timber.w("Notifications being tracked are different! Tracked [%s] Current [%s]",
                     groupToNotificationKeyMultimap.values(), currentGroupToNotificationKeyMultimap.values());
             groupToNotificationKeyMultimap.clear();
             groupToNotificationKeyMultimap.putAll(currentGroupToNotificationKeyMultimap);
+            return false;
         } else {
             Timber.d("Verified notifications are the same");
+            return true;
+        }
+    }
+
+    public void updateStateFromExistingNotifications(final List<StatusBarNotification> existingNotifications) {
+        for (final StatusBarNotification notification : existingNotifications) {
+            groupToNotificationKeyMultimap.clear();
+            Timber.d("Restoring notification group [%s] key [%s]",
+                    notification.getNotification().getGroup(), notification.getKey());
+            groupToNotificationKeyMultimap.put(notification.getNotification().getGroup(), notification.getKey());
         }
     }
 

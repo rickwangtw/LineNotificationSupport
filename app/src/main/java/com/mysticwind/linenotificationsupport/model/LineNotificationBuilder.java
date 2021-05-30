@@ -89,15 +89,11 @@ public class LineNotificationBuilder {
         if (callState != null) {
             return CALL_VIRTUAL_CHAT_ID;
         }
-        final String lineChatId = getChatId(statusBarNotification);
+        final String lineChatId = NotificationExtractor.getLineChatId(statusBarNotification.getNotification());
         if (StringUtils.isBlank(lineChatId)) {
             return DEFAULT_CHAT_ID;
         }
         return lineChatId;
-    }
-
-    private String getChatId(final StatusBarNotification statusBarNotification) {
-        return statusBarNotification.getNotification().extras.getString("line.chat.id");
     }
 
     private String getLineStickerUrl(final StatusBarNotification statusBarNotification) {

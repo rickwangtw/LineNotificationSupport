@@ -28,6 +28,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
+import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.CachingGroupChatNameDataAccessorDecorator;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.CachingMultiPersonChatNameDataAccessorDecorator;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.GroupChatNameDataAccessor;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.MultiPersonChatNameDataAccessor;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomGroupChatNameDataAccessor;
+import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomMultiPersonChatNameDataAccessor;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.debug.history.manager.impl.NullNotificationHistoryManager;
@@ -56,9 +63,11 @@ import com.mysticwind.linenotificationsupport.notification.SlotAvailabilityCheck
 import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificationCounter;
+import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNamePersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.LoggingDismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNotificationIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
 import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
@@ -66,6 +75,7 @@ import com.mysticwind.linenotificationsupport.notification.reactor.SmartNotifica
 import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
+import com.mysticwind.linenotificationsupport.persistence.ChatGroupDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
@@ -76,6 +86,7 @@ import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.Instant;
@@ -106,7 +117,6 @@ public class NotificationListenerService
 
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
     private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
-    private static final ChatTitleAndSenderResolver CHAT_TITLE_AND_SENDER_RESOLVER = new ChatTitleAndSenderResolver();
     private static final StatusBarNotificationPrinter NOTIFICATION_PRINTER = new StatusBarNotificationPrinter();
     private static final DebugModeProvider DEBUG_MODE_PROVIDER = new DebugModeProvider();
 
@@ -138,19 +148,28 @@ public class NotificationListenerService
 
     private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
 
+
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
+    private final MutableBoolean isInitialized = new MutableBoolean(false);
 
-    private SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+    private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String preferenceKey) {
+            Timber.d("onSharedPreferenceChangeListener: updated preference [%s]", preferenceKey);
             if (PREFERENCE_KEYS_THAT_TRIGGER_REBUILDING_NOTIFICATION_PUBLISHER.contains(preferenceKey)) {
                 NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
             }
         }
     };
 
+    private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
+
     private NotificationPublisher buildNotificationPublisher() {
+        return buildNotificationPublisherWithPreviousStateRestored(Collections.EMPTY_LIST);
+    }
+
+    private NotificationPublisher buildNotificationPublisherWithPreviousStateRestored(List<StatusBarNotification> existingNotifications) {
         final boolean shouldExecuteMaxNotificationWorkaround =
                 getPreferenceProvider().shouldExecuteMaxNotificationWorkaround();
 
@@ -176,7 +195,7 @@ public class NotificationListenerService
         if (getPreferenceProvider().shouldUseSingleNotificationForConversations()) {
             // do this before LinkActionInjectorNotificationPublisherDecorator
             // so that link mutations are also persisted
-            notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher);
+            notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher, existingNotifications);
         }
 
         notificationPublisher =
@@ -211,12 +230,69 @@ public class NotificationListenerService
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+
+        Timber.d("NotificationListenerService onCreate");
+    }
+
+    @Override
     public IBinder onBind(Intent intent) {
+        Timber.d("NotificationListenerService onBind");
+        return super.onBind(intent);
+    }
+
+    @Override
+    public void onListenerConnected() {
+        super.onListenerConnected();
+
+        Timber.w("NotificationListenerService onListenerConnected");
+
+        if (isInitialized.booleanValue()) {
+            Timber.d("NotificationListenerService has already been initialized");
+            return;
+        }
+
+        // getting active notifications to restore previous state
+        final List<StatusBarNotification> existingNotifications = getActiveNotificationsFromAllAppsSafely().stream()
+                .filter(notification -> notification.getPackageName().equals(getPackageName()))
+                .collect(Collectors.toList());
+
+        if (!existingNotifications.isEmpty()) {
+            final String keys = existingNotifications.stream()
+                    .map(notification -> notification.getKey())
+                    .reduce((key1, key2) -> key1 + "," + key2)
+                    .orElse("N/A");
+            Timber.w("Existing notifications to restore [%s]", keys);
+        } else {
+            Timber.d("No existing notifications to restore");
+        }
+
+        final ChatGroupDatabase chatGroupDatabase = Room.databaseBuilder(getApplicationContext(),
+                ChatGroupDatabase.class, "chat_group_database.db")
+                .allowMainThreadQueries()
+                .build();
+        final GroupChatNameDataAccessor groupChatNameDataAccessor =
+                new CachingGroupChatNameDataAccessorDecorator(
+                        new RoomGroupChatNameDataAccessor(chatGroupDatabase));
+        final MultiPersonChatNameDataAccessor multiPersonChatNameDataAccessor =
+                new CachingMultiPersonChatNameDataAccessorDecorator(
+                        new RoomMultiPersonChatNameDataAccessor(chatGroupDatabase));
+        final ChatNameManager chatNameManager = new ChatNameManager(groupChatNameDataAccessor, multiPersonChatNameDataAccessor);
+        chatTitleAndSenderResolver = new ChatTitleAndSenderResolver(chatNameManager);
+
+        this.incomingNotificationReactors.add(
+                new ChatRoomNamePersistenceIncomingNotificationReactor(groupChatNameDataAccessor));
+
+        this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
+
         // TODO remove this after testing the stability of the dumb version
         final SmartNotificationCounterNotificationReactor smartNotificationCounterNotificationReactor =
                 new SmartNotificationCounterNotificationReactor(getPackageName(), smartNotificationCounter);
         this.incomingNotificationReactors.add(smartNotificationCounterNotificationReactor);
         this.dismissedNotificationReactors.add(smartNotificationCounterNotificationReactor);
+
+        dumbNotificationCounter.updateStateFromExistingNotifications(existingNotifications);
 
         final DumbNotificationCounterNotificationReactor dumbNotificationCounterNotificationReactor =
                 new DumbNotificationCounterNotificationReactor(getPackageName(), dumbNotificationCounter);
@@ -240,7 +316,7 @@ public class NotificationListenerService
 
         this.incomingNotificationReactors.add(new SameLineMessageIdFilterIncomingNotificationReactor());
 
-        this.notificationPublisher = buildNotificationPublisher();
+        this.notificationPublisher = buildNotificationPublisherWithPreviousStateRestored(existingNotifications);
 
         new NotificationGroupCreator(
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
@@ -249,6 +325,7 @@ public class NotificationListenerService
 
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+        Timber.d("Registered onSharedPreferenceChangeListener");
 
         if (DEBUG_MODE_PROVIDER.isDebugMode()) {
             AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
@@ -259,7 +336,17 @@ public class NotificationListenerService
 
         scheduleNotificationCounterCheck();
 
-        return super.onBind(intent);
+        isInitialized.setTrue();
+        Timber.d("Service completed initialization");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        isInitialized.setFalse();
+
+        Timber.w("NotificationListenerService onDestroy");
     }
 
     private long getMaxNotificationsPerApp() {
@@ -272,15 +359,7 @@ public class NotificationListenerService
 
     @Override
     public boolean onUnbind(Intent intent) {
-        this.incomingNotificationReactors.clear();
-        this.dismissedNotificationReactors.clear();
-
-        this.notificationPublisher = NullNotificationPublisher.INSTANCE;
-
-        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
-
-        this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
+        Timber.w("NotificationListenerService onUnbind");
 
         return super.onUnbind(intent);
     }
@@ -389,7 +468,7 @@ public class NotificationListenerService
 
     private void sendNotification(StatusBarNotification notificationFromLine) {
         final LineNotification lineNotification = new LineNotificationBuilder(this,
-                CHAT_TITLE_AND_SENDER_RESOLVER, NOTIFICATION_PRINTER).from(notificationFromLine);
+                chatTitleAndSenderResolver, NOTIFICATION_PRINTER).from(notificationFromLine);
 
         int notificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
 
@@ -609,7 +688,11 @@ public class NotificationListenerService
         getActiveNotificationsFromAllAppsSafely().stream()
                 .filter(notification -> notification.getPackageName().equals(getPackageName()))
                 .forEach(notification -> groupToNotificationKeyMultimap.put(notification.getNotification().getGroup(), notification.getKey()));
-        dumbNotificationCounter.validateNotifications(groupToNotificationKeyMultimap);
+        boolean isValid = dumbNotificationCounter.validateNotifications(groupToNotificationKeyMultimap);
+
+        if (!isValid) {
+            // TODO why would this happen outside of service being killed?
+        }
 
         scheduleNotificationCounterCheck();
     }
@@ -651,6 +734,26 @@ public class NotificationListenerService
         }
     }
 
+    @Override
+    public void onListenerDisconnected() {
+        super.onListenerDisconnected();
+
+        Timber.w("NotificationListenerService onListenerDisconnected");
+
+        this.incomingNotificationReactors.clear();
+        this.dismissedNotificationReactors.clear();
+
+        this.notificationPublisher = NullNotificationPublisher.INSTANCE;
+
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+        Timber.d("Unregistered onSharedPreferenceChangeListener");
+
+        this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
+
+        isInitialized.setFalse();
+    }
+
     public void onNotificationRemovedUnsafe(final StatusBarNotification statusBarNotification) {
         super.onNotificationRemoved(statusBarNotification);
 
@@ -661,7 +764,7 @@ public class NotificationListenerService
         }
 
         final LineNotification dismissedLineNotification = new LineNotificationBuilder(
-                this, CHAT_TITLE_AND_SENDER_RESOLVER, NOTIFICATION_PRINTER)
+                this, chatTitleAndSenderResolver, NOTIFICATION_PRINTER)
                 .from(statusBarNotification);
 
         if (LineNotification.CallState.INCOMING == dismissedLineNotification.getCallState() &&
@@ -678,14 +781,15 @@ public class NotificationListenerService
         return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
     }
 
-    private void dismissLineNotificationSupportNotifications(final String groupId) {
+    private void dismissLineNotificationSupportNotifications(final String chatId) {
         final NotificationManager notificationManager = (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE);
 
         final Set<Integer> notificationIdsToCancel = Arrays.stream(notificationManager.getActiveNotifications())
                 // we're only clearing notifications from our package
                 .filter(notification -> notification.getPackageName().equals(this.getPackageName()))
                 // LINE only shows the last message for a chat, we'll dismiss all of the messages in the same chat ID
-                .filter(notification -> groupId.equals(notification.getNotification().getGroup()))
+                .filter(notification -> NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification()).isPresent())
+                .filter(notification -> chatId.equals(NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification()).get()))
                 .map(notification -> notification.getId())
                 .collect(Collectors.toSet());
 

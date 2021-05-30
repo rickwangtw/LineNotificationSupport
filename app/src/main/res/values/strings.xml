@@ -53,6 +53,8 @@
     <string name="call_notification_action_reverse_summary_off">Show "Answer" then "Decline". Use this option when you tend to answer calls more often.</string>
 
     <!-- Notification Preferences -->
+    <string name="notification_settings_title">Manage Notification Settings</string>
+    <string name="notification_settings_summary">Change settings such as sound, vibration, and pop-ups.</string>
     <string name="manage_line_message_notifications_title">[BETA] Manage LINE notifications</string>
     <string name="manage_line_message_notifications_summary_on">Use LINE Notification Support to handle LINE messages. LINE messages will be automatically dismissed.</string>
     <string name="manage_line_message_notifications_summary_off">Do not mess with LINE notifications</string>
@@ -74,7 +76,8 @@
 
     <!-- Help page strings -->
     <string name="thanks_for_donate">BIG thanks for supporting this app!</string>
-    <string name="author">Author: Rick Wang (rickwangtw1014@gmail.com)"</string>
+    <string name="author">Author: Rick Wang (linenotificationapp@gmail.com)"</string>
+    <string name="recommended_settings">Find or suggest recommended settings in our <a href="https://github.com/rickwangtw/LineNotificationSupport/blob/main/README.md#recommended-settings">website</a>!</string>
     <string name="contribute_to_open_source">This is an open source project! Feel free to contribute! https://github.com/rickwangtw/LineNotificationSupport"</string>
 
 </resources>

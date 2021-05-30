@@ -17,6 +17,7 @@ import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.line.LineLauncher;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
+import com.mysticwind.linenotificationsupport.model.NotificationExtraConstants;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
@@ -97,6 +98,10 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
                     lineNotification.getMessages().get(0));
             singleNotification.extras.putString(Notification.EXTRA_TEXT, lineNotification.getMessages().get(0));
         }
+        singleNotification.extras.putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
+        singleNotification.extras.putString(NotificationExtraConstants.MESSAGE_ID, lineNotification.getLineMessageId());
+        singleNotification.extras.putString(NotificationExtraConstants.STICKER_URL, lineNotification.getLineStickerUrl());
+        singleNotification.extras.putString(NotificationExtraConstants.SENDER_NAME, lineNotification.getSender().getName().toString());
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(notificationId, singleNotification);
@@ -127,10 +132,15 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
                 ImmutableList.of(lineNotification.getMessage()) : lineNotification.getMessages();
         final ImmutableList.Builder<NotificationCompat.MessagingStyle.Message> messageListBuilder = ImmutableList.builder();
         for (final String message : messages) {
-            messageListBuilder.add(
+            final NotificationCompat.MessagingStyle.Message messagingStyleMessage =
                     new NotificationCompat.MessagingStyle.Message(
-                            message, lineNotification.getTimestamp(), lineNotification.getSender())
-            );
+                            message, lineNotification.getTimestamp(), lineNotification.getSender());
+            messagingStyleMessage.getExtras().putString(NotificationExtraConstants.CHAT_ID, lineNotification.getChatId());
+            messagingStyleMessage.getExtras().putString(NotificationExtraConstants.MESSAGE_ID, lineNotification.getLineMessageId());
+            messagingStyleMessage.getExtras().putString(NotificationExtraConstants.STICKER_URL, lineNotification.getLineStickerUrl());
+            messagingStyleMessage.getExtras().putString(NotificationExtraConstants.SENDER_NAME, lineNotification.getSender().getName().toString());
+
+            messageListBuilder.add(messagingStyleMessage);
         }
         return messageListBuilder.build();
     }

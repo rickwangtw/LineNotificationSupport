@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,6 +40,9 @@ public class HelpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.help_main);
+
+        final TextView recommendedSettingsTextView = findViewById(R.id.recommended_settings_text_view);
+        recommendedSettingsTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
         showLineVersionWarning();
 

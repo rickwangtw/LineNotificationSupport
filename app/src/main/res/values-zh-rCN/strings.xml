@@ -44,6 +44,8 @@
     <string name="call_notification_action_reverse_summary_off">先『应答』再『拒绝』。使用这个选项如果您较常选择应答来电。</string>
 
     <!-- Notification Preferences -->
+    <string name="notification_settings_title">LINE 提示助手通知设置</string>
+    <string name="notification_settings_summary">设置声音、振动、以及弹出窗口。</string>
     <string name="manage_line_message_notifications_title">[测试中]管理 LINE 通知</string>
     <string name="manage_line_message_notifications_summary_on">使用 LINE提示助手 管理LINE通知。LINE通知会自动被取消。</string>
     <string name="manage_line_message_notifications_summary_off">不自动取消来自 LINE 的通知。</string>
@@ -65,7 +67,8 @@
 
     <!-- Help page strings -->
     <string name="thanks_for_donate">感谢您的贊助！</string>
-    <string name="author">作者：Rick Wang (rickwangtw1014@gmail.com)"</string>
+    <string name="author">作者：Rick Wang (linenotificationapp@gmail.com)"</string>
+    <string name="recommended_settings">在<a href="https://github.com/rickwangtw/LineNotificationSupport/blob/main/README.zh-tw.md">此网页</a>找适合您手錶的配置！如果您的手錶不在名单内，欢迎提供您的配置！</string>
     <string name="contribute_to_open_source">这是个开源项目，欢迎协助开發！https://github.com/rickwangtw/LineNotificationSupport"</string>
 
 </resources>

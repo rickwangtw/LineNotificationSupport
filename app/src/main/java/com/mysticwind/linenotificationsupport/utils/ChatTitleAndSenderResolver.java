@@ -2,22 +2,22 @@ package com.mysticwind.linenotificationsupport.utils;
 
 import android.service.notification.StatusBarNotification;
 
-import com.google.common.collect.HashMultimap;
+import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 
 import timber.log.Timber;
 
 public class ChatTitleAndSenderResolver {
 
-    private final HashMultimap<String, String> chatIdToSenderMultimap = HashMultimap.create();
-    // there are crazy weird situations where LINE don't provide chat room names. This acts as a workaround.
-    private final Map<String, String> chatIdToChatRoomNameMap = new HashMap<>();
+    private ChatNameManager chatNameManager;
+
+    public ChatTitleAndSenderResolver(final ChatNameManager chatNameManager) {
+        this.chatNameManager = Objects.requireNonNull(chatNameManager);
+    }
 
     public Pair<String, String> resolveTitleAndSender(final StatusBarNotification statusBarNotification) {
         // individual: android.title is the sender
@@ -25,32 +25,22 @@ public class ChatTitleAndSenderResolver {
         // chat with multi-folks: android.title is also the sender, no way to differentiate between individual and multi-folks :(
 
         // it is straightforward for chat groups
-        if (isChatGroup(statusBarNotification)) {
-            final String title = getGroupChatTitle(statusBarNotification);
-            cacheGroupTitle(statusBarNotification, title);
-            final String sender = calculateGroupSender(statusBarNotification);
-            return Pair.of(title, sender);
-        }
-        // for others, it can be an individual or multiple folks without a group name
-        final String sender = getAndroidTitle(statusBarNotification);
+        String sender = getAndroidTitle(statusBarNotification);
 
         // just use the sender if not chat (e.g. calls)
-        String chatId = getChatId(statusBarNotification);
+        final String chatId = NotificationExtractor.getLineChatId(statusBarNotification.getNotification());
         if (StringUtils.isBlank(chatId)) {
             return Pair.of(sender, sender);
         }
 
-        chatIdToSenderMultimap.put(chatId, sender);
-
-        final String title;
-        final String highConfidenceChatRoomName = chatIdToChatRoomNameMap.get(chatId);
-        if (StringUtils.isNotBlank(highConfidenceChatRoomName)) {
-            title = highConfidenceChatRoomName;
-            Timber.w("Override with chat room name: " + title);
-        } else {
-            title = sortAndMerge(chatIdToSenderMultimap.get(chatId));
+        String highConfidenceChatGroupName = null;
+        if (isChatGroup(statusBarNotification)) {
+            highConfidenceChatGroupName = getGroupChatTitle(statusBarNotification);
+            sender = calculateGroupSender(statusBarNotification);
         }
-        return Pair.of(title, sender);
+
+        final String chatName = chatNameManager.getChatName(chatId, sender, highConfidenceChatGroupName);
+        return Pair.of(chatName, sender);
     }
 
     private boolean isChatGroup(final StatusBarNotification statusBarNotification) {
@@ -58,16 +48,9 @@ public class ChatTitleAndSenderResolver {
         return StringUtils.isNotBlank(title);
     }
 
-    private void cacheGroupTitle(final StatusBarNotification statusBarNotification, final String groupName) {
-        final String chatId = getChatId(statusBarNotification);
-        if (StringUtils.isNotBlank(chatId)) {
-            chatIdToChatRoomNameMap.put(chatId, groupName);
-        }
-    }
-
     private String getGroupChatTitle(final StatusBarNotification statusBarNotification) {
         // chat groups will have a conversationTitle (but not groups of people)
-        return statusBarNotification.getNotification().extras.getString("android.conversationTitle");
+        return NotificationExtractor.getConversationTitle(statusBarNotification.getNotification());
     }
 
     private String calculateGroupSender(StatusBarNotification statusBarNotification) {
@@ -98,17 +81,6 @@ public class ChatTitleAndSenderResolver {
 
     private String getAndroidTitle(final StatusBarNotification statusBarNotification) {
         return NotificationExtractor.getTitle(statusBarNotification.getNotification());
-    }
-
-    private String getChatId(final StatusBarNotification statusBarNotification) {
-        return statusBarNotification.getNotification().extras.getString("line.chat.id");
-    }
-
-    private String sortAndMerge(Set<String> senders) {
-        return senders.stream()
-                .sorted()
-                .reduce((sender1, sender2) -> sender1 + "," + sender2)
-                .get(); // there should always be at least one sender
     }
 
 }

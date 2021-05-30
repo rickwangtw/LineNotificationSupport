@@ -26,7 +26,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
     private static final ConcurrentLinkedDeque<QueueItem> QUEUE_ITEMS = new ConcurrentLinkedDeque<>();
 
     // this is to make sure we have sufficient cool down for each chat after it being dismissed
-    private static final Map<String, Instant> CHAT_ID_TO_LAST_DISMISSED_INSTANT_MAP = new ConcurrentHashMap<>();
+    private static final Map<String, Instant> GROUP_TO_LAST_DISMISSED_INSTANT_MAP = new ConcurrentHashMap<>();
 
     private final Handler handler;
     private final NotificationPublisher notificationPublisher;
@@ -99,20 +99,20 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
         // when should this actually happen??
         notificationPublisher.updateNotificationDismissed(statusBarNotification);
 
-        final String chatId = statusBarNotification.getNotification().getGroup();
+        final String group = statusBarNotification.getNotification().getGroup();
 
-        if (!slotAvailabilityChecker.hasSlot(chatId)) {
+        if (!slotAvailabilityChecker.hasSlot(group)) {
             return;
         }
 
         Optional<QueueItem> firstItem = getFirstItem();
         if (!firstItem.isPresent()) {
-            CHAT_ID_TO_LAST_DISMISSED_INSTANT_MAP.put(chatId, Instant.now());
+            GROUP_TO_LAST_DISMISSED_INSTANT_MAP.put(group, Instant.now());
             return;
         }
         final long delayInMillis = calculateDelayInMillis(firstItem.get().getLineNotification().getChatId());
         delayedPublish(firstItem.get(), delayInMillis);
-        CHAT_ID_TO_LAST_DISMISSED_INSTANT_MAP.put(chatId, Instant.now().plusMillis(delayInMillis));
+        GROUP_TO_LAST_DISMISSED_INSTANT_MAP.put(group, Instant.now().plusMillis(delayInMillis));
 
         // TODO why are there cases where there are available slots but the queue still has items???
         if (!QUEUE_ITEMS.isEmpty()) {
@@ -133,7 +133,7 @@ public class MaxNotificationHandlingNotificationPublisherDecorator implements No
     }
 
     private long calculateDelayInMillis(final String chatId) {
-        final long lastDismissedTimestamp = CHAT_ID_TO_LAST_DISMISSED_INSTANT_MAP.getOrDefault(chatId, Instant.now()).toEpochMilli();
+        final long lastDismissedTimestamp = GROUP_TO_LAST_DISMISSED_INSTANT_MAP.getOrDefault(chatId, Instant.now()).toEpochMilli();
         final long now = Instant.now().toEpochMilli();
         if (lastDismissedTimestamp > now) {
             return lastDismissedTimestamp - now + 1;
