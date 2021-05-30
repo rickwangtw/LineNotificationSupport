@@ -76,7 +76,7 @@
 
     <!-- Help page strings -->
     <string name="author">Author: Rick Wang (linenotificationapp@gmail.com)"</string>
-    <string name="recommended_settings">Find or suggest recommended settings in our <a href="https://github.com/rickwangtw/LineNotificationSupport/#recommended-settings">website</a>!</string>
+    <string name="recommended_settings">Find or suggest recommended settings in our <a href="https://github.com/rickwangtw/LineNotificationSupport/blob/main/README.md#recommended-settings">website</a>!</string>
     <string name="contribute_to_open_source">This is an open source project! Feel free to contribute! https://github.com/rickwangtw/LineNotificationSupport"</string>
     <string name="support_donate_app">Please support my effort through the donate version: https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate</string>
 

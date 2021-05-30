@@ -67,7 +67,7 @@
 
     <!-- Help page strings -->
     <string name="author">作者：Rick Wang (linenotificationapp@gmail.com)"</string>
-    <string name="recommended_settings">在<a href="https://github.com/rickwangtw/LineNotificationSupport/#recommended-settings">此网页</a>找适合您手錶的配置！如果您的手錶不在名单内，欢迎提供您的配置！</string>
+    <string name="recommended_settings">在<a href="https://github.com/rickwangtw/LineNotificationSupport/blob/main/README.zh-tw.md">此网页</a>找适合您手錶的配置！如果您的手錶不在名单内，欢迎提供您的配置！</string>
     <string name="contribute_to_open_source">这是个开源项目，欢迎协助开發！https://github.com/rickwangtw/LineNotificationSupport"</string>
     <string name="support_donate_app">请透过捐赠版支持我的努力！ https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate</string>
 
