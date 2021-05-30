@@ -1,3 +1,5 @@
+[![zhtw](https://img.shields.io/badge/lang-zhtw-green.svg)](https://github.com/rickwangtw/LineNotificationSupport/blob/main/README.zh-tw.md)
+
 # LINE Notification Support
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CYC657N6DY3CJ&item_name=Support+LINE+Notification+Support%21&currency_code=USD)
 
