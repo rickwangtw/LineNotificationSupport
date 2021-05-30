@@ -67,7 +67,7 @@
             app:title="@string/notification_settings_title"
             app:summary="@string/notification_settings_summary">
             <intent
-                android:targetPackage="com.mysticwind.linenotificationsupport"
+                android:targetPackage="com.mysticwind.linenotificationsupport.donate"
                 android:targetClass="com.mysticwind.linenotificationsupport.NotificationSettingsLauncherActivity"/>
         </Preference>
 
