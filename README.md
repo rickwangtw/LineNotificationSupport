@@ -19,7 +19,7 @@ This is the app for you!
 * You'll get messages when you get an incoming call. Worried that you may not get it? It will send messages continuously until you accept or reject.
 * You can configure each chat the way you want! You can choose to ignore notifications that come from some to focus on the critical messages!
 * LINE stickers will also be shown on your watch!
-* You *CAN* reply to your friends on your watch!
+* You **CAN** reply to your friends on your watch!
 
 Supports all LINE languages (the app still has limited language support though - translation contributions are always welcomed).
 
