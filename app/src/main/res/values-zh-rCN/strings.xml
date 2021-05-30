@@ -66,7 +66,7 @@
     <string name="line_version_warning_10_19_1">您使用的这个 LINE 版本 (10.19.1) 在信息中不显示群组名称。应对这个问题，这个应用会显示之前在群中传过信息的朋友列表。如果不显示群名称对您造成困扰，请降版本至 10.18.2 或 10.19.2 以上。</string>
 
     <!-- Help page strings -->
-    <string name="author">作者：Rick Wang (rickwangtw1014@gmail.com)"</string>
+    <string name="author">作者：Rick Wang (linenotificationapp@gmail.com)"</string>
     <string name="contribute_to_open_source">这是个开源项目，欢迎协助开發！https://github.com/rickwangtw/LineNotificationSupport"</string>
     <string name="support_donate_app">请透过捐赠版支持我的努力！ https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate</string>
 
