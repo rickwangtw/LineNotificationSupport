@@ -53,7 +53,7 @@ Please support my effort by either buying the donate version of my app, or donat
 
 ## FAQ
 
-### 1. What is the recommended settings for watches?
+### 1. What are the recommended settings for watches?
 You use a watch that is not on the list? Share your settings!
 
 #### Galaxy Watch / Tizen 5.5.0.1
