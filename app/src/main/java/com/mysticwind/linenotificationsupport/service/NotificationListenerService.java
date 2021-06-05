@@ -63,6 +63,7 @@ import com.mysticwind.linenotificationsupport.notification.SlotAvailabilityCheck
 import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificationCounter;
+import com.mysticwind.linenotificationsupport.notification.reactor.ChatReplyActionTrackingIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNamePersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
@@ -77,6 +78,7 @@ import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGrou
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.persistence.ChatGroupDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
+import com.mysticwind.linenotificationsupport.reply.ChatReplyActionManager;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
@@ -283,6 +285,9 @@ public class NotificationListenerService
 
         this.incomingNotificationReactors.add(
                 new ChatRoomNamePersistenceIncomingNotificationReactor(groupChatNameDataAccessor));
+
+        final ChatReplyActionManager chatReplyActionManager = new ChatReplyActionManager();
+        this.incomingNotificationReactors.add(new ChatReplyActionTrackingIncomingNotificationReactor(chatReplyActionManager));
 
         this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
 
