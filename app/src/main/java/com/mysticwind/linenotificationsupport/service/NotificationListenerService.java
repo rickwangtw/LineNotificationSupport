@@ -18,6 +18,7 @@ import android.service.notification.StatusBarNotification;
 import android.widget.Toast;
 
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.Person;
 import androidx.preference.PreferenceManager;
 import androidx.room.Room;
 
@@ -28,6 +29,7 @@ import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -214,15 +216,18 @@ public class NotificationListenerService
                 return;
             }
 
-            // TODO ideally we want to generate another StatusBarNotification with the response
-            final Notification repliedNotification = statusBarNotification.get().getNotification();
+            Notification notification = statusBarNotification.get().getNotification();
 
-            final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(NotificationListenerService.this);
-            notificationManager.notify(statusBarNotification.get().getId(), repliedNotification);
-            Timber.i("Notify notification ID [%d] with response [%s] through channel [%s]",
-                    statusBarNotification.get().getId(),
-                    response,
-                    statusBarNotification.get().getNotification().getChannelId());
+            final LineNotification responseLineNotification = LineNotification.builder()
+                    .title(NotificationExtractor.getTitle(notification))
+                    .message(response)
+                    .sender(new Person.Builder().setName("You").build()) // TODO localization
+                    .chatId(chatId)
+                    .timestamp(Instant.now().toEpochMilli())
+                    .actions(ImmutableList.copyOf(statusBarNotification.get().getNotification().actions))
+                    .build();
+
+            sendNotification(responseLineNotification, NOTIFICATION_ID_GENERATOR.getNextNotificationId());
         }
 
         private Optional<StatusBarNotification> findNotificationOfChatId(final String chatId) {
@@ -547,9 +552,9 @@ public class NotificationListenerService
         final LineNotification lineNotification = new LineNotificationBuilder(this,
                 chatTitleAndSenderResolver, NOTIFICATION_PRINTER).from(notificationFromLine);
 
-        int notificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
+        final int notificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
 
-        Optional<Pair<LineNotification, Integer>> notificationAndId =
+        final Optional<Pair<LineNotification, Integer>> notificationAndId =
                 handleDuplicate(lineNotification, notificationId);
 
         if (!notificationAndId.isPresent()) {
@@ -557,25 +562,29 @@ public class NotificationListenerService
             return;
         }
 
-        LineNotification actionAdjustedLineNotification = adjustActionOrder(notificationAndId.get().getLeft());
+        final LineNotification actionAdjustedLineNotification = adjustActionOrder(notificationAndId.get().getLeft());
 
-        notificationPublisher.publishNotification(actionAdjustedLineNotification, notificationAndId.get().getRight());
+        sendNotification(actionAdjustedLineNotification, notificationAndId.get().getRight());
+    }
 
-        if (actionAdjustedLineNotification.getCallState() == null) {
+    private void sendNotification(final LineNotification lineNotification, final int notificationId) {
+        notificationPublisher.publishNotification(lineNotification, notificationId);
+
+        if (lineNotification.getCallState() == null) {
             return;
         }
 
         // deal with auto notifications for calls
-        if (actionAdjustedLineNotification.getCallState() == LineNotification.CallState.INCOMING) {
+        if (lineNotification.getCallState() == LineNotification.CallState.INCOMING) {
             if (this.autoIncomingCallNotificationState != null) {
                 this.autoIncomingCallNotificationState.cancel();
             }
             this.autoIncomingCallNotificationState = AutoIncomingCallNotificationState.builder()
-                    .lineNotification(actionAdjustedLineNotification)
+                    .lineNotification(lineNotification)
                     .waitDurationInSeconds(getWaitDurationInSeconds())
                     .timeoutInSeconds(getAutoSendTimeoutInSecondsFromPreferences())
                     .build();
-            this.autoIncomingCallNotificationState.notified(notificationAndId.get().getRight());
+            this.autoIncomingCallNotificationState.notified(notificationId);
             sendIncomingCallNotification(this.autoIncomingCallNotificationState);
         }
 
