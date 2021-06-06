@@ -219,6 +219,7 @@ public class NotificationListenerService
             Notification notification = statusBarNotification.get().getNotification();
 
             final LineNotification responseLineNotification = LineNotification.builder()
+                    .lineMessageId(String.valueOf(Instant.now().toEpochMilli())) // just generate a fake one
                     .title(NotificationExtractor.getTitle(notification))
                     .message(response)
                     .sender(new Person.Builder().setName("You").build()) // TODO localization
