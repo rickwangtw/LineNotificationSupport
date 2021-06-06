@@ -31,7 +31,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
-import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.CachingGroupChatNameDataAccessorDecorator;
@@ -215,12 +214,8 @@ public class NotificationListenerService
                 return;
             }
 
-            final Notification repliedNotification =
-                    new Notification.Builder(NotificationListenerService.this,
-                            statusBarNotification.get().getNotification().getChannelId())
-                            .setSmallIcon(R.mipmap.ic_launcher_round)
-                            .setContentText(response)
-                            .build();
+            // TODO ideally we want to generate another StatusBarNotification with the response
+            final Notification repliedNotification = statusBarNotification.get().getNotification();
 
             final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(NotificationListenerService.this);
             notificationManager.notify(statusBarNotification.get().getId(), repliedNotification);
