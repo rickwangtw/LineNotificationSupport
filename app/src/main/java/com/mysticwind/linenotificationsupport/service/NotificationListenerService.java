@@ -31,6 +31,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.CachingGroupChatNameDataAccessorDecorator;
@@ -101,6 +102,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -185,6 +187,7 @@ public class NotificationListenerService
 
                 if (responseMessage.isPresent() && lineReplyAction.isPresent()) {
                     lineRemoteInputReplier.sendReply(lineReplyAction.get(), responseMessage.get());
+                    updateNotification(intent, responseMessage.get());
                 }
             }
         }
@@ -202,6 +205,37 @@ public class NotificationListenerService
             return Optional.ofNullable(lineReplyAction);
         }
 
+        private void updateNotification(Intent intent, String response) {
+            final String chatId = intent.getStringExtra(ReplyActionBuilder.CHAT_ID_KEY);
+
+            final Optional<StatusBarNotification> statusBarNotification = findNotificationOfChatId(chatId);
+
+            if (!statusBarNotification.isPresent()) {
+                Timber.e("Cannot find corresponding notification for chat ID [%s]", chatId);
+                return;
+            }
+
+            final Notification repliedNotification =
+                    new Notification.Builder(NotificationListenerService.this,
+                            statusBarNotification.get().getNotification().getChannelId())
+                            .setSmallIcon(R.mipmap.ic_launcher_round)
+                            .setContentText(response)
+                            .build();
+
+            final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(NotificationListenerService.this);
+            notificationManager.notify(statusBarNotification.get().getId(), repliedNotification);
+            Timber.i("Notify notification ID [%d] with response [%s] through channel [%s]",
+                    statusBarNotification.get().getId(),
+                    response,
+                    statusBarNotification.get().getNotification().getChannelId());
+        }
+
+        private Optional<StatusBarNotification> findNotificationOfChatId(final String chatId) {
+            return getActiveNotificationsFromAllAppsSafely().stream()
+                    .filter(notification -> notification.getPackageName().equals(getPackageName()))
+                    .filter(notification -> chatId.equals(NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification()).orElse(null)))
+                    .max(Comparator.comparing(notification -> notification.getNotification().when));
+        }
     };
 
     private ChatTitleAndSenderResolver chatTitleAndSenderResolver;

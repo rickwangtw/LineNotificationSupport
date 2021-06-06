@@ -15,9 +15,9 @@ public class ReplyActionBuilder {
     public static final String REPLY_MESSAGE_ACTION = "reply_message";
     public static final String RESPONSE_REMOTE_INPUT_KEY = "response";
     public static final String LINE_REPLY_ACTION_KEY = "line.reply.action";
+    public static final String CHAT_ID_KEY = "chat.id";
 
     private static final String DEFAULT_REPLY_LABEL = "Reply";
-    private static final String CHAT_ID_KEY = "chat.id";
 
     private final Context context;
     private final String replyLabel;
