@@ -2,12 +2,16 @@ package com.mysticwind.linenotificationsupport.service;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.RemoteInput;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
@@ -79,6 +83,8 @@ import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.persistence.ChatGroupDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.reply.ChatReplyActionManager;
+import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
+import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
@@ -149,7 +155,7 @@ public class NotificationListenerService
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
     private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
-
+    private LineRemoteInputReplier lineRemoteInputReplier;
 
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
@@ -163,6 +169,39 @@ public class NotificationListenerService
                 NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
             }
         }
+    };
+
+    // TODO should this be in its own class?
+    private final BroadcastReceiver replyActionBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            final String action = intent.getAction();
+            if (ReplyActionBuilder.REPLY_MESSAGE_ACTION.equals(action)){
+
+                final Optional<String> responseMessage = getResponseMessage(intent);
+                final Optional<Notification.Action> lineReplyAction = getLineReplyAction(intent);
+                Timber.i("Received reply action with response [%s] and line reply action [%s]",
+                        responseMessage, lineReplyAction);
+
+                if (responseMessage.isPresent() && lineReplyAction.isPresent()) {
+                    lineRemoteInputReplier.sendReply(lineReplyAction.get(), responseMessage.get());
+                }
+            }
+        }
+
+        private Optional<String> getResponseMessage(final Intent intent) {
+            final Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
+            if (remoteInput != null) {
+                return Optional.ofNullable(remoteInput.getCharSequence(ReplyActionBuilder.RESPONSE_REMOTE_INPUT_KEY).toString());
+            }
+            return Optional.empty();
+        }
+
+        private Optional<Notification.Action> getLineReplyAction(final Intent intent) {
+            final Notification.Action lineReplyAction = intent.getParcelableExtra(ReplyActionBuilder.LINE_REPLY_ACTION_KEY);
+            return Optional.ofNullable(lineReplyAction);
+        }
+
     };
 
     private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
@@ -255,6 +294,8 @@ public class NotificationListenerService
             return;
         }
 
+        lineRemoteInputReplier = new LineRemoteInputReplier(this);
+
         // getting active notifications to restore previous state
         final List<StatusBarNotification> existingNotifications = getActiveNotificationsFromAllAppsSafely().stream()
                 .filter(notification -> notification.getPackageName().equals(getPackageName()))
@@ -340,6 +381,8 @@ public class NotificationListenerService
         }
 
         scheduleNotificationCounterCheck();
+
+        registerReceiver(replyActionBroadcastReceiver, new IntentFilter(ReplyActionBuilder.REPLY_MESSAGE_ACTION));
 
         isInitialized.setTrue();
         Timber.d("Service completed initialization");
@@ -744,6 +787,8 @@ public class NotificationListenerService
         super.onListenerDisconnected();
 
         Timber.w("NotificationListenerService onListenerDisconnected");
+
+        unregisterReceiver(replyActionBroadcastReceiver);
 
         this.incomingNotificationReactors.clear();
         this.dismissedNotificationReactors.clear();

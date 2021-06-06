@@ -12,6 +12,8 @@ import android.service.notification.StatusBarNotification;
 import androidx.core.app.Person;
 import androidx.core.graphics.drawable.IconCompat;
 
+import com.google.common.collect.ImmutableList;
+import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
@@ -37,6 +39,7 @@ public class LineNotificationBuilder {
     private final Context context;
     private final ChatTitleAndSenderResolver chatTitleAndSenderResolver;
     private final StatusBarNotificationPrinter statusBarNotificationPrinter;
+    private final ReplyActionBuilder replyActionBuilder;
 
     public LineNotificationBuilder(final Context context,
                                    final ChatTitleAndSenderResolver chatTitleAndSenderResolver,
@@ -44,6 +47,7 @@ public class LineNotificationBuilder {
         this.context = context;
         this.chatTitleAndSenderResolver = chatTitleAndSenderResolver;
         this.statusBarNotificationPrinter = statusBarNotificationPrinter;
+        this.replyActionBuilder = new ReplyActionBuilder(context);
     }
 
     public LineNotification from(StatusBarNotification statusBarNotification) {
@@ -159,7 +163,12 @@ public class LineNotificationBuilder {
         if(isMessage(statusBarNotification, callState)) {
             // mute and reply buttons
             // the mute button doesn't seem very useful
-            return extractActionsOfIndices(statusBarNotification, 1);
+            List<Notification.Action> lineAction = extractActionsOfIndices(statusBarNotification, 1);
+            // TODO we have a resolve method that has additional logic to fill in default chat IDs. We'll want to consolidate the logic here.
+            final String lineChatId = NotificationExtractor.getLineChatId(statusBarNotification.getNotification());
+            return ImmutableList.of(
+                    replyActionBuilder.buildReplyAction(lineChatId, lineAction.size() > 0 ? lineAction.get(0) : null)
+            );
         }
 
         if (callState == null) {
