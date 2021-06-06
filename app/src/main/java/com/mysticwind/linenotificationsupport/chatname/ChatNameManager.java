@@ -21,6 +21,10 @@ public class ChatNameManager {
         this.multiPersonChatNameDataAccessor = Objects.requireNonNull(multiPersonChatNameDataAccessor);
     }
 
+    public String getChatName(final String chatId) {
+        return getChatName(chatId, null, null);
+    }
+
     public String getChatName(final String chatId, final String sender) {
         return getChatName(chatId, sender, null);
     }

@@ -159,6 +159,7 @@ public class NotificationListenerService
 
     private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
     private LineRemoteInputReplier lineRemoteInputReplier;
+    private ChatNameManager chatNameManager;
 
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
@@ -216,11 +217,11 @@ public class NotificationListenerService
                 return;
             }
 
-            Notification notification = statusBarNotification.get().getNotification();
+            final String chatName = chatNameManager.getChatName(chatId);
 
             final LineNotification responseLineNotification = LineNotification.builder()
                     .lineMessageId(String.valueOf(Instant.now().toEpochMilli())) // just generate a fake one
-                    .title(NotificationExtractor.getTitle(notification))
+                    .title(chatName)
                     .message(response)
                     .sender(new Person.Builder().setName("You").build()) // TODO localization
                     .chatId(chatId)
@@ -356,7 +357,7 @@ public class NotificationListenerService
         final MultiPersonChatNameDataAccessor multiPersonChatNameDataAccessor =
                 new CachingMultiPersonChatNameDataAccessorDecorator(
                         new RoomMultiPersonChatNameDataAccessor(chatGroupDatabase));
-        final ChatNameManager chatNameManager = new ChatNameManager(groupChatNameDataAccessor, multiPersonChatNameDataAccessor);
+        chatNameManager = new ChatNameManager(groupChatNameDataAccessor, multiPersonChatNameDataAccessor);
         chatTitleAndSenderResolver = new ChatTitleAndSenderResolver(chatNameManager);
 
         this.incomingNotificationReactors.add(
