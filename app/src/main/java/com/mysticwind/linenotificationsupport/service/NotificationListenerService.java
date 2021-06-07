@@ -74,6 +74,7 @@ import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNameP
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.LineNotificationLoggingIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.LoggingDismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNotificationIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
@@ -360,6 +361,17 @@ public class NotificationListenerService
         chatNameManager = new ChatNameManager(groupChatNameDataAccessor, multiPersonChatNameDataAccessor);
         chatTitleAndSenderResolver = new ChatTitleAndSenderResolver(chatNameManager);
 
+        if (DEBUG_MODE_PROVIDER.isDebugMode()) {
+            AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
+                    AppDatabase.class, "database").build();
+
+            this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
+        }
+
+        this.incomingNotificationReactors.add(
+                new LineNotificationLoggingIncomingNotificationReactor(
+                        NOTIFICATION_PRINTER, notificationHistoryManager, getLineAppVersion()));
+
         this.incomingNotificationReactors.add(
                 new ChatRoomNamePersistenceIncomingNotificationReactor(groupChatNameDataAccessor));
 
@@ -408,13 +420,6 @@ public class NotificationListenerService
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
         Timber.d("Registered onSharedPreferenceChangeListener");
-
-        if (DEBUG_MODE_PROVIDER.isDebugMode()) {
-            AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
-                    AppDatabase.class, "database").build();
-
-            this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
-        }
 
         scheduleNotificationCounterCheck();
 
@@ -498,27 +503,7 @@ public class NotificationListenerService
             return;
         }
 
-        NOTIFICATION_PRINTER.print("Received", statusBarNotification);
-        notificationHistoryManager.record(statusBarNotification, getLineAppVersion());
-
-        if (isNewMesssageWithoutContent(statusBarNotification)) {
-            Timber.d("Detected potential new message without content: key [%s] title [%s] message [%s]",
-                    statusBarNotification.getKey(), NotificationExtractor.getTitle(statusBarNotification.getNotification()),
-                    statusBarNotification.getNotification().tickerText);
-            // we should get a notification update for this message
-        }
-
         sendNotification(statusBarNotification);
-    }
-
-    private boolean isNewMesssageWithoutContent(final StatusBarNotification statusBarNotification) {
-        // There are notifications that will not have actions and don't need to retry.
-        // For example: notifications of someone added to a chat
-        if (StringUtils.isBlank(NotificationExtractor.getLineMessageId(statusBarNotification.getNotification()))) {
-            return false;
-        }
-        return StringUtils.equals(LineNotificationBuilder.MESSAGE_CATEGORY, statusBarNotification.getNotification().category) &&
-                statusBarNotification.getNotification().actions == null;
     }
 
     private boolean shouldIgnoreNotification(final StatusBarNotification statusBarNotification) {

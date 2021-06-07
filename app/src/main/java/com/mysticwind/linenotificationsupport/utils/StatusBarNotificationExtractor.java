@@ -11,9 +11,6 @@ public class StatusBarNotificationExtractor {
 
     public static boolean isSummary(final StatusBarNotification statusBarNotification) {
         if ((statusBarNotification.getNotification().flags & Notification.FLAG_GROUP_SUMMARY) > 0) {
-            Timber.d(String.format("Summary notification with message [%s]: flag %s",
-                    NotificationExtractor.getMessage(statusBarNotification.getNotification()),
-                    statusBarNotification.getNotification().flags));
             return true;
         }
 
