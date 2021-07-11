@@ -9,6 +9,7 @@ import android.os.Bundle;
 
 import org.apache.commons.lang3.Validate;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -43,7 +44,8 @@ public class LineRemoteInputReplier {
 
         RemoteInput.addResultsToIntent(replyAction.getRemoteInputs(), intent, bundle);
         try {
-            replyAction.actionIntent.send(context, 0, intent);
+            final int code = (int) Instant.now().toEpochMilli();
+            replyAction.actionIntent.send(context, code, intent, onFinished, null);
         } catch (final PendingIntent.CanceledException e) {
             Timber.e(e, "Failed to send message to LINE: %s", e.getMessage());
         }
