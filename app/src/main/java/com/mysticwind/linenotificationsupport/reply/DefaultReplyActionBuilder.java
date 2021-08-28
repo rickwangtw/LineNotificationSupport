@@ -10,7 +10,7 @@ import org.apache.commons.lang3.Validate;
 
 import java.util.Objects;
 
-public class ReplyActionBuilder {
+public class DefaultReplyActionBuilder implements  ReplyActionBuilder {
 
     public static final String REPLY_MESSAGE_ACTION = "reply_message";
     public static final String RESPONSE_REMOTE_INPUT_KEY = "response";
@@ -22,15 +22,16 @@ public class ReplyActionBuilder {
     private final Context context;
     private final String replyLabel;
 
-    public ReplyActionBuilder(final Context context) {
+    public DefaultReplyActionBuilder(final Context context) {
         this(context, DEFAULT_REPLY_LABEL);
     }
 
-    public ReplyActionBuilder(final Context context, final String replyLabel) {
+    public DefaultReplyActionBuilder(final Context context, final String replyLabel) {
         this.context = Objects.requireNonNull(context);
         this.replyLabel = Validate.notBlank(replyLabel);
     }
 
+    @Override
     public Notification.Action buildReplyAction(final String chatId, final Notification.Action originalLineReplyAction) {
         final RemoteInput remoteInput = new RemoteInput.Builder(RESPONSE_REMOTE_INPUT_KEY)
                 .setLabel(replyLabel)

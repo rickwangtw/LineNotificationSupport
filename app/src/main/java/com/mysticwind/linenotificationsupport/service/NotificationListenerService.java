@@ -87,7 +87,7 @@ import com.mysticwind.linenotificationsupport.persistence.ChatGroupDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.reply.ChatReplyActionManager;
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
-import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
+import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
@@ -181,7 +181,7 @@ public class NotificationListenerService
         @Override
         public void onReceive(final Context context, final Intent intent) {
             final String action = intent.getAction();
-            if (ReplyActionBuilder.REPLY_MESSAGE_ACTION.equals(action)){
+            if (DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION.equals(action)){
 
                 final Optional<String> responseMessage = getResponseMessage(intent);
                 final Optional<Notification.Action> lineReplyAction = getLineReplyAction(intent);
@@ -198,18 +198,18 @@ public class NotificationListenerService
         private Optional<String> getResponseMessage(final Intent intent) {
             final Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
             if (remoteInput != null) {
-                return Optional.ofNullable(remoteInput.getCharSequence(ReplyActionBuilder.RESPONSE_REMOTE_INPUT_KEY).toString());
+                return Optional.ofNullable(remoteInput.getCharSequence(DefaultReplyActionBuilder.RESPONSE_REMOTE_INPUT_KEY).toString());
             }
             return Optional.empty();
         }
 
         private Optional<Notification.Action> getLineReplyAction(final Intent intent) {
-            final Notification.Action lineReplyAction = intent.getParcelableExtra(ReplyActionBuilder.LINE_REPLY_ACTION_KEY);
+            final Notification.Action lineReplyAction = intent.getParcelableExtra(DefaultReplyActionBuilder.LINE_REPLY_ACTION_KEY);
             return Optional.ofNullable(lineReplyAction);
         }
 
         private void updateNotification(Intent intent, String response) {
-            final String chatId = intent.getStringExtra(ReplyActionBuilder.CHAT_ID_KEY);
+            final String chatId = intent.getStringExtra(DefaultReplyActionBuilder.CHAT_ID_KEY);
 
             final Optional<StatusBarNotification> statusBarNotification = findNotificationOfChatId(chatId);
 
@@ -423,7 +423,7 @@ public class NotificationListenerService
 
         scheduleNotificationCounterCheck();
 
-        registerReceiver(replyActionBroadcastReceiver, new IntentFilter(ReplyActionBuilder.REPLY_MESSAGE_ACTION));
+        registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
 
         isInitialized.setTrue();
         Timber.d("Service completed initialization");
