@@ -45,7 +45,7 @@ public class LineRemoteInputReplier {
         RemoteInput.addResultsToIntent(replyAction.getRemoteInputs(), intent, bundle);
         try {
             final int code = (int) Instant.now().toEpochMilli();
-            replyAction.actionIntent.send(context, code, intent, onFinished, null);
+            replyAction.actionIntent.send(context, code, intent);
         } catch (final PendingIntent.CanceledException e) {
             Timber.e(e, "Failed to send message to LINE: %s", e.getMessage());
         }
