@@ -694,7 +694,7 @@ public class NotificationListenerService
             try {
                 notificationManager.cancel(notificationId);
             } catch (final Exception e) {
-                Timber.w(e, String.format("Failed to cancel notification %d: %s", notificationId, e.getMessage()));
+                Timber.w(e, "Failed to cancel notification %d: %s", notificationId, e.getMessage());
             }
         }
     }
