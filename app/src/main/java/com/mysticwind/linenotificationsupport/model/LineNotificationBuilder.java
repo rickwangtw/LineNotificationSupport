@@ -164,10 +164,13 @@ public class LineNotificationBuilder {
             // mute and reply buttons
             // the mute button doesn't seem very useful
             List<Notification.Action> lineAction = extractActionsOfIndices(statusBarNotification, 1);
+            if (lineAction.isEmpty()) {
+                return Collections.EMPTY_LIST;
+            }
             // TODO we have a resolve method that has additional logic to fill in default chat IDs. We'll want to consolidate the logic here.
             final String lineChatId = NotificationExtractor.getLineChatId(statusBarNotification.getNotification());
             return ImmutableList.of(
-                    replyActionBuilder.buildReplyAction(lineChatId, lineAction.size() > 0 ? lineAction.get(0) : null)
+                    replyActionBuilder.buildReplyAction(lineChatId, lineAction.get(0))
             );
         }
 
