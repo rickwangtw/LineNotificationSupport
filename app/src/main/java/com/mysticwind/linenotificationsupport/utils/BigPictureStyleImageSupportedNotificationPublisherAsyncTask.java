@@ -65,8 +65,7 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
             in = connection.getInputStream();
             return BitmapFactory.decodeStream(in);
         } catch (final Exception e) {
-            Timber.e(e, String.format("Failed to download image %s: %s",
-                    lineNotification.getLineStickerUrl(), e.getMessage()));
+            Timber.e(e, "Failed to download image %s: %s", lineNotification.getLineStickerUrl(), e.getMessage());
             return null;
         }
     }
