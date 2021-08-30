@@ -33,6 +33,7 @@ This app has been tested with Samsung Galaxy Watch Tizen 5.5.0.1 with Android 11
 
 LINE version tested:
 
+* 11.14.3
 * 11.8.3, 11.8.1, 11.8.0
 * 11.7.2, 11.7.1, 11.7.0
 * 11.6.5
