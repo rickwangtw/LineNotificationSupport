@@ -1,5 +1,7 @@
 package com.mysticwind.linenotificationsupport.model;
 
+import static java.util.Collections.EMPTY_LIST;
+
 import android.app.Notification;
 import android.graphics.Bitmap;
 
@@ -11,10 +13,8 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
-import static java.util.Collections.EMPTY_LIST;
-
 @Value
-@Builder(toBuilder = true)
+@Builder(toBuilder = true, builderClassName = "LineNotificationDefaultValueBuilder")
 public class LineNotification {
 
     public enum CallState {
@@ -38,6 +38,11 @@ public class LineNotification {
     private final List<Notification.Action> actions;
     private final Bitmap icon;
     private final List<NotificationHistoryEntry> history;
+    private final boolean isSelfResponse;
+
+    public static class LineNotificationDefaultValueBuilder {
+        private boolean isSelfResponse = false;
+    }
 
     public List<String> getMessages() {
         if (messages == null) {

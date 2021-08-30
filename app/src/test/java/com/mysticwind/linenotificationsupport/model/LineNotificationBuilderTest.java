@@ -4,6 +4,7 @@ import static com.mysticwind.linenotificationsupport.model.LineNotificationBuild
 import static com.mysticwind.linenotificationsupport.model.LineNotificationBuilder.DEFAULT_CHAT_ID;
 import static com.mysticwind.linenotificationsupport.model.LineNotificationBuilder.GENERAL_NOTIFICATION_CHANNEL;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -108,6 +109,7 @@ public class LineNotificationBuilderTest {
         assertEquals(1, lineNotification.getActions().size());
         MockedReplyActionBuilder.validateAction(action2, lineNotification.getActions().get(0));
         assertEquals(LINE_MESSAGE_ID, lineNotification.getLineMessageId());
+        assertFalse(lineNotification.isSelfResponse());
     }
 
     @Test
@@ -121,6 +123,7 @@ public class LineNotificationBuilderTest {
         assertEquals(1, lineNotification.getActions().size());
         MockedReplyActionBuilder.validateAction(action2, lineNotification.getActions().get(0));
         assertEquals(LINE_MESSAGE_ID, lineNotification.getLineMessageId());
+        assertFalse(lineNotification.isSelfResponse());
     }
 
     @Test
@@ -133,6 +136,7 @@ public class LineNotificationBuilderTest {
         assertNull(lineNotification.getCallState());
         assertTrue(lineNotification.getActions().isEmpty());
         assertEquals(LINE_MESSAGE_ID, lineNotification.getLineMessageId());
+        assertFalse(lineNotification.isSelfResponse());
     }
 
     @Test
@@ -146,6 +150,7 @@ public class LineNotificationBuilderTest {
         assertEquals(1, lineNotification.getActions().size());
         MockedReplyActionBuilder.validateAction(action2, lineNotification.getActions().get(0));
         assertEquals(LINE_MESSAGE_ID, lineNotification.getLineMessageId());
+        assertFalse(lineNotification.isSelfResponse());
     }
 
     @Test
@@ -159,6 +164,7 @@ public class LineNotificationBuilderTest {
         assertEquals(1, lineNotification.getActions().size());
         MockedReplyActionBuilder.validateAction(action2, lineNotification.getActions().get(0));
         assertEquals(LINE_MESSAGE_ID, lineNotification.getLineMessageId());
+        assertFalse(lineNotification.isSelfResponse());
     }
 
     @Test
@@ -171,6 +177,7 @@ public class LineNotificationBuilderTest {
         assertEquals(LineNotification.CallState.INCOMING, lineNotification.getCallState());
         assertEquals(ImmutableList.of(action2, action1), lineNotification.getActions());
         assertNull(lineNotification.getLineMessageId());
+        assertFalse(lineNotification.isSelfResponse());
     }
 
     @Test
@@ -183,6 +190,7 @@ public class LineNotificationBuilderTest {
         assertEquals(LineNotification.CallState.IN_A_CALL, lineNotification.getCallState());
         assertEquals(ImmutableList.of(action1), lineNotification.getActions());
         assertNull(lineNotification.getLineMessageId());
+        assertFalse(lineNotification.isSelfResponse());
     }
 
     @Test
@@ -195,6 +203,7 @@ public class LineNotificationBuilderTest {
         assertEquals(LineNotification.CallState.MISSED_CALL, lineNotification.getCallState());
         assertEquals(ImmutableList.of(action2), lineNotification.getActions());
         assertNull(lineNotification.getLineMessageId());
+        assertFalse(lineNotification.isSelfResponse());
     }
 
     @Test
@@ -207,6 +216,7 @@ public class LineNotificationBuilderTest {
         assertEquals(LineNotification.CallState.INCOMING, lineNotification.getCallState());
         assertEquals(ImmutableList.of(action2, action1), lineNotification.getActions());
         assertNull(lineNotification.getLineMessageId());
+        assertFalse(lineNotification.isSelfResponse());
     }
 
     @Test
@@ -218,6 +228,7 @@ public class LineNotificationBuilderTest {
         assertEquals(DEFAULT_CHAT_ID, lineNotification.getChatId());
         assertTrue(lineNotification.getActions().isEmpty());
         assertNull(lineNotification.getLineMessageId());
+        assertFalse(lineNotification.isSelfResponse());
     }
 
     @Test
@@ -231,6 +242,7 @@ public class LineNotificationBuilderTest {
         assertEquals(1, lineNotification.getActions().size());
         MockedReplyActionBuilder.validateAction(action2, lineNotification.getActions().get(0));
         assertEquals(LINE_MESSAGE_ID, lineNotification.getLineMessageId());
+        assertFalse(lineNotification.isSelfResponse());
     }
 
     @Test
@@ -246,6 +258,7 @@ public class LineNotificationBuilderTest {
         assertEquals(1, lineNotification.getActions().size());
         MockedReplyActionBuilder.validateAction(action2, lineNotification.getActions().get(0));
         assertEquals(LINE_MESSAGE_ID, lineNotification.getLineMessageId());
+        assertFalse(lineNotification.isSelfResponse());
     }
 
     private StatusBarNotification buildGroupChatWithGroupNameNotification() {
