@@ -1,7 +1,6 @@
 [![English](https://img.shields.io/badge/lang-en-green.svg)](https://github.com/rickwangtw/LineNotificationSupport/blob/main/README.md)
 
 # LINE通知小幫手
-[![donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CYC657N6DY3CJ&item_name=Support+LINE+Notification+Support%21&currency_code=USD)
 
 您使用 LINE 嗎？您使用三星智慧型手錶嗎？這可能是個適合您的 App 唷！
 
@@ -50,11 +49,6 @@
 ## Google Play
 * [免費版](https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport)
 * [捐贈版](https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate)
-
-## 贊助
-歡迎購買捐贈版或者透過 Paypal 贊助開發！感謝！
-
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CYC657N6DY3CJ&item_name=Support+LINE+Notification+Support%21&currency_code=USD)
 
 ## 常見問題
 
