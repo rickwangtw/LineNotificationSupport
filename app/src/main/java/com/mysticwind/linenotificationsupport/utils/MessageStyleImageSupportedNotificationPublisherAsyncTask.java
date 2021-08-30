@@ -215,9 +215,15 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
 
     private Optional<String> createNotificationChannel() {
         final NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-        return new NotificationGroupCreator(notificationManager, new AndroidFeatureProvider(),
-                new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(context)))
-                .createNotificationChannel(lineNotification.getChatId(), lineNotification.getTitle());
+        final NotificationGroupCreator notificationGroupCreator = new NotificationGroupCreator(
+                notificationManager, new AndroidFeatureProvider(),
+                new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(context)));
+
+        if (lineNotification.isSelfResponse()) {
+            return notificationGroupCreator.createSelfResponseNotificationChannel();
+        } else {
+            return notificationGroupCreator.createNotificationChannel(lineNotification.getChatId(), lineNotification.getTitle());
+        }
     }
 
     private String resolveGroup() {
