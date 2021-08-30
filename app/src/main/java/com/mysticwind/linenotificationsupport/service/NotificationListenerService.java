@@ -1,19 +1,27 @@
 package com.mysticwind.linenotificationsupport.service;
 
+import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
+
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.RemoteInput;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
 import android.widget.Toast;
 
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.Person;
 import androidx.preference.PreferenceManager;
 import androidx.room.Room;
 
@@ -24,6 +32,7 @@ import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -63,10 +72,12 @@ import com.mysticwind.linenotificationsupport.notification.SlotAvailabilityCheck
 import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificationCounter;
+import com.mysticwind.linenotificationsupport.notification.reactor.ChatReplyActionTrackingIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNamePersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.LineNotificationLoggingIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.LoggingDismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNotificationIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
@@ -77,6 +88,11 @@ import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGrou
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.persistence.ChatGroupDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
+import com.mysticwind.linenotificationsupport.reply.ChatReplyActionManager;
+import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
+import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
+import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
+import com.mysticwind.linenotificationsupport.reply.impl.LocalizedMyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
@@ -93,6 +109,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -103,8 +120,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import timber.log.Timber;
-
-import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
 
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
@@ -147,7 +162,9 @@ public class NotificationListenerService
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
     private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
-
+    private LineRemoteInputReplier lineRemoteInputReplier;
+    private ChatNameManager chatNameManager;
+    private MyPersonLabelProvider myPersonLabelProvider;
 
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
@@ -160,6 +177,87 @@ public class NotificationListenerService
             if (PREFERENCE_KEYS_THAT_TRIGGER_REBUILDING_NOTIFICATION_PUBLISHER.contains(preferenceKey)) {
                 NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
             }
+        }
+    };
+
+    // TODO should this be in its own class?
+    private final BroadcastReceiver replyActionBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            final String action = intent.getAction();
+            if (DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION.equals(action)){
+
+                final Optional<String> responseMessage = getResponseMessage(intent);
+                final Optional<Notification.Action> lineReplyAction = getLineReplyAction(intent);
+                Timber.i("Received reply action with response [%s] and line reply action [%s]",
+                        responseMessage, lineReplyAction);
+
+                if (responseMessage.isPresent() && lineReplyAction.isPresent()) {
+                    lineRemoteInputReplier.sendReply(lineReplyAction.get(), responseMessage.get());
+                    updateNotification(intent, responseMessage.get());
+                }
+            }
+        }
+
+        private Optional<String> getResponseMessage(final Intent intent) {
+            final Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
+            if (remoteInput != null) {
+                return Optional.ofNullable(remoteInput.getCharSequence(DefaultReplyActionBuilder.RESPONSE_REMOTE_INPUT_KEY).toString());
+            }
+            return Optional.empty();
+        }
+
+        private Optional<Notification.Action> getLineReplyAction(final Intent intent) {
+            final Notification.Action lineReplyAction = intent.getParcelableExtra(DefaultReplyActionBuilder.LINE_REPLY_ACTION_KEY);
+            return Optional.ofNullable(lineReplyAction);
+        }
+
+        private void updateNotification(Intent intent, String response) {
+            final String chatId = intent.getStringExtra(DefaultReplyActionBuilder.CHAT_ID_KEY);
+
+            final Optional<StatusBarNotification> statusBarNotification = findNotificationOfChatId(chatId);
+
+            if (!statusBarNotification.isPresent()) {
+                Timber.e("Cannot find corresponding notification for chat ID [%s]", chatId);
+                return;
+            }
+
+            final String chatName = chatNameManager.getChatName(chatId);
+            final String personLabel = myPersonLabelProvider.getMyPersonLabel().orElseGet(() -> {
+                Timber.w("Cannot resolve my person label");
+                return LocalizedMyPersonLabelProvider.DEFAULT_LABEL;
+            });
+
+            final LineNotification responseLineNotification = LineNotification.builder()
+                    .lineMessageId(String.valueOf(Instant.now().toEpochMilli())) // just generate a fake one
+                    .title(chatName)
+                    .message(response)
+                    .sender(new Person.Builder().setName(personLabel).build())
+                    .chatId(chatId)
+                    .timestamp(Instant.now().toEpochMilli())
+                    .actions(ImmutableList.copyOf(statusBarNotification.get().getNotification().actions))
+                    .isSelfResponse(true)
+                    .build();
+
+            sendNotification(responseLineNotification, NOTIFICATION_ID_GENERATOR.getNextNotificationId());
+        }
+
+        private Optional<StatusBarNotification> findNotificationOfChatId(final String chatId) {
+            return getActiveNotificationsFromAllAppsSafely().stream()
+                    .filter(notification -> notification.getPackageName().equals(getPackageName()))
+                    .filter(notification -> chatId.equals(NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification()).orElse(null)))
+                    .max(Comparator.comparing(notification -> notification.getNotification().when));
+        }
+    };
+
+    private final BroadcastReceiver localeUpdateBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String locale =
+                    Resources.getSystem().getConfiguration().getLocales().get(0).toLanguageTag();
+            Timber.i("Locale has been changed to %s", locale);
+
+            NotificationListenerService.this.myPersonLabelProvider = new LocalizedMyPersonLabelProvider(locale);
         }
     };
 
@@ -253,6 +351,8 @@ public class NotificationListenerService
             return;
         }
 
+        lineRemoteInputReplier = new LineRemoteInputReplier(this);
+
         // getting active notifications to restore previous state
         final List<StatusBarNotification> existingNotifications = getActiveNotificationsFromAllAppsSafely().stream()
                 .filter(notification -> notification.getPackageName().equals(getPackageName()))
@@ -278,11 +378,27 @@ public class NotificationListenerService
         final MultiPersonChatNameDataAccessor multiPersonChatNameDataAccessor =
                 new CachingMultiPersonChatNameDataAccessorDecorator(
                         new RoomMultiPersonChatNameDataAccessor(chatGroupDatabase));
-        final ChatNameManager chatNameManager = new ChatNameManager(groupChatNameDataAccessor, multiPersonChatNameDataAccessor);
+        chatNameManager = new ChatNameManager(groupChatNameDataAccessor, multiPersonChatNameDataAccessor);
         chatTitleAndSenderResolver = new ChatTitleAndSenderResolver(chatNameManager);
+        myPersonLabelProvider = new LocalizedMyPersonLabelProvider(
+                Resources.getSystem().getConfiguration().getLocales().get(0).toLanguageTag());
+
+        if (DEBUG_MODE_PROVIDER.isDebugMode()) {
+            AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
+                    AppDatabase.class, "database").build();
+
+            this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
+        }
+
+        this.incomingNotificationReactors.add(
+                new LineNotificationLoggingIncomingNotificationReactor(
+                        NOTIFICATION_PRINTER, notificationHistoryManager, getLineAppVersion()));
 
         this.incomingNotificationReactors.add(
                 new ChatRoomNamePersistenceIncomingNotificationReactor(groupChatNameDataAccessor));
+
+        final ChatReplyActionManager chatReplyActionManager = new ChatReplyActionManager();
+        this.incomingNotificationReactors.add(new ChatReplyActionTrackingIncomingNotificationReactor(chatReplyActionManager));
 
         this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
 
@@ -327,14 +443,10 @@ public class NotificationListenerService
         sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
         Timber.d("Registered onSharedPreferenceChangeListener");
 
-        if (DEBUG_MODE_PROVIDER.isDebugMode()) {
-            AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
-                    AppDatabase.class, "database").build();
-
-            this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
-        }
-
         scheduleNotificationCounterCheck();
+
+        registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
+        registerReceiver(localeUpdateBroadcastReceiver, new IntentFilter(Intent.ACTION_LOCALE_CHANGED));
 
         isInitialized.setTrue();
         Timber.d("Service completed initialization");
@@ -414,27 +526,7 @@ public class NotificationListenerService
             return;
         }
 
-        NOTIFICATION_PRINTER.print("Received", statusBarNotification);
-        notificationHistoryManager.record(statusBarNotification, getLineAppVersion());
-
-        if (isNewMesssageWithoutContent(statusBarNotification)) {
-            Timber.d("Detected potential new message without content: key [%s] title [%s] message [%s]",
-                    statusBarNotification.getKey(), NotificationExtractor.getTitle(statusBarNotification.getNotification()),
-                    statusBarNotification.getNotification().tickerText);
-            // we should get a notification update for this message
-        }
-
         sendNotification(statusBarNotification);
-    }
-
-    private boolean isNewMesssageWithoutContent(final StatusBarNotification statusBarNotification) {
-        // There are notifications that will not have actions and don't need to retry.
-        // For example: notifications of someone added to a chat
-        if (StringUtils.isBlank(NotificationExtractor.getLineMessageId(statusBarNotification.getNotification()))) {
-            return false;
-        }
-        return StringUtils.equals(LineNotificationBuilder.MESSAGE_CATEGORY, statusBarNotification.getNotification().category) &&
-                statusBarNotification.getNotification().actions == null;
     }
 
     private boolean shouldIgnoreNotification(final StatusBarNotification statusBarNotification) {
@@ -470,9 +562,9 @@ public class NotificationListenerService
         final LineNotification lineNotification = new LineNotificationBuilder(this,
                 chatTitleAndSenderResolver, NOTIFICATION_PRINTER).from(notificationFromLine);
 
-        int notificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
+        final int notificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
 
-        Optional<Pair<LineNotification, Integer>> notificationAndId =
+        final Optional<Pair<LineNotification, Integer>> notificationAndId =
                 handleDuplicate(lineNotification, notificationId);
 
         if (!notificationAndId.isPresent()) {
@@ -480,25 +572,29 @@ public class NotificationListenerService
             return;
         }
 
-        LineNotification actionAdjustedLineNotification = adjustActionOrder(notificationAndId.get().getLeft());
+        final LineNotification actionAdjustedLineNotification = adjustActionOrder(notificationAndId.get().getLeft());
 
-        notificationPublisher.publishNotification(actionAdjustedLineNotification, notificationAndId.get().getRight());
+        sendNotification(actionAdjustedLineNotification, notificationAndId.get().getRight());
+    }
 
-        if (actionAdjustedLineNotification.getCallState() == null) {
+    private void sendNotification(final LineNotification lineNotification, final int notificationId) {
+        notificationPublisher.publishNotification(lineNotification, notificationId);
+
+        if (lineNotification.getCallState() == null) {
             return;
         }
 
         // deal with auto notifications for calls
-        if (actionAdjustedLineNotification.getCallState() == LineNotification.CallState.INCOMING) {
+        if (lineNotification.getCallState() == LineNotification.CallState.INCOMING) {
             if (this.autoIncomingCallNotificationState != null) {
                 this.autoIncomingCallNotificationState.cancel();
             }
             this.autoIncomingCallNotificationState = AutoIncomingCallNotificationState.builder()
-                    .lineNotification(actionAdjustedLineNotification)
+                    .lineNotification(lineNotification)
                     .waitDurationInSeconds(getWaitDurationInSeconds())
                     .timeoutInSeconds(getAutoSendTimeoutInSecondsFromPreferences())
                     .build();
-            this.autoIncomingCallNotificationState.notified(notificationAndId.get().getRight());
+            this.autoIncomingCallNotificationState.notified(notificationId);
             sendIncomingCallNotification(this.autoIncomingCallNotificationState);
         }
 
@@ -621,7 +717,7 @@ public class NotificationListenerService
             try {
                 notificationManager.cancel(notificationId);
             } catch (final Exception e) {
-                Timber.w(e, String.format("Failed to cancel notification %d: %s", notificationId, e.getMessage()));
+                Timber.w(e, "Failed to cancel notification %d: %s", notificationId, e.getMessage());
             }
         }
     }
@@ -739,6 +835,9 @@ public class NotificationListenerService
         super.onListenerDisconnected();
 
         Timber.w("NotificationListenerService onListenerDisconnected");
+
+        unregisterReceiver(replyActionBroadcastReceiver);
+        unregisterReceiver(localeUpdateBroadcastReceiver);
 
         this.incomingNotificationReactors.clear();
         this.dismissedNotificationReactors.clear();

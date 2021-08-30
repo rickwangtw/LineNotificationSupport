@@ -13,6 +13,7 @@ public class PreferenceProvider {
     public static final String MESSAGE_SIZE_LIMIT_PREFERENCE_KEY = "message_size_limit";
     public static final String SPLIT_MESSAGE_MAX_PAGES_KEY = "split_message_max_pages";
     public static final String SINGLE_NOTIFICATION_CONVERSATIONS_KEY = "single_notification_with_history";
+    public static final String GENERATE_SELF_RESPONSE_MESSAGE_KEY = "generate_self_response_message";
 
     private final SharedPreferences sharedPreferences;
 
@@ -76,6 +77,10 @@ public class PreferenceProvider {
 
     public boolean shouldUseSingleNotificationForConversations() {
         return sharedPreferences.getBoolean(SINGLE_NOTIFICATION_CONVERSATIONS_KEY, false);
+    }
+
+    public boolean shouldGenerateSelfResponseMessage() {
+        return sharedPreferences.getBoolean(GENERATE_SELF_RESPONSE_MESSAGE_KEY, true);
     }
 
 }

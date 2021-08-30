@@ -33,6 +33,8 @@ public class NotificationGroupCreator {
     protected static final String CALL_CHANNEL_NAME = "Calls";
     protected static final String MERGED_MESSAGE_CHANNEL_ID = "merged_message_channel_id";
     protected static final String MERGED_MESSAGE_CHANNEL_NAME = "All Messages";
+    protected static final String SELF_RESPONSE_CHANNEL_ID = "self_response_channel_id";
+    protected static final String SELF_RESPONSE_CHANNEL_NAME = "My Responses";
     private static final String NO_CHANNEL_NAME_DEFAULT = "No title";
 
     private static final Map<String, String> NOTIFICATION_GROUP_ID_TO_NAME_MAP = ImmutableMap.of(
@@ -138,6 +140,16 @@ public class NotificationGroupCreator {
         return Optional.of(channelId);
     }
 
+    public Optional<String> createSelfResponseNotificationChannel() {
+        if (!androidFeatureProvider.hasNotificationChannelSupport()) {
+            return Optional.empty();
+        }
+        createNotificationChannelWithChannelIdAndName(SELF_RESPONSE_CHANNEL_ID,
+                SELF_RESPONSE_CHANNEL_NAME, NotificationManager.IMPORTANCE_MIN, false);
+
+        return Optional.of(SELF_RESPONSE_CHANNEL_ID);
+    }
+
     // TODO unit tests
     private String getChannelId(String chatId) {
         if (LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID.equals(chatId) ||
@@ -152,13 +164,22 @@ public class NotificationGroupCreator {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void createNotificationChannelWithChannelIdAndName(final String channelId, final String channelName) {
-        final String group = resolveNotificationChannelGroup(channelId);
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
+        createNotificationChannelWithChannelIdAndName(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT, true);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void createNotificationChannelWithChannelIdAndName(final String channelId,
+                                                               final String channelName,
+                                                               final int importance,
+                                                               final boolean vibrate) {
         final String description = "Notification channel for " + channelName;
         NotificationChannel channel = new NotificationChannel(channelId, channelName, importance);
         channel.setDescription(description);
-        channel.enableVibration(true);
+        channel.enableVibration(vibrate);
+
+        final String group = resolveNotificationChannelGroup(channelId);
         channel.setGroup(group);
+
         // Register the channel with the system; you can't change the importance
         // or other notification behaviors after this
         notificationManager.createNotificationChannel(channel);

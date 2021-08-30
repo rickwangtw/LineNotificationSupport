@@ -39,6 +39,7 @@ public class StatusBarNotificationPrinter {
     private String stringifyNotification(final StatusBarNotification statusBarNotification) {
         return MoreObjects.toStringHelper(statusBarNotification)
                 .add("packageName", statusBarNotification.getPackageName())
+                .add("isSummary", StatusBarNotificationExtractor.isSummary(statusBarNotification))
                 .add("groupKey", statusBarNotification.getGroupKey())
                 .add("key", statusBarNotification.getKey())
                 .add("id", statusBarNotification.getId())

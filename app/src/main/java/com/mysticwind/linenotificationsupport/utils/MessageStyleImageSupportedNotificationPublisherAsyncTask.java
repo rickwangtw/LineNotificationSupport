@@ -1,5 +1,7 @@
 package com.mysticwind.linenotificationsupport.utils;
 
+import static java.util.Collections.EMPTY_LIST;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -37,8 +39,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import timber.log.Timber;
-
-import static java.util.Collections.EMPTY_LIST;
 
 public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends AsyncTask<String, Void, NotificationCompat.Style> {
 
@@ -154,8 +154,7 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
             Timber.i("URL %s downloaded at: %s", lineStickerUrl, uri);
             return Optional.of(uri);
         } catch (Exception e) {
-            Timber.e(e, String.format("Failed to download image %s: %s",
-                    lineStickerUrl, e.getMessage()));
+            Timber.e(e, "Failed to download image %s: %s", lineStickerUrl, e.getMessage());
             return Optional.empty();
         }
     }
@@ -216,9 +215,15 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
 
     private Optional<String> createNotificationChannel() {
         final NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-        return new NotificationGroupCreator(notificationManager, new AndroidFeatureProvider(),
-                new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(context)))
-                .createNotificationChannel(lineNotification.getChatId(), lineNotification.getTitle());
+        final NotificationGroupCreator notificationGroupCreator = new NotificationGroupCreator(
+                notificationManager, new AndroidFeatureProvider(),
+                new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(context)));
+
+        if (lineNotification.isSelfResponse()) {
+            return notificationGroupCreator.createSelfResponseNotificationChannel();
+        } else {
+            return notificationGroupCreator.createNotificationChannel(lineNotification.getChatId(), lineNotification.getTitle());
+        }
     }
 
     private String resolveGroup() {

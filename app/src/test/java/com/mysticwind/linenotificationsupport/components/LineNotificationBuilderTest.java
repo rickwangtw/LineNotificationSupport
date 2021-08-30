@@ -1,5 +1,8 @@
 package com.mysticwind.linenotificationsupport.components;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import android.content.Context;
 import android.service.notification.StatusBarNotification;
 
@@ -13,6 +16,7 @@ import com.mysticwind.linenotificationsupport.chatname.dataaccessor.MultiPersonC
 import com.mysticwind.linenotificationsupport.components.helper.StatusBarNotificationBuilder;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
+import com.mysticwind.linenotificationsupport.reply.MockedReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
@@ -25,9 +29,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LineNotificationBuilderTest {
@@ -80,7 +81,7 @@ public class LineNotificationBuilderTest {
 
     @Before
     public void setUp() {
-        classUnderTest = new LineNotificationBuilder(mockedContext, chatTitleAndSenderResolver, mockedStatusBarNotificationPrinter);
+        classUnderTest = new LineNotificationBuilder(mockedContext, chatTitleAndSenderResolver, mockedStatusBarNotificationPrinter, new MockedReplyActionBuilder());
     }
 
     @Test

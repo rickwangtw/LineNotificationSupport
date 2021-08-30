@@ -3,6 +3,8 @@ package com.mysticwind.linenotificationsupport.chatname.dataaccessor;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -20,7 +22,7 @@ public class CachingMultiPersonChatNameDataAccessorDecorator implements MultiPer
     @Override
     public String addRelationshipAndGetChatGroupName(String chatId, String sender) {
         final Collection<String> senders = this.chatIdToSenderMultimap.get(chatId);
-        if (senders.contains(sender)) {
+        if (StringUtils.isBlank(sender) || senders.contains(sender)) {
             return sortAndMerge(senders);
         }
         this.chatIdToSenderMultimap.put(chatId, sender);

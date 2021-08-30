@@ -65,8 +65,7 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
             in = connection.getInputStream();
             return BitmapFactory.decodeStream(in);
         } catch (final Exception e) {
-            Timber.e(e, String.format("Failed to download image %s: %s",
-                    lineNotification.getLineStickerUrl(), e.getMessage()));
+            Timber.e(e, "Failed to download image %s: %s", lineNotification.getLineStickerUrl(), e.getMessage());
             return null;
         }
     }
@@ -161,9 +160,15 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
 
     private Optional<String> createNotificationChannel() {
         final NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-        return new NotificationGroupCreator(notificationManager, new AndroidFeatureProvider(),
-                new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(context)))
-                .createNotificationChannel(lineNotification.getChatId(), lineNotification.getTitle());
+        final NotificationGroupCreator notificationGroupCreator = new NotificationGroupCreator(
+                notificationManager, new AndroidFeatureProvider(),
+                new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(context)));
+
+        if (lineNotification.isSelfResponse()) {
+            return notificationGroupCreator.createSelfResponseNotificationChannel();
+        } else {
+            return notificationGroupCreator.createNotificationChannel(lineNotification.getChatId(), lineNotification.getTitle());
+        }
     }
 
 }

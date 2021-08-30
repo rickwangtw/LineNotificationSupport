@@ -33,6 +33,9 @@
 
     <!-- Messages Preferences -->
     <string name="identical_messages_title">Identical messages</string>
+    <string name="generate_self_response_message_title">Show my responses sent from my watch</string>
+    <string name="generate_self_response_message_summary_on">Show my responses sent from my watch in notifications. Useful to track your conversations and if you have responded. Note that the notification will be shown even if LINE FAILS to send the actual message and you may need to confirm through the LINE app.</string>
+    <string name="generate_self_response_message_summary_off">Do not show my responses sent from my watch in notifications.</string>
     <string name="use_legacy_sticker_loader_title">Legacy sticker loader</string>
     <string name="use_legacy_sticker_loader_summary_on">Use the old sticker loader. Use this option only if the stickers are not showing.</string>
     <string name="use_legacy_sticker_loader_summary_off">Use the up-to-date sticker loader.</string>
