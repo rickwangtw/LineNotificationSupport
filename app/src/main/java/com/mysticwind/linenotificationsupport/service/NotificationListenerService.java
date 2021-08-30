@@ -1,5 +1,7 @@
 package com.mysticwind.linenotificationsupport.service;
 
+import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.RemoteInput;
@@ -86,8 +88,8 @@ import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.persistence.ChatGroupDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.reply.ChatReplyActionManager;
-import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
 import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
+import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
@@ -115,8 +117,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import timber.log.Timber;
-
-import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
 
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
@@ -228,6 +228,7 @@ public class NotificationListenerService
                     .chatId(chatId)
                     .timestamp(Instant.now().toEpochMilli())
                     .actions(ImmutableList.copyOf(statusBarNotification.get().getNotification().actions))
+                    .isSelfResponse(true)
                     .build();
 
             sendNotification(responseLineNotification, NOTIFICATION_ID_GENERATOR.getNextNotificationId());
