@@ -1,5 +1,15 @@
 package com.mysticwind.linenotificationsupport.notificationgroup;
 
+import static com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator.CALL_NOTIFICATION_GROUP_ID;
+import static com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator.MESSAGE_NOTIFICATION_GROUP_ID;
+import static com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator.OTHERS_NOTIFICATION_GROUP_ID;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.app.NotificationManager;
@@ -11,23 +21,16 @@ import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
-
-import static com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator.CALL_NOTIFICATION_GROUP_ID;
-import static com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator.MESSAGE_NOTIFICATION_GROUP_ID;
-import static com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator.OTHERS_NOTIFICATION_GROUP_ID;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class NotificationGroupCreatorTest {
@@ -51,6 +54,9 @@ public class NotificationGroupCreatorTest {
 
     @Mock
     private NotificationChannelGroup otherNotificationChannelGroup;
+
+    @Captor
+    private ArgumentCaptor<NotificationChannelGroup> notificationChannelGroupCaptor;
 
     private NotificationGroupCreator classUnderTest;
 
@@ -163,6 +169,16 @@ public class NotificationGroupCreatorTest {
         verify(mockedAndroidFeatureProvider).hasNotificationChannelSupport();
         verify(mockedNotificationManager).getNotificationChannelGroups();
         verify(mockedNotificationManager).getNotificationChannels();
+    }
+
+    @Test
+    @Ignore("TODO figure out a way to test these Android classes where we are getting the not-mocked exceptions")
+    public void createSelfResponseNotificationChannel() {
+        classUnderTest.createSelfResponseNotificationChannel();
+
+        verify(mockedAndroidFeatureProvider).hasNotificationChannelSupport();
+        verify(mockedNotificationManager).createNotificationChannelGroup(notificationChannelGroupCaptor.capture());
+        NotificationChannelGroup notificationChannelGroup = notificationChannelGroupCaptor.getValue();
     }
 
     private NotificationChannel buildNotificationChannelWithoutGroup(String chatId) {
