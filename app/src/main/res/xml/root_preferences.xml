@@ -14,6 +14,15 @@
             app:title="@string/identical_messages_title"
             app:useSimpleSummaryProvider="true" />
 
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            app:key="generate_self_response_message"
+            app:title="@string/generate_self_response_message_title"
+            app:defaultValue="true"
+            app:summaryOff="@string/generate_self_response_message_summary_off"
+            app:summaryOn="@string/generate_self_response_message_summary_on" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/calls_header"

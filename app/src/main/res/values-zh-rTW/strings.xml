@@ -24,6 +24,9 @@
 
     <!-- Messages Preferences -->
     <string name="identical_messages_title">重複的訊息</string>
+    <string name="generate_self_response_message_title">顯示從我手錶寄出的訊息</string>
+    <string name="generate_self_response_message_summary_on">在手錶上顯示由手錶傳送出的訊息。方便回憶起聊天內容和自己的答覆。注意，LINE有時會傳送訊息失敗，例如網路不穩的情況下，請在LINE裡面確認！</string>
+    <string name="generate_self_response_message_summary_off">不要在手錶上顯示由手錶傳送出的訊息。</string>
     <string name="use_legacy_sticker_loader_title">舊的貼圖下載模式</string>
     <string name="use_legacy_sticker_loader_summary_on">使用舊的貼圖下載模式。請只在新的下載模式無法正常顯示貼圖時使用。</string>
     <string name="use_legacy_sticker_loader_summary_off">使用新的貼圖下載模式。</string>
