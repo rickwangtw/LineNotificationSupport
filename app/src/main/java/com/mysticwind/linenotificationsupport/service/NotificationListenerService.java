@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -90,6 +91,8 @@ import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.reply.ChatReplyActionManager;
 import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
+import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
+import com.mysticwind.linenotificationsupport.reply.impl.LocalizedMyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
@@ -161,6 +164,7 @@ public class NotificationListenerService
     private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
     private LineRemoteInputReplier lineRemoteInputReplier;
     private ChatNameManager chatNameManager;
+    private MyPersonLabelProvider myPersonLabelProvider;
 
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
@@ -219,12 +223,16 @@ public class NotificationListenerService
             }
 
             final String chatName = chatNameManager.getChatName(chatId);
+            final String personLabel = myPersonLabelProvider.getMyPersonLabel().orElseGet(() -> {
+                Timber.w("Cannot resolve my person label");
+                return LocalizedMyPersonLabelProvider.DEFAULT_LABEL;
+            });
 
             final LineNotification responseLineNotification = LineNotification.builder()
                     .lineMessageId(String.valueOf(Instant.now().toEpochMilli())) // just generate a fake one
                     .title(chatName)
                     .message(response)
-                    .sender(new Person.Builder().setName("You").build()) // TODO localization
+                    .sender(new Person.Builder().setName(personLabel).build())
                     .chatId(chatId)
                     .timestamp(Instant.now().toEpochMilli())
                     .actions(ImmutableList.copyOf(statusBarNotification.get().getNotification().actions))
@@ -361,6 +369,8 @@ public class NotificationListenerService
                         new RoomMultiPersonChatNameDataAccessor(chatGroupDatabase));
         chatNameManager = new ChatNameManager(groupChatNameDataAccessor, multiPersonChatNameDataAccessor);
         chatTitleAndSenderResolver = new ChatTitleAndSenderResolver(chatNameManager);
+        myPersonLabelProvider = new LocalizedMyPersonLabelProvider(
+                Resources.getSystem().getConfiguration().getLocales().get(0).toString());
 
         if (DEBUG_MODE_PROVIDER.isDebugMode()) {
             AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
