@@ -250,6 +250,17 @@ public class NotificationListenerService
         }
     };
 
+    private final BroadcastReceiver localeUpdateBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final String locale =
+                    Resources.getSystem().getConfiguration().getLocales().get(0).toLanguageTag();
+            Timber.i("Locale has been changed to %s", locale);
+
+            NotificationListenerService.this.myPersonLabelProvider = new LocalizedMyPersonLabelProvider(locale);
+        }
+    };
+
     private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
 
     private NotificationPublisher buildNotificationPublisher() {
@@ -370,7 +381,7 @@ public class NotificationListenerService
         chatNameManager = new ChatNameManager(groupChatNameDataAccessor, multiPersonChatNameDataAccessor);
         chatTitleAndSenderResolver = new ChatTitleAndSenderResolver(chatNameManager);
         myPersonLabelProvider = new LocalizedMyPersonLabelProvider(
-                Resources.getSystem().getConfiguration().getLocales().get(0).toString());
+                Resources.getSystem().getConfiguration().getLocales().get(0).toLanguageTag());
 
         if (DEBUG_MODE_PROVIDER.isDebugMode()) {
             AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
@@ -435,6 +446,7 @@ public class NotificationListenerService
         scheduleNotificationCounterCheck();
 
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
+        registerReceiver(localeUpdateBroadcastReceiver, new IntentFilter(Intent.ACTION_LOCALE_CHANGED));
 
         isInitialized.setTrue();
         Timber.d("Service completed initialization");
@@ -825,6 +837,7 @@ public class NotificationListenerService
         Timber.w("NotificationListenerService onListenerDisconnected");
 
         unregisterReceiver(replyActionBroadcastReceiver);
+        unregisterReceiver(localeUpdateBroadcastReceiver);
 
         this.incomingNotificationReactors.clear();
         this.dismissedNotificationReactors.clear();
