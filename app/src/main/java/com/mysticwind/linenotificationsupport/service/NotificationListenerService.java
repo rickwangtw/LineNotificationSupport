@@ -201,10 +201,20 @@ public class NotificationListenerService
 
         private Optional<String> getResponseMessage(final Intent intent) {
             final Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
-            if (remoteInput != null) {
-                return Optional.ofNullable(remoteInput.getCharSequence(DefaultReplyActionBuilder.RESPONSE_REMOTE_INPUT_KEY).toString());
+            if (remoteInput == null) {
+                Timber.d("ReplyActionBroadcastReceiver: Null RemoteInput");
+                return Optional.empty();
             }
-            return Optional.empty();
+            final CharSequence response = remoteInput.getCharSequence(DefaultReplyActionBuilder.RESPONSE_REMOTE_INPUT_KEY);
+            if (response == null) {
+                Timber.d("ReplyActionBroadcastReceiver: Null response from %s", DefaultReplyActionBuilder.RESPONSE_REMOTE_INPUT_KEY);
+                return Optional.empty();
+            }
+            if (StringUtils.isBlank(response.toString())) {
+                Timber.d("ReplyActionBroadcastReceiver: Blank response: [%s]", response.toString());
+                return Optional.empty();
+            }
+            return Optional.of(response.toString());
         }
 
         private Optional<Notification.Action> getLineReplyAction(final Intent intent) {
