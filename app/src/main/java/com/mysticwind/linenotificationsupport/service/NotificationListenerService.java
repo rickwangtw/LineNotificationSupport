@@ -72,6 +72,7 @@ import com.mysticwind.linenotificationsupport.notification.SlotAvailabilityCheck
 import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificationCounter;
+import com.mysticwind.linenotificationsupport.notification.reactor.CallInProgressTrackingReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ChatReplyActionTrackingIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNamePersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
@@ -403,13 +404,17 @@ public class NotificationListenerService
                 new LineNotificationLoggingIncomingNotificationReactor(
                         NOTIFICATION_PRINTER, notificationHistoryManager, getLineAppVersion()));
 
+        this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
+
+        final CallInProgressTrackingReactor callInProgressTrackingReactor = new CallInProgressTrackingReactor();
+        this.incomingNotificationReactors.add(callInProgressTrackingReactor);
+        this.dismissedNotificationReactors.add(callInProgressTrackingReactor);
+
         this.incomingNotificationReactors.add(
                 new ChatRoomNamePersistenceIncomingNotificationReactor(groupChatNameDataAccessor));
 
         final ChatReplyActionManager chatReplyActionManager = new ChatReplyActionManager();
         this.incomingNotificationReactors.add(new ChatReplyActionTrackingIncomingNotificationReactor(chatReplyActionManager));
-
-        this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
 
         // TODO remove this after testing the stability of the dumb version
         final SmartNotificationCounterNotificationReactor smartNotificationCounterNotificationReactor =
