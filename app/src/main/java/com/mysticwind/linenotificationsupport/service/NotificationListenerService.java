@@ -272,6 +272,7 @@ public class NotificationListenerService
 
     private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
     private boolean isInitialized = false;
+    private boolean isListenerConnected = false;
 
     private NotificationPublisher buildNotificationPublisher() {
         return buildNotificationPublisherWithPreviousStateRestored(Collections.EMPTY_LIST);
@@ -354,6 +355,7 @@ public class NotificationListenerService
     public void onListenerConnected() {
         super.onListenerConnected();
 
+        isListenerConnected = true;
         Timber.w("NotificationListenerService onListenerConnected");
 
         if (isInitialized) {
@@ -794,6 +796,11 @@ public class NotificationListenerService
     }
 
     private void checkNotificationCounter() {
+        if (!isListenerConnected) {
+            Timber.w("Listener is not connected. Skipping notification counter check");
+            scheduleNotificationCounterCheck();
+            return;
+        }
         final Multimap<String, String> groupToNotificationKeyMultimap = HashMultimap.create();
         getActiveNotificationsFromAllAppsSafely().stream()
                 .filter(notification -> notification.getPackageName().equals(getPackageName()))
@@ -848,6 +855,7 @@ public class NotificationListenerService
     public void onListenerDisconnected() {
         super.onListenerDisconnected();
 
+        isListenerConnected = false;
         Timber.w("NotificationListenerService onListenerDisconnected");
 
         unregisterReceiver(replyActionBroadcastReceiver);
