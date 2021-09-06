@@ -102,7 +102,6 @@ import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.Instant;
@@ -168,7 +167,6 @@ public class NotificationListenerService
 
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
-    private final MutableBoolean isInitialized = new MutableBoolean(false);
 
     private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -272,6 +270,7 @@ public class NotificationListenerService
     };
 
     private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
+    private boolean isInitialized = false;
 
     private NotificationPublisher buildNotificationPublisher() {
         return buildNotificationPublisherWithPreviousStateRestored(Collections.EMPTY_LIST);
@@ -356,7 +355,7 @@ public class NotificationListenerService
 
         Timber.w("NotificationListenerService onListenerConnected");
 
-        if (isInitialized.booleanValue()) {
+        if (isInitialized) {
             Timber.d("NotificationListenerService has already been initialized");
             return;
         }
@@ -458,7 +457,7 @@ public class NotificationListenerService
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
         registerReceiver(localeUpdateBroadcastReceiver, new IntentFilter(Intent.ACTION_LOCALE_CHANGED));
 
-        isInitialized.setTrue();
+        isInitialized = true;
         Timber.d("Service completed initialization");
     }
 
@@ -466,7 +465,7 @@ public class NotificationListenerService
     public void onDestroy() {
         super.onDestroy();
 
-        isInitialized.setFalse();
+        isInitialized = false;
 
         Timber.w("NotificationListenerService onDestroy");
     }
@@ -860,7 +859,7 @@ public class NotificationListenerService
 
         this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
-        isInitialized.setFalse();
+        isInitialized = false;
     }
 
     public void onNotificationRemovedUnsafe(final StatusBarNotification statusBarNotification) {
