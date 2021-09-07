@@ -162,6 +162,7 @@ public class NotificationListenerService
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
+    private PreferenceProvider preferenceProvider;
     private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
     private LineRemoteInputReplier lineRemoteInputReplier;
     private ChatNameManager chatNameManager;
@@ -409,7 +410,8 @@ public class NotificationListenerService
 
         this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
 
-        final CallInProgressTrackingReactor callInProgressTrackingReactor = new CallInProgressTrackingReactor(new AndroidBluetoothController());
+        final CallInProgressTrackingReactor callInProgressTrackingReactor = new CallInProgressTrackingReactor(
+                getPreferenceProvider(), new AndroidBluetoothController());
         this.incomingNotificationReactors.add(callInProgressTrackingReactor);
         this.dismissedNotificationReactors.add(callInProgressTrackingReactor);
 
@@ -900,7 +902,12 @@ public class NotificationListenerService
     }
 
     private PreferenceProvider getPreferenceProvider() {
-        return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
+        if (preferenceProvider == null) {
+            preferenceProvider = new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
+            return preferenceProvider;
+        } else {
+            return preferenceProvider;
+        }
     }
 
     private void dismissLineNotificationSupportNotifications(final String chatId) {

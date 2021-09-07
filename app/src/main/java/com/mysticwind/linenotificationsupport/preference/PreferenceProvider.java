@@ -14,6 +14,7 @@ public class PreferenceProvider {
     public static final String SPLIT_MESSAGE_MAX_PAGES_KEY = "split_message_max_pages";
     public static final String SINGLE_NOTIFICATION_CONVERSATIONS_KEY = "single_notification_with_history";
     public static final String GENERATE_SELF_RESPONSE_MESSAGE_KEY = "generate_self_response_message";
+    public static final String BLUETOOTH_CONTROL_ONGOING_CALL_KEY = "bluetooth_control_in_calls";
 
     private final SharedPreferences sharedPreferences;
 
@@ -81,6 +82,10 @@ public class PreferenceProvider {
 
     public boolean shouldGenerateSelfResponseMessage() {
         return sharedPreferences.getBoolean(GENERATE_SELF_RESPONSE_MESSAGE_KEY, true);
+    }
+
+    public boolean shouldControlBluetoothDuringCalls() {
+        return sharedPreferences.getBoolean(BLUETOOTH_CONTROL_ONGOING_CALL_KEY, false);
     }
 
 }
