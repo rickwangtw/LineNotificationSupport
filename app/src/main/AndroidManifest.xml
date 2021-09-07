@@ -6,6 +6,8 @@
         <package android:name="jp.naver.line.android" />
     </queries>
 
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
