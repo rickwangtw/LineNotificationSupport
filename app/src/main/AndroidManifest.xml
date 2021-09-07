@@ -18,7 +18,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LineNotificationSupport">
-
+        <receiver
+            android:name=".SettingsUpdateRequestBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.mysticwind.linenotificationsupport.action.settings.update"/>
+            </intent-filter>
+        </receiver>
         <receiver
             android:name=".DismissNotificationBroadcastReceiver"
             android:enabled="true"
