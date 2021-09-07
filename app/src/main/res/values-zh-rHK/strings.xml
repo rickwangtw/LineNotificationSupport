@@ -44,6 +44,9 @@
     <string name="call_notification_action_reverse_order_title">LINE 通話按鈕順序</string>
     <string name="call_notification_action_reverse_summary_on">先『接聽』再『拒絕』。使用這個選項如果您較常選擇接聽。</string>
     <string name="call_notification_action_reverse_summary_off">先『拒絕』再『接聽』。使用這個選項如果您較常選擇拒絕。</string>
+    <string name="bluetooth_control_in_calls_title">LINE 通話時的藍芽設定</string>
+    <string name="bluetooth_control_in_calls_summary_on">LINE 通話中關閉藍芽。已知的 LINE 臭蟲：連著三星手錶時的視訊音量異常低。</string>
+    <string name="bluetooth_control_in_calls_summary_off">LINE 通話中不改變藍牙設定。</string>
 
     <!-- Notification Preferences -->
     <string name="notification_settings_title">LINE 通知小幫手通知設定</string>
