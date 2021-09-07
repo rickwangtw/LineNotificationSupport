@@ -1,11 +1,12 @@
 package com.mysticwind.linenotificationsupport.notification.reactor;
 
+import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
+
 import android.os.Handler;
 import android.service.notification.StatusBarNotification;
 
 import com.google.common.collect.ImmutableSet;
 import com.mysticwind.linenotificationsupport.line.Constants;
-import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
@@ -21,8 +22,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import timber.log.Timber;
-
-import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
 
 public class ManageLineNotificationIncomingNotificationReactor implements IncomingNotificationReactor {
 
@@ -85,13 +84,13 @@ public class ManageLineNotificationIncomingNotificationReactor implements Incomi
         if (StringUtils.isBlank(NotificationExtractor.getLineMessageId(statusBarNotification.getNotification()))) {
             return false;
         }
-        return StringUtils.equals(LineNotificationBuilder.MESSAGE_CATEGORY, statusBarNotification.getNotification().category) &&
+        return StatusBarNotificationExtractor.isMessage(statusBarNotification) &&
                 statusBarNotification.getNotification().actions == null;
     }
 
     private void dismissLineNotification(final StatusBarNotification statusBarNotification) {
         // we only dismiss notifications that are in the message category
-        if (!LineNotificationBuilder.MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category)) {
+        if (!StatusBarNotificationExtractor.isMessage(statusBarNotification)) {
             Timber.d("LINE notification not message category but [%s]: [%s]",
                     statusBarNotification.getNotification().category, statusBarNotification.getNotification().tickerText);
             return;
@@ -123,7 +122,7 @@ public class ManageLineNotificationIncomingNotificationReactor implements Incomi
                         StatusBarNotificationExtractor.isSummary(notification),
                         NotificationExtractor.getTitle(notification.getNotification()),
                         NotificationExtractor.getMessage(notification.getNotification())))
-                .filter(notification -> LineNotificationBuilder.MESSAGE_CATEGORY.equals(notification.getNotification().category))
+                .filter(notification -> StatusBarNotificationExtractor.isMessage(notification))
                 .filter(notification -> StatusBarNotificationExtractor.isSummary(notification))
                 .filter(notification -> StringUtils.equals(group, notification.getNotification().getGroup()))
                 .map(notification -> notification.getKey())

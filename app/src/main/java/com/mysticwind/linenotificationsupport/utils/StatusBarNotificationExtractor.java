@@ -25,4 +25,12 @@ public class StatusBarNotificationExtractor {
         return false;
     }
 
+    public static boolean isMessage(final StatusBarNotification statusBarNotification) {
+        return Notification.CATEGORY_MESSAGE.equals(statusBarNotification.getNotification().category);
+    }
+
+    public static boolean isCall(final StatusBarNotification statusBarNotification) {
+        return Notification.CATEGORY_CALL.equals(statusBarNotification.getNotification().category);
+    }
+
 }

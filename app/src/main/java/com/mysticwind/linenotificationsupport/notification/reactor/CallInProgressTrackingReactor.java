@@ -6,6 +6,7 @@ import android.service.notification.StatusBarNotification;
 import com.google.common.collect.ImmutableSet;
 import com.mysticwind.linenotificationsupport.bluetooth.BluetoothController;
 import com.mysticwind.linenotificationsupport.line.Constants;
+import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -40,7 +41,6 @@ public class CallInProgressTrackingReactor implements IncomingNotificationReacto
             Timber.d("Notification [%s] not a call", notificationKey);
             return Reaction.NONE;
         }
-        // TODO differentiate between incoming call and call in progress
         Timber.d("Notification [%s] IS a call", statusBarNotification.getKey());
         if (callNotificationKeys.contains(notificationKey)) {
             Timber.d("Call notification [%s] already present", notificationKey);
@@ -84,8 +84,9 @@ public class CallInProgressTrackingReactor implements IncomingNotificationReacto
 
     // TODO unit tests
     private boolean isLineCallInProgressNotification(final StatusBarNotification statusBarNotification) {
-        // essentially, if a notification is persistent, it is due to an active call
-        return ((statusBarNotification.getNotification().flags & Notification.FLAG_ONGOING_EVENT) > 0) &&
+        // essentially, if a notification is a message and persistent, it is due to an active call
+        return StatusBarNotificationExtractor.isMessage(statusBarNotification) &&
+                ((statusBarNotification.getNotification().flags & Notification.FLAG_ONGOING_EVENT) > 0) &&
                 ((statusBarNotification.getNotification().flags & Notification.FLAG_NO_CLEAR) > 0);
     }
 

@@ -34,6 +34,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class LineNotificationBuilderTest {
 
+    private static final String CALL_CATEGORY = "call";
+    private static final String MESSAGE_CATEGORY = "msg";
     private static final String CONVERSATION_TITLE_GROUP_NAME = "GroupName";
     private static final String CONVERSATION_TITLE_NULL = null;
     private static final String TEXT_FULL_MESSAGE = "Message - LONG";
@@ -263,61 +265,61 @@ public class LineNotificationBuilderTest {
 
     private StatusBarNotification buildGroupChatWithGroupNameNotification() {
         return buildNotification(CONVERSATION_TITLE_GROUP_NAME, TEXT_FULL_MESSAGE, TITLE_GROUPNAME_AND_SENDER, CHAT_ID, TICKER_TEXT_SENDER_AND_SHORT_MESSAGE,
-                LineNotificationBuilder.MESSAGE_CATEGORY, TAG_MESSAGE, NOTIFICATION_CHANNEL_NEW_MESSAGES, 2, true);
+                MESSAGE_CATEGORY, TAG_MESSAGE, NOTIFICATION_CHANNEL_NEW_MESSAGES, 2, true);
     }
 
     private StatusBarNotification buildGroupChatWithMissingGroupNameNotification() {
         return buildNotification(CONVERSATION_TITLE_NULL, TEXT_FULL_MESSAGE, TITLE_SENDER, CHAT_ID, TICKER_TEXT_SENDER_AND_SHORT_MESSAGE,
-                LineNotificationBuilder.MESSAGE_CATEGORY, TAG_MESSAGE, NOTIFICATION_CHANNEL_NEW_MESSAGES, 2, true);
+                MESSAGE_CATEGORY, TAG_MESSAGE, NOTIFICATION_CHANNEL_NEW_MESSAGES, 2, true);
     }
 
     private StatusBarNotification buildReplacingNewMessageNotification() {
         return buildNotification(CONVERSATION_TITLE_NULL, TEXT_FULL_MESSAGE, TITLE_SENDER, CHAT_ID, TICKER_TEXT_SENDER_AND_SHORT_MESSAGE,
-                LineNotificationBuilder.MESSAGE_CATEGORY, TAG_MESSAGE, GENERAL_NOTIFICATION_CHANNEL, 2, true);
+                MESSAGE_CATEGORY, TAG_MESSAGE, GENERAL_NOTIFICATION_CHANNEL, 2, true);
     }
 
     private StatusBarNotification buildNewMessageNotification() {
         return buildNotification(CONVERSATION_TITLE_NULL, TEXT_NEW_MESSAGE, TITLE_SENDER, CHAT_ID, TICKER_TEXT_SENDER_AND_NEW_MESSAGE,
-                LineNotificationBuilder.MESSAGE_CATEGORY, TAG_NULL, NOTIFICATION_CHANNEL_NEW_MESSAGES, 0, true);
+                MESSAGE_CATEGORY, TAG_NULL, NOTIFICATION_CHANNEL_NEW_MESSAGES, 0, true);
     }
 
     private StatusBarNotification buildOneOnOneMessageNotification() {
         return buildNotification(CONVERSATION_TITLE_NULL, TEXT_FULL_MESSAGE, TITLE_SENDER, CHAT_ID, TICKER_TEXT_SENDER_AND_SHORT_MESSAGE,
-                LineNotificationBuilder.MESSAGE_CATEGORY, TAG_MESSAGE, NOTIFICATION_CHANNEL_NEW_MESSAGES, 2, true);
+                MESSAGE_CATEGORY, TAG_MESSAGE, NOTIFICATION_CHANNEL_NEW_MESSAGES, 2, true);
     }
 
     private StatusBarNotification buildIncomingCallNotification() {
         // android.bigText=LINE語音通話來電中…
         return buildNotification(CONVERSATION_TITLE_NULL, TEXT_INCOMING_CALL, TITLE_SENDER, CHAT_ID_NULL, TICKER_TEXT_SENDER_AND_INCOMING_CALL_MESSAGE,
-                LineNotificationBuilder.CALL_CATEGORY, TAG_NULL, NOTIFICATION_CHANNEL_CALLS, 2, false);
+                CALL_CATEGORY, TAG_NULL, NOTIFICATION_CHANNEL_CALLS, 2, false);
     }
 
     private StatusBarNotification buildOngoingCallNotification() {
         // android.bigText=LINE通話中
         return buildNotification(CONVERSATION_TITLE_NULL, TEXT_ONGOING_CALL, TITLE_SENDER, CHAT_ID_NULL, TICKER_TEXT_SENDER_AND_ONGOING_CALL_MESSAGE,
-                LineNotificationBuilder.MESSAGE_CATEGORY, TAG_NULL, GENERAL_NOTIFICATION_CHANNEL, 1, false);
+                MESSAGE_CATEGORY, TAG_NULL, GENERAL_NOTIFICATION_CHANNEL, 1, false);
     }
 
     private StatusBarNotification buildMissedCallNotification() {
         // android.bigText=蕭文鈺
         return buildNotification(CONVERSATION_TITLE_NULL, TEXT_SENDER, TITLE_MISSED_CALL, CHAT_ID_NULL, TICKER_TEXT_MISSED_CALL_AND_SENDER,
-                LineNotificationBuilder.MESSAGE_CATEGORY, TAG_MISSED_CALL, NOTIFICATION_CHANNEL_NEW_MESSAGES, 2, false);
+                MESSAGE_CATEGORY, TAG_MISSED_CALL, NOTIFICATION_CHANNEL_NEW_MESSAGES, 2, false);
     }
 
     private StatusBarNotification buildIncomingVideoCallNotification() {
         // android.bigText=LINE視訊通話來電中…
         return buildNotification(CONVERSATION_TITLE_NULL, TEXT_INCOMING_VIDEO_CALL, TITLE_SENDER, CHAT_ID_NULL, TICKER_TEXT_SENDER_AND_INCOMING_VIDEO_CALL_MESSAGE,
-                LineNotificationBuilder.CALL_CATEGORY, TAG_NULL, NOTIFICATION_CHANNEL_CALLS, 2 /* TODO confirm */, false);
+                CALL_CATEGORY, TAG_NULL, NOTIFICATION_CHANNEL_CALLS, 2 /* TODO confirm */, false);
     }
 
     private StatusBarNotification buildJoinedGroupChatNotification() {
         // android.bigText=Sender已加入「GroupName」。
         return buildNotification(CONVERSATION_TITLE_NULL, TEXT_INDIVIDUAL_JOINED_GROUP_CHAT, TITLE_LINE, CHAT_ID_NULL, TICKER_TEXT_INDIVIDUAL_JOINED_GROUP_CHAT,
-                LineNotificationBuilder.MESSAGE_CATEGORY, TAG_GROUP, NOTIFICATION_CHANNEL_FRIEND_REQUESTS, 0, false);
+                MESSAGE_CATEGORY, TAG_GROUP, NOTIFICATION_CHANNEL_FRIEND_REQUESTS, 0, false);
     }
     private StatusBarNotification buildGroupMessageWithStickerNotification() {
         return buildNotification(CONVERSATION_TITLE_GROUP_NAME, TEXT_SENDER_WITH_STICKER, TITLE_GROUPNAME_AND_SENDER, CHAT_ID, TICKER_TEXT_SENDER_WITH_STICKER,
-                LineNotificationBuilder.MESSAGE_CATEGORY, TAG_MESSAGE, NOTIFICATION_CHANNEL_NEW_MESSAGES, 2, true);
+                MESSAGE_CATEGORY, TAG_MESSAGE, NOTIFICATION_CHANNEL_NEW_MESSAGES, 2, true);
     }
 
     private StatusBarNotification buildNotification(final String conversationTitle,
