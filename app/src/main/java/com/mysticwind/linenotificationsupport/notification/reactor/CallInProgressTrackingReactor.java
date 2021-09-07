@@ -4,17 +4,24 @@ import android.app.Notification;
 import android.service.notification.StatusBarNotification;
 
 import com.google.common.collect.ImmutableSet;
+import com.mysticwind.linenotificationsupport.bluetooth.BluetoothController;
 import com.mysticwind.linenotificationsupport.line.Constants;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import timber.log.Timber;
 
 public class CallInProgressTrackingReactor implements IncomingNotificationReactor, DismissedNotificationReactor {
 
-    private Set<String> callNotificationKeys = new HashSet<>();
+    private final Set<String> callNotificationKeys = new HashSet<>();
+    private final BluetoothController bluetoothController;
+
+    public CallInProgressTrackingReactor(final BluetoothController bluetoothController) {
+        this.bluetoothController = Objects.requireNonNull(bluetoothController);
+    }
 
     @Override
     public Collection<String> interestedPackages() {
@@ -33,6 +40,7 @@ public class CallInProgressTrackingReactor implements IncomingNotificationReacto
             Timber.d("Notification [%s] not a call", notificationKey);
             return Reaction.NONE;
         }
+        // TODO differentiate between incoming call and call in progress
         Timber.d("Notification [%s] IS a call", statusBarNotification.getKey());
         if (callNotificationKeys.contains(notificationKey)) {
             Timber.d("Call notification [%s] already present", notificationKey);
@@ -46,6 +54,12 @@ public class CallInProgressTrackingReactor implements IncomingNotificationReacto
             return Reaction.NONE;
         }
         callNotificationKeys.add(notificationKey);
+
+        // TODO 1. we probably should do a Toast here
+        // TODO 2. integrate with preference
+        Timber.i("Disabling bluetooth");
+        bluetoothController.disableBluetooth();
+
         return Reaction.NONE;
     }
 
@@ -55,6 +69,13 @@ public class CallInProgressTrackingReactor implements IncomingNotificationReacto
         if (callNotificationKeys.contains(notificationKey)) {
             Timber.i("Notification [%s] IS for an in progress call and dismissed", notificationKey);
             callNotificationKeys.remove(notificationKey);
+
+            // TODO 1. we probably should do a Toast here
+            // TODO 2. we probably want to revert to the original bluetooth status
+            // TODO 3. integrate with preference
+            Timber.i("Re-enabling bluetooth");
+            bluetoothController.enableBluetooth();
+
             return Reaction.NONE;
         }
         Timber.d("Notification [%s] is not a in progress call notification", notificationKey);

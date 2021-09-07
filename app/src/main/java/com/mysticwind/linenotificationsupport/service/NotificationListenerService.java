@@ -37,6 +37,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
+import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothController;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.CachingGroupChatNameDataAccessorDecorator;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.CachingMultiPersonChatNameDataAccessorDecorator;
@@ -408,7 +409,7 @@ public class NotificationListenerService
 
         this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
 
-        final CallInProgressTrackingReactor callInProgressTrackingReactor = new CallInProgressTrackingReactor();
+        final CallInProgressTrackingReactor callInProgressTrackingReactor = new CallInProgressTrackingReactor(new AndroidBluetoothController());
         this.incomingNotificationReactors.add(callInProgressTrackingReactor);
         this.dismissedNotificationReactors.add(callInProgressTrackingReactor);
 
