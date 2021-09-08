@@ -58,3 +58,26 @@
 #### Galaxy Watch / Tizen 5.5.0.1
 * [測試中]管理 LINE 通知：啟用
 * 一個群組使用一個通知：啟用
+
+### <a name="tasker"></a> 2. 請問支援 Tasker 嗎？
+自 1.11 版，您可以利用 Tasker 來改變設定。
+
+#### 改變 LINE 通話時的藍芽設定
+* 支援 1.11 以上版本
+* 啟動藍牙控制的 Tasker 設定
+  * Action: com.mysticwind.linenotificationsupport.action.settings.update
+  * Extra: setting-key:bluetooth\_control\_in\_calls
+  * Extra: setting-value:true
+  * Package: com.mysticwind.linenotificationsupport (若您使用捐贈版 - com.mysticwind.linenotificationsupport.donate)
+  * Target: Broadcast Receiver
+* 關閉藍芽控制的 Tasker 設定
+  * Action: com.mysticwind.linenotificationsupport.action.settings.update
+  * Extra: setting-key:bluetooth\_control\_in\_calls
+  * Extra: setting-value:false
+  * Package: com.mysticwind.linenotificationsupport (若您使用捐贈版 - com.mysticwind.linenotificationsupport.donate)
+  * Target: Broadcast Receiver
+
+* 您也可以利用 am 來改變設定
+```
+adb shell am broadcast -a com.mysticwind.linenotificationsupport.action.settings.update -n com.mysticwind.linenotificationsupport/.SettingsUpdateRequestBroadcastReceiver -e setting-key bluetooth_control_in_calls -e setting-value true
+```
