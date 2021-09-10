@@ -55,8 +55,8 @@
     <string name="call_notification_action_reverse_summary_on">Show "Decline" then "Answer". Use this option when you tend to decline calls more often.</string>
     <string name="call_notification_action_reverse_summary_off">Show "Answer" then "Decline". Use this option when you tend to answer calls more often.</string>
     <string name="bluetooth_control_in_calls_title">Bluetooth control during calls</string>
-    <string name="bluetooth_control_in_calls_summary_on">Disable Bluetooth during calls. There is a known LINE bug where the volume is very low during video calls when connected to Samsung Watches.</string>
-    <string name="bluetooth_control_in_calls_summary_off">Do nothing during calls.</string>
+    <string name="bluetooth_control_in_calls_summary_on">Disable Bluetooth during calls. There is a known LINE bug where the volume is very low during video calls when connected to Samsung Watches. You can update this setting through Tasker (details on website).</string>
+    <string name="bluetooth_control_in_calls_summary_off">Do nothing during calls. You can update this setting through Tasker (details on website).</string>
 
     <!-- Notification Preferences -->
     <string name="notification_settings_title">Manage Notification Settings</string>
