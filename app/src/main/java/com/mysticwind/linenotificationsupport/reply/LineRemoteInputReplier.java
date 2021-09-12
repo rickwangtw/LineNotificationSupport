@@ -23,6 +23,15 @@ public class LineRemoteInputReplier {
 
     private static final String LINE_TEXT_REMOTE_INPUT_KEY = "line.text";
 
+    private final PendingIntent.OnFinished onFinished = new PendingIntent.OnFinished() {
+        @Override
+        public void onSendFinished(final PendingIntent pendingIntent, final Intent intent,
+                                   final int resultCode, final String resultData, final Bundle resultExtras) {
+            Timber.i("Completed sending pending intent action [%s], code [%d], data [%s]",
+                    intent.getAction(), resultCode, resultData);
+        }
+    };
+
     private final Context context;
 
     public LineRemoteInputReplier(final Context context) {
@@ -45,7 +54,8 @@ public class LineRemoteInputReplier {
         RemoteInput.addResultsToIntent(replyAction.getRemoteInputs(), intent, bundle);
         try {
             final int code = (int) Instant.now().toEpochMilli();
-            replyAction.actionIntent.send(context, code, intent);
+            replyAction.actionIntent.send(context, code, intent, onFinished, null);
+            Timber.d("Sent intent with bundle [%s]", bundle.toString());
         } catch (final PendingIntent.CanceledException e) {
             Timber.e(e, "Failed to send message to LINE: %s", e.getMessage());
         }
