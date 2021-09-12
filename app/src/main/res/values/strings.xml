@@ -80,7 +80,7 @@
 
     <!-- Other Preferences -->
     <string name="power_optimization_settings_title">Optimize Power Settings</string>
-    <string name="power_optimization_settings_summary">Update power optimization settings for LINE and LINE Notification Support.</string>
+    <string name="power_optimization_settings_summary">It is highly recommended to disable power optimization for both LINE and LINE Notification Support. With power optimization, LINE will miss messages or fail to send responses through your watch. Similarly LINE Notification support may not successfully forward notifications from LINE.</string>
 
     <!-- LINE version warnings -->
     <string name="line_version_warning_10_19_1">This LINE version (10.19.1) you are using does not provide the title of the chat group. Instead of showing the title of the chat group, this app will list out the users who previously responded as a mitigation. If not showing the title is a problem, please downgrade your LINE version to 10.18.2 or 10.19.2 and above.</string>
