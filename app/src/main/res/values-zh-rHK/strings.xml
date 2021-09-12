@@ -12,6 +12,10 @@
     <!-- Permission Dialog -->
     <string name="permission_request_dialog_message">您必須授與 LINE通知小幫手 存取 LINE 通知的權限。</string>
 
+    <!-- Disable Power Optimization Tip Dialog -->
+    <string name="disable_power_optimization_tip_dialog_title">關閉最佳化電池用量</string>
+    <string name="disable_power_optimization_tip_dialog_yes">更新</string>
+
     <!-- LINE Notification Settings Dialog -->
     <string name="make_line_message_notification_silent">強烈推薦將『訊息提醒』的設定改為『靜音』。</string>
     <string name="reminder_for_enabling_line_message_notification">請記得將『訊息提醒』的設定改為『提醒』。</string>
