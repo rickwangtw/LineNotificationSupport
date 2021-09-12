@@ -63,6 +63,9 @@ dependencies {
     implementation "net.yslibrary.historian:historian-core:$historian_version"
     implementation "net.yslibrary.historian:historian-tree:$historian_version"
 
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
+    implementation "androidx.datastore:datastore-preferences-rxjava3:1.0.0"
+
     // Required -- JUnit 4 framework
     testImplementation 'junit:junit:4.12'
     // Optional -- Robolectric environment

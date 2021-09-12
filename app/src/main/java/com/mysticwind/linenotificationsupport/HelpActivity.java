@@ -21,7 +21,6 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
 
 import com.google.common.collect.ImmutableMap;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
@@ -98,25 +97,36 @@ public class HelpActivity extends AppCompatActivity {
             grantPermissionDialog.show();
         }
 
-        if (shouldShowDisablePowerOptimizationTip()) {
-            disablePowerOptimizationTipDialog.show();
-        } else {
-            if (disablePowerOptimizationTipDialog.isShowing()) {
-                disablePowerOptimizationTipDialog.dismiss();
-            }
-        }
+        perhapsShowDisablePowerOptimizationTip();
     }
 
-    private boolean shouldShowDisablePowerOptimizationTip() {
-        return !getFeatureProvisionStateProvider().isDisablePowerOptimizationTipShown() &&
-                isPowerOptimizationEnabled();
+    private void perhapsShowDisablePowerOptimizationTip() {
+        getFeatureProvisionStateProvider()
+                .isDisablePowerOptimizationTipShown()
+                .subscribe(isShownBefore -> {
+                    if (isShownBefore.orElse(false)) {
+                        dismissDisablePowerOptimizationTipDialog();
+                        return;
+                    }
+                    if (!isPowerOptimizationEnabled()) {
+                        dismissDisablePowerOptimizationTipDialog();
+                        return;
+                    }
+                    this.runOnUiThread(() -> disablePowerOptimizationTipDialog.show());
+                });
+    }
+
+    private void dismissDisablePowerOptimizationTipDialog() {
+        if (disablePowerOptimizationTipDialog.isShowing()) {
+            disablePowerOptimizationTipDialog.dismiss();
+        }
     }
 
     private FeatureProvisionStateProvider getFeatureProvisionStateProvider() {
         if (featureProvisionStateProvider != null) {
             return featureProvisionStateProvider;
         } else {
-            featureProvisionStateProvider = new FeatureProvisionStateProvider(PreferenceManager.getDefaultSharedPreferences(this));
+            featureProvisionStateProvider = new FeatureProvisionStateProvider(this);
             return featureProvisionStateProvider;
         }
     }
