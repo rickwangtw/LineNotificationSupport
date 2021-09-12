@@ -1,12 +1,17 @@
 package com.mysticwind.linenotificationsupport;
 
+import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
+
 import android.app.Dialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.method.LinkMovementMethod;
 import android.view.Menu;
@@ -24,8 +29,6 @@ import java.util.Map;
 
 import timber.log.Timber;
 
-import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
-
 public class HelpActivity extends AppCompatActivity {
 
     private static final DebugModeProvider DEBUG_MODE_PROVIDER = new DebugModeProvider();
@@ -34,7 +37,10 @@ public class HelpActivity extends AppCompatActivity {
             "10.19.1", R.string.line_version_warning_10_19_1
     );
 
+    // TODO persist this
+    private boolean isPowerOptimizationTipShown = false;
     private Dialog grantPermissionDialog;
+    private Dialog disablePowerOptimizationTipDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +54,9 @@ public class HelpActivity extends AppCompatActivity {
 
         if (grantPermissionDialog == null) {
             grantPermissionDialog = createGrantPermissionDialog();
+        }
+        if (disablePowerOptimizationTipDialog == null) {
+            disablePowerOptimizationTipDialog = createDisablePowerOptimizationTipDialog();
         }
     }
 
@@ -87,6 +96,26 @@ public class HelpActivity extends AppCompatActivity {
         } else {
             grantPermissionDialog.show();
         }
+
+        if (!isPowerOptimizationTipShown && isPowerOptimizationEnabled()) {
+            disablePowerOptimizationTipDialog.show();
+        } else {
+            if (disablePowerOptimizationTipDialog.isShowing()) {
+                disablePowerOptimizationTipDialog.dismiss();
+            }
+        }
+
+    }
+
+    // https://stackoverflow.com/questions/39256501/check-if-battery-optimization-is-enabled-or-not-for-an-app
+    private boolean isPowerOptimizationEnabled() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return false;
+        }
+        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        boolean isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(getPackageName());
+        Timber.d("isIgnoringBatteryOptimizations [%s]", isIgnoringBatteryOptimizations);
+        return !isIgnoringBatteryOptimizations;
     }
 
     private Dialog createGrantPermissionDialog() {
@@ -99,6 +128,23 @@ public class HelpActivity extends AppCompatActivity {
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setCancelable(false)
+                .create();
+    }
+
+    private Dialog createDisablePowerOptimizationTipDialog() {
+        return new AlertDialog.Builder(this)
+                .setTitle(R.string.disable_power_optimization_tip_dialog_title)
+                .setMessage(R.string.power_optimization_settings_summary)
+                .setPositiveButton(R.string.disable_power_optimization_tip_dialog_yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        final Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+                        HelpActivity.this.startActivity(intent);
+                    }
+                })
+                .setNeutralButton(android.R.string.cancel, null)
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .setCancelable(true)
                 .create();
     }
 

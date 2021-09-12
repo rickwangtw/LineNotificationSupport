@@ -21,6 +21,10 @@
     <!-- Permission Dialog -->
     <string name="permission_request_dialog_message">You will need to grant permissions for this app to access Line notifications.</string>
 
+    <!-- Disable Power Optimization Tip Dialog -->
+    <string name="disable_power_optimization_tip_dialog_title">Disable Power Optimization</string>
+    <string name="disable_power_optimization_tip_dialog_yes">Update</string>
+
     <!-- LINE Notification Settings Dialog -->
     <string name="make_line_message_notification_silent">Highly recommend to update the \"Message notifications\" setting to \"Silent\"</string>
     <string name="reminder_for_enabling_line_message_notification">Please remember to update the \"Message notifications\" setting back to \"Alert\"</string>
