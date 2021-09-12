@@ -21,6 +21,7 @@
     <string name="messages_header">LINE 訊息</string>
     <string name="calls_header">LINE 通話</string>
     <string name="notifications_header">通知</string>
+    <string name="other_settings_header">其他</string>
 
     <!-- Messages Preferences -->
     <string name="identical_messages_title">重複的訊息</string>
@@ -67,6 +68,10 @@
     <string name="max_notification_workaround_title">[測試中]解決安卓通知的系統限制。安卓10限制一個 app 只能有25則通知。安卓10之前的限制為50則通知。</string>
     <string name="max_notification_workaround_summary_on">這個選項會在超過通知限制時暫存通知。在舊的通知被取消時，暫存的通知會再次被傳送。這是個測試中的新功能。如果發現問題，請盡量減少顯示中的通知數量。</string>
     <string name="max_notification_workaround_summary_off">這個選項是預設的安卓體驗。在超過限制時您不會收到任何新的訊息。</string>
+
+    <!-- Other Preferences -->
+    <string name="power_optimization_settings_title">最佳化電池用量</string>
+    <string name="power_optimization_settings_summary">強烈建議關閉 LINE 及 LINE 通知小幫手的最佳化電池用量設定。若啟用最佳化電池用量，LINE 會錯過訊息或回覆訊息失敗。LINE 通知小幫手相似的也會導致訊息重送延遲。</string>
 
     <!-- LINE version warnings -->
     <string name="line_version_warning_10_19_1">您使用的這個 LINE 版本 (10.19.1) 在訊息中不顯示群組名稱。應對這個問題，這個 app 會顯示之前在群組中傳過訊息的朋友列表。如果不顯示群組名稱對您造成困擾，請降版本至 10.18.2 或 10.19.2 以上。</string>
