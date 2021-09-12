@@ -179,4 +179,19 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/other_settings_header"
+        app:iconSpaceReserved="false" >
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="power_optimization_settings"
+            app:title="@string/power_optimization_settings_title"
+            app:summary="@string/power_optimization_settings_summary">
+            <intent
+                android:action="android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS" />
+        </Preference>
+
+    </PreferenceCategory>
+
+
 </PreferenceScreen>
