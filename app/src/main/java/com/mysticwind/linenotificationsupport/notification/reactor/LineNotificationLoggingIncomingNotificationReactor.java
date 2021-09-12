@@ -5,8 +5,8 @@ import android.service.notification.StatusBarNotification;
 import com.google.common.collect.ImmutableSet;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.line.Constants;
-import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
+import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
 import org.apache.commons.lang3.StringUtils;
@@ -64,7 +64,7 @@ public class LineNotificationLoggingIncomingNotificationReactor implements Incom
         if (StringUtils.isBlank(NotificationExtractor.getLineMessageId(statusBarNotification.getNotification()))) {
             return false;
         }
-        return StringUtils.equals(LineNotificationBuilder.MESSAGE_CATEGORY, statusBarNotification.getNotification().category) &&
+        return StatusBarNotificationExtractor.isMessage(statusBarNotification) &&
                 statusBarNotification.getNotification().actions == null;
     }
 

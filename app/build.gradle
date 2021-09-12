@@ -9,8 +9,8 @@ android {
         applicationId "com.mysticwind.linenotificationsupport.donate"
         minSdkVersion 26
         targetSdkVersion 30
-        versionCode 15
-        versionName "1.10.1"
+        versionCode 16
+        versionName "1.11"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -62,6 +62,9 @@ dependencies {
     def historian_version = "0.3.1"
     implementation "net.yslibrary.historian:historian-core:$historian_version"
     implementation "net.yslibrary.historian:historian-tree:$historian_version"
+
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
+    implementation "androidx.datastore:datastore-preferences-rxjava3:1.0.0"
 
     // Required -- JUnit 4 framework
     testImplementation 'junit:junit:4.12'

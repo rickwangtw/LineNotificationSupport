@@ -17,6 +17,7 @@ import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
+import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,8 +32,6 @@ public class LineNotificationBuilder {
     public static final String CALL_VIRTUAL_CHAT_ID = "call_virtual_chat_id";
     public static final String DEFAULT_CHAT_ID = "default_chat_id";
 
-    protected static final String CALL_CATEGORY = "call";
-    public static final String MESSAGE_CATEGORY = "msg";
     protected static final String MISSED_CALL_TAG = "NOTIFICATION_TAG_MISSED_CALL";
     public static final String GENERAL_NOTIFICATION_CHANNEL = "jp.naver.line.android.notification.GeneralNotifications";
     protected static final String DEFAULT_SENDER_NAME = "?";
@@ -85,7 +84,7 @@ public class LineNotificationBuilder {
     }
 
     private LineNotification.CallState resolveCallState(final StatusBarNotification statusBarNotification) {
-        if (CALL_CATEGORY.equals(statusBarNotification.getNotification().category)) {
+        if (StatusBarNotificationExtractor.isCall(statusBarNotification)) {
             return LineNotification.CallState.INCOMING;
         } else if (MISSED_CALL_TAG.equals(statusBarNotification.getTag())) {
             return LineNotification.CallState.MISSED_CALL;
@@ -207,7 +206,7 @@ public class LineNotificationBuilder {
         if (callState != null) {
             return false;
         }
-        return MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category);
+        return StatusBarNotificationExtractor.isMessage(statusBarNotification);
     }
 
     private List<Notification.Action> extractActionsOfIndices(final StatusBarNotification notificationFromLine,

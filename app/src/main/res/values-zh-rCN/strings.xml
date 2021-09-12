@@ -12,6 +12,10 @@
     <!-- Permission Dialog -->
     <string name="permission_request_dialog_message">您必须授与 LINE提示助手 存取 LINE 通知的权限。</string>
 
+    <!-- Disable Power Optimization Tip Dialog -->
+    <string name="disable_power_optimization_tip_dialog_title">关闭优化电池使用量</string>
+    <string name="disable_power_optimization_tip_dialog_yes">更新</string>
+
     <!-- LINE Notification Settings Dialog -->
     <string name="make_line_message_notification_silent">强烈推荐将『新消息通知』的设定改为『静音』。</string>
     <string name="reminder_for_enabling_line_message_notification">请记得将『讯息提醒』的设定改为『提醒』。</string>
@@ -21,6 +25,7 @@
     <string name="messages_header">LINE 信息</string>
     <string name="calls_header">LINE 来电</string>
     <string name="notifications_header">提示</string>
+    <string name="other_settings_header">其他</string>
 
     <!-- Messages Preferences -->
     <string name="identical_messages_title">重复的信息</string>
@@ -45,6 +50,9 @@
     <string name="call_notification_action_reverse_order_title">LINE来电按钮顺序</string>
     <string name="call_notification_action_reverse_summary_on">先『拒绝』再『应答』。使用这个选项如果您较常选择拒绝来电。</string>
     <string name="call_notification_action_reverse_summary_off">先『应答』再『拒绝』。使用这个选项如果您较常选择应答来电。</string>
+    <string name="bluetooth_control_in_calls_title">LINE 通话时的蓝芽设定</string>
+    <string name="bluetooth_control_in_calls_summary_on">LINE 通话中关闭蓝芽。已知的 LINE 臭虫：连着三星手錶时的视讯音量异常低。您可以利用 Tasker 改变设置（网页有详细信息）。</string>
+    <string name="bluetooth_control_in_calls_summary_off">LINE 通话中不改变蓝牙设定。您可以利用 Tasker 改变设置（网页有详细信息）。</string>
 
     <!-- Notification Preferences -->
     <string name="notification_settings_title">LINE 提示助手通知设置</string>
@@ -64,6 +72,10 @@
     <string name="max_notification_workaround_title">[测试中]解决安卓通知的系统限制。安卓10限制一个应用只能有25则通知。安卓10之前的限制为50则通知。</string>
     <string name="max_notification_workaround_summary_on">这个选项会在超过通知限制时暂存通知。在旧的通知被取消时，暂存的通知会再次被传送。这是个测试中的新功能。如果發现问题，请尽量减少显示中的通知数量。</string>
     <string name="max_notification_workaround_summary_off">这个选项是预设的安卓体验。在超过限制时您不会收到任何新的讯息。</string>
+
+    <!-- Other Preferences -->
+    <string name="power_optimization_settings_title">优化电池使用量</string>
+    <string name="power_optimization_settings_summary">强烈建议关闭 LINE 及 LINE 提示助手的优化电池使用量设定。若启用优化电池使用量，LINE 会错过信息或回复信息失败。LINE 提示助手相似的也会导致信息重送延迟。</string>
 
     <!-- LINE version warnings -->
     <string name="line_version_warning_10_19_1">您使用的这个 LINE 版本 (10.19.1) 在信息中不显示群组名称。应对这个问题，这个应用会显示之前在群中传过信息的朋友列表。如果不显示群名称对您造成困扰，请降版本至 10.18.2 或 10.19.2 以上。</string>

@@ -37,6 +37,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
+import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothController;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.CachingGroupChatNameDataAccessorDecorator;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.CachingMultiPersonChatNameDataAccessorDecorator;
@@ -72,6 +73,7 @@ import com.mysticwind.linenotificationsupport.notification.SlotAvailabilityCheck
 import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificationCounter;
+import com.mysticwind.linenotificationsupport.notification.reactor.CallInProgressTrackingReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ChatReplyActionTrackingIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNamePersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
@@ -102,7 +104,6 @@ import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.Instant;
@@ -161,6 +162,7 @@ public class NotificationListenerService
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
+    private PreferenceProvider preferenceProvider;
     private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
     private LineRemoteInputReplier lineRemoteInputReplier;
     private ChatNameManager chatNameManager;
@@ -168,7 +170,6 @@ public class NotificationListenerService
 
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
-    private final MutableBoolean isInitialized = new MutableBoolean(false);
 
     private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -201,10 +202,20 @@ public class NotificationListenerService
 
         private Optional<String> getResponseMessage(final Intent intent) {
             final Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
-            if (remoteInput != null) {
-                return Optional.ofNullable(remoteInput.getCharSequence(DefaultReplyActionBuilder.RESPONSE_REMOTE_INPUT_KEY).toString());
+            if (remoteInput == null) {
+                Timber.d("ReplyActionBroadcastReceiver: Null RemoteInput");
+                return Optional.empty();
             }
-            return Optional.empty();
+            final CharSequence response = remoteInput.getCharSequence(DefaultReplyActionBuilder.RESPONSE_REMOTE_INPUT_KEY);
+            if (response == null) {
+                Timber.d("ReplyActionBroadcastReceiver: Null response from %s", DefaultReplyActionBuilder.RESPONSE_REMOTE_INPUT_KEY);
+                return Optional.empty();
+            }
+            if (StringUtils.isBlank(response.toString())) {
+                Timber.d("ReplyActionBroadcastReceiver: Blank response: [%s]", response.toString());
+                return Optional.empty();
+            }
+            return Optional.of(response.toString());
         }
 
         private Optional<Notification.Action> getLineReplyAction(final Intent intent) {
@@ -262,6 +273,8 @@ public class NotificationListenerService
     };
 
     private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
+    private boolean isInitialized = false;
+    private boolean isListenerConnected = false;
 
     private NotificationPublisher buildNotificationPublisher() {
         return buildNotificationPublisherWithPreviousStateRestored(Collections.EMPTY_LIST);
@@ -344,9 +357,10 @@ public class NotificationListenerService
     public void onListenerConnected() {
         super.onListenerConnected();
 
+        isListenerConnected = true;
         Timber.w("NotificationListenerService onListenerConnected");
 
-        if (isInitialized.booleanValue()) {
+        if (isInitialized) {
             Timber.d("NotificationListenerService has already been initialized");
             return;
         }
@@ -394,13 +408,18 @@ public class NotificationListenerService
                 new LineNotificationLoggingIncomingNotificationReactor(
                         NOTIFICATION_PRINTER, notificationHistoryManager, getLineAppVersion()));
 
+        this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
+
+        final CallInProgressTrackingReactor callInProgressTrackingReactor = new CallInProgressTrackingReactor(
+                getPreferenceProvider(), new AndroidBluetoothController());
+        this.incomingNotificationReactors.add(callInProgressTrackingReactor);
+        this.dismissedNotificationReactors.add(callInProgressTrackingReactor);
+
         this.incomingNotificationReactors.add(
                 new ChatRoomNamePersistenceIncomingNotificationReactor(groupChatNameDataAccessor));
 
         final ChatReplyActionManager chatReplyActionManager = new ChatReplyActionManager();
         this.incomingNotificationReactors.add(new ChatReplyActionTrackingIncomingNotificationReactor(chatReplyActionManager));
-
-        this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
 
         // TODO remove this after testing the stability of the dumb version
         final SmartNotificationCounterNotificationReactor smartNotificationCounterNotificationReactor =
@@ -448,7 +467,7 @@ public class NotificationListenerService
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
         registerReceiver(localeUpdateBroadcastReceiver, new IntentFilter(Intent.ACTION_LOCALE_CHANGED));
 
-        isInitialized.setTrue();
+        isInitialized = true;
         Timber.d("Service completed initialization");
     }
 
@@ -456,7 +475,7 @@ public class NotificationListenerService
     public void onDestroy() {
         super.onDestroy();
 
-        isInitialized.setFalse();
+        isInitialized = false;
 
         Timber.w("NotificationListenerService onDestroy");
     }
@@ -780,6 +799,11 @@ public class NotificationListenerService
     }
 
     private void checkNotificationCounter() {
+        if (!isListenerConnected) {
+            Timber.w("Listener is not connected. Skipping notification counter check");
+            scheduleNotificationCounterCheck();
+            return;
+        }
         final Multimap<String, String> groupToNotificationKeyMultimap = HashMultimap.create();
         getActiveNotificationsFromAllAppsSafely().stream()
                 .filter(notification -> notification.getPackageName().equals(getPackageName()))
@@ -834,6 +858,7 @@ public class NotificationListenerService
     public void onListenerDisconnected() {
         super.onListenerDisconnected();
 
+        isListenerConnected = false;
         Timber.w("NotificationListenerService onListenerDisconnected");
 
         unregisterReceiver(replyActionBroadcastReceiver);
@@ -850,7 +875,7 @@ public class NotificationListenerService
 
         this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
-        isInitialized.setFalse();
+        isInitialized = false;
     }
 
     public void onNotificationRemovedUnsafe(final StatusBarNotification statusBarNotification) {
@@ -877,7 +902,12 @@ public class NotificationListenerService
     }
 
     private PreferenceProvider getPreferenceProvider() {
-        return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
+        if (preferenceProvider == null) {
+            preferenceProvider = new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
+            return preferenceProvider;
+        } else {
+            return preferenceProvider;
+        }
     }
 
     private void dismissLineNotificationSupportNotifications(final String chatId) {

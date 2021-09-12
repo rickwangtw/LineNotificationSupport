@@ -19,6 +19,7 @@ This is the app for you!
 * You can configure each chat the way you want! You can choose to ignore notifications that come from some to focus on the critical messages!
 * LINE stickers will also be shown on your watch!
 * You **CAN** reply to your friends on your watch!
+* Disable Bluetooth during ongoing calls - workaround to address a low volume bug with Samsung watches.
 
 Supports all LINE languages (the app still has limited language support though - translation contributions are always welcomed).
 
@@ -33,6 +34,9 @@ This app has been tested with Samsung Galaxy Watch Tizen 5.5.0.1 with Android 11
 
 LINE version tested:
 
+* 11.16.0
+* 11.15.3, 11.15.2, 11.15.0
+* 11.14.3
 * 11.8.3, 11.8.1, 11.8.0
 * 11.7.2, 11.7.1, 11.7.0
 * 11.6.5
@@ -57,3 +61,26 @@ You use a watch that is not on the list? Share your settings!
 #### Galaxy Watch / Tizen 5.5.0.1
 * [BETA] Manage LINE notificaions: true
 * Use a single notification for each conversation: true
+
+### <a name="tasker"></a> 2. Does the app support Tasker integration?
+You can integrate with Tasker and update settings since version 1.11.
+
+#### Change setting to enable/disable Bluetooth during LINE calls
+* Available since 1.11
+* Tasker settings to enable Bluetooth control
+  * Action: com.mysticwind.linenotificationsupport.action.settings.update
+  * Extra: setting-key:bluetooth\_control\_in\_calls
+  * Extra: setting-value:true
+  * Package: com.mysticwind.linenotificationsupport (if you are using the donate version - com.mysticwind.linenotificationsupport.donate)
+  * Target: Broadcast Receiver
+* Tasker settings to disable Bluetooth control
+  * Action: com.mysticwind.linenotificationsupport.action.settings.update
+  * Extra: setting-key:bluetooth\_control\_in\_calls
+  * Extra: setting-value:false
+  * Package: com.mysticwind.linenotificationsupport (if you are using the donate version - com.mysticwind.linenotificationsupport.donate)
+  * Target: Broadcast Receiver
+
+* Sample Command to enable this setting through am command
+```
+adb shell am broadcast -a com.mysticwind.linenotificationsupport.action.settings.update -n com.mysticwind.linenotificationsupport/.SettingsUpdateRequestBroadcastReceiver -e setting-key bluetooth_control_in_calls -e setting-value true
+```

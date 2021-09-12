@@ -1,7 +1,6 @@
 [![English](https://img.shields.io/badge/lang-en-green.svg)](https://github.com/rickwangtw/LineNotificationSupport/blob/main/README.md)
 
 # LINE通知小幫手
-[![donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CYC657N6DY3CJ&item_name=Support+LINE+Notification+Support%21&currency_code=USD)
 
 您使用 LINE 嗎？您使用三星智慧型手錶嗎？這可能是個適合您的 App 唷！
 
@@ -20,6 +19,7 @@
 * 您可選擇忽略來自特定的群組或個人的訊息。幫助您只專注於重要的訊息！
 * LINE 貼圖也會被顯示在您的手錶！
 * 您依然 **可以** 回覆您的朋友！
+* 通話時關閉藍芽 - 解決連接三星手錶時音量過低的問題。
 
 支援所有的LINE語言，然而 App 本身支援非常少的語言，歡迎提供翻譯！
 
@@ -34,6 +34,9 @@
 
 測試過的 LINE 版本：
 
+* 11.16.0
+* 11.15.3, 11.15.2, 11.15.0
+* 11.14.3
 * 11.8.3, 11.8.1, 11.8.0
 * 11.7.2, 11.7.1, 11.7.0
 * 11.6.5
@@ -50,11 +53,6 @@
 * [免費版](https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport)
 * [捐贈版](https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate)
 
-## 贊助
-歡迎購買捐贈版或者透過 Paypal 贊助開發！感謝！
-
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=CYC657N6DY3CJ&item_name=Support+LINE+Notification+Support%21&currency_code=USD)
-
 ## 常見問題
 
 ### <a name="recommended-settings"></a> 1. 請問有推薦的設定嗎？
@@ -63,3 +61,26 @@
 #### Galaxy Watch / Tizen 5.5.0.1
 * [測試中]管理 LINE 通知：啟用
 * 一個群組使用一個通知：啟用
+
+### <a name="tasker"></a> 2. 請問支援 Tasker 嗎？
+自 1.11 版，您可以利用 Tasker 來改變設定。
+
+#### 改變 LINE 通話時的藍芽設定
+* 支援 1.11 以上版本
+* 啟動藍牙控制的 Tasker 設定
+  * Action: com.mysticwind.linenotificationsupport.action.settings.update
+  * Extra: setting-key:bluetooth\_control\_in\_calls
+  * Extra: setting-value:true
+  * Package: com.mysticwind.linenotificationsupport (若您使用捐贈版 - com.mysticwind.linenotificationsupport.donate)
+  * Target: Broadcast Receiver
+* 關閉藍芽控制的 Tasker 設定
+  * Action: com.mysticwind.linenotificationsupport.action.settings.update
+  * Extra: setting-key:bluetooth\_control\_in\_calls
+  * Extra: setting-value:false
+  * Package: com.mysticwind.linenotificationsupport (若您使用捐贈版 - com.mysticwind.linenotificationsupport.donate)
+  * Target: Broadcast Receiver
+
+* 您也可以利用 am 來改變設定
+```
+adb shell am broadcast -a com.mysticwind.linenotificationsupport.action.settings.update -n com.mysticwind.linenotificationsupport/.SettingsUpdateRequestBroadcastReceiver -e setting-key bluetooth_control_in_calls -e setting-value true
+```

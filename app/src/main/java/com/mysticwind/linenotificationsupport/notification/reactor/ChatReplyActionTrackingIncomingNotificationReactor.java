@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.mysticwind.linenotificationsupport.line.Constants;
 import com.mysticwind.linenotificationsupport.reply.ChatReplyActionManager;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
+import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -15,8 +16,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import timber.log.Timber;
-
-import static com.mysticwind.linenotificationsupport.model.LineNotificationBuilder.MESSAGE_CATEGORY;
 
 public class ChatReplyActionTrackingIncomingNotificationReactor implements IncomingNotificationReactor {
 
@@ -57,9 +56,8 @@ public class ChatReplyActionTrackingIncomingNotificationReactor implements Incom
         return Reaction.NONE;
     }
 
-    // TODO extract a common class for this shared with LineNotificationBuilder
     private boolean isMessage(StatusBarNotification statusBarNotification) {
-        return MESSAGE_CATEGORY.equals(statusBarNotification.getNotification().category);
+        return StatusBarNotificationExtractor.isMessage(statusBarNotification);
     }
 
     private Optional<Notification.Action> resolveReplyAction(Notification.Action[] actions) {

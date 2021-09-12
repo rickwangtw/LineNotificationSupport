@@ -67,6 +67,14 @@
             app:summaryOff="@string/call_notification_action_reverse_summary_off"
             app:summaryOn="@string/call_notification_action_reverse_summary_on" />
 
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:key="bluetooth_control_in_calls"
+            app:title="@string/bluetooth_control_in_calls_title"
+            app:defaultValue="false"
+            app:summaryOff="@string/bluetooth_control_in_calls_summary_off"
+            app:summaryOn="@string/bluetooth_control_in_calls_summary_on" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/notifications_header"
@@ -170,5 +178,20 @@
             app:summaryOn="@string/max_notification_workaround_summary_on" />
 
     </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/other_settings_header"
+        app:iconSpaceReserved="false" >
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="power_optimization_settings"
+            app:title="@string/power_optimization_settings_title"
+            app:summary="@string/power_optimization_settings_summary">
+            <intent
+                android:action="android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS" />
+        </Preference>
+
+    </PreferenceCategory>
+
 
 </PreferenceScreen>
