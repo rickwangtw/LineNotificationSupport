@@ -161,7 +161,6 @@ public class HelpActivity extends AppCompatActivity {
                 .setMessage(R.string.power_optimization_settings_summary)
                 .setPositiveButton(R.string.disable_power_optimization_tip_dialog_yes,
                         (dialog, which) -> {
-                            getFeatureProvisionStateProvider().setDisablePowerOptimizationTipShown();
                             final Intent intent = new Intent();
                             intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
                             HelpActivity.this.startActivity(intent);
