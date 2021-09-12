@@ -101,6 +101,10 @@ public class HelpActivity extends AppCompatActivity {
     }
 
     private void perhapsShowDisablePowerOptimizationTip() {
+        if (grantPermissionDialog.isShowing()) {
+            return;
+        }
+
         getFeatureProvisionStateProvider()
                 .isDisablePowerOptimizationTipShown()
                 .subscribe(isShownBefore -> {
