@@ -21,9 +21,11 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import com.google.common.collect.ImmutableMap;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
+import com.mysticwind.linenotificationsupport.provision.FeatureProvisionStateProvider;
 
 import java.util.Map;
 
@@ -37,8 +39,7 @@ public class HelpActivity extends AppCompatActivity {
             "10.19.1", R.string.line_version_warning_10_19_1
     );
 
-    // TODO persist this
-    private boolean isPowerOptimizationTipShown = false;
+    private FeatureProvisionStateProvider featureProvisionStateProvider;
     private Dialog grantPermissionDialog;
     private Dialog disablePowerOptimizationTipDialog;
 
@@ -97,14 +98,27 @@ public class HelpActivity extends AppCompatActivity {
             grantPermissionDialog.show();
         }
 
-        if (!isPowerOptimizationTipShown && isPowerOptimizationEnabled()) {
+        if (shouldShowDisablePowerOptimizationTip()) {
             disablePowerOptimizationTipDialog.show();
         } else {
             if (disablePowerOptimizationTipDialog.isShowing()) {
                 disablePowerOptimizationTipDialog.dismiss();
             }
         }
+    }
 
+    private boolean shouldShowDisablePowerOptimizationTip() {
+        return !getFeatureProvisionStateProvider().isDisablePowerOptimizationTipShown() &&
+                isPowerOptimizationEnabled();
+    }
+
+    private FeatureProvisionStateProvider getFeatureProvisionStateProvider() {
+        if (featureProvisionStateProvider != null) {
+            return featureProvisionStateProvider;
+        } else {
+            featureProvisionStateProvider = new FeatureProvisionStateProvider(PreferenceManager.getDefaultSharedPreferences(this));
+            return featureProvisionStateProvider;
+        }
     }
 
     // https://stackoverflow.com/questions/39256501/check-if-battery-optimization-is-enabled-or-not-for-an-app
@@ -135,16 +149,19 @@ public class HelpActivity extends AppCompatActivity {
         return new AlertDialog.Builder(this)
                 .setTitle(R.string.disable_power_optimization_tip_dialog_title)
                 .setMessage(R.string.power_optimization_settings_summary)
-                .setPositiveButton(R.string.disable_power_optimization_tip_dialog_yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        final Intent intent = new Intent();
-                        intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
-                        HelpActivity.this.startActivity(intent);
-                    }
-                })
-                .setNeutralButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.disable_power_optimization_tip_dialog_yes,
+                        (dialog, which) -> {
+                            getFeatureProvisionStateProvider().setDisablePowerOptimizationTipShown();
+                            final Intent intent = new Intent();
+                            intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+                            HelpActivity.this.startActivity(intent);
+                        })
+                .setNeutralButton(android.R.string.cancel,
+                        (dialog, which) ->
+                                getFeatureProvisionStateProvider().setDisablePowerOptimizationTipShown()
+                )
                 .setIcon(android.R.drawable.ic_dialog_info)
-                .setCancelable(true)
+                .setCancelable(false)
                 .create();
     }
 
