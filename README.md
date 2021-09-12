@@ -19,6 +19,7 @@ This is the app for you!
 * You can configure each chat the way you want! You can choose to ignore notifications that come from some to focus on the critical messages!
 * LINE stickers will also be shown on your watch!
 * You **CAN** reply to your friends on your watch!
+* Disable Bluetooth during ongoing calls - workaround to address a low volume bug with Samsung watches.
 
 Supports all LINE languages (the app still has limited language support though - translation contributions are always welcomed).
 
