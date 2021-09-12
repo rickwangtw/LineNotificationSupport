@@ -27,16 +27,19 @@ public class FeatureProvisionStateProvider {
         dataStore = new RxPreferenceDataStoreBuilder(context, FILE_NAME).build();
     }
 
-    // TODO how can we default to false?
-    public @NonNull Flowable<Optional<Boolean>> isDisablePowerOptimizationTipShown() {
+    public @NonNull Flowable<Boolean> isDisablePowerOptimizationTipShown() {
         return dataStore.data()
-                .map(prefs -> Optional.ofNullable(prefs.get(SHOW_DISABLE_POWER_OPTIMIZATION_TIP_PREFERENCE_KEY)));
+                .map(prefs -> Optional.ofNullable(prefs.get(SHOW_DISABLE_POWER_OPTIMIZATION_TIP_PREFERENCE_KEY)).orElse(false));
     }
 
     public void setDisablePowerOptimizationTipShown() {
+        updateDisablePowerOptimizationTipShown(true);
+    }
+
+    private void updateDisablePowerOptimizationTipShown(boolean value) {
         dataStore.updateDataAsync(preferences -> {
             final MutablePreferences mutablePreferences = preferences.toMutablePreferences();
-            mutablePreferences.set(SHOW_DISABLE_POWER_OPTIMIZATION_TIP_PREFERENCE_KEY, true);
+            mutablePreferences.set(SHOW_DISABLE_POWER_OPTIMIZATION_TIP_PREFERENCE_KEY, value);
             return Single.just(mutablePreferences);
         });
     }

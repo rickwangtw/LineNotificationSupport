@@ -104,7 +104,7 @@ public class HelpActivity extends AppCompatActivity {
         getFeatureProvisionStateProvider()
                 .isDisablePowerOptimizationTipShown()
                 .subscribe(isShownBefore -> {
-                    if (isShownBefore.orElse(false)) {
+                    if (isShownBefore) {
                         dismissDisablePowerOptimizationTipDialog();
                         return;
                     }
