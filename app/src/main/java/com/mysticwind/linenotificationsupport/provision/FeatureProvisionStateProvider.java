@@ -36,6 +36,10 @@ public class FeatureProvisionStateProvider {
         updateDisablePowerOptimizationTipShown(true);
     }
 
+    public void shutdown() {
+        dataStore.dispose();
+    }
+
     private void updateDisablePowerOptimizationTipShown(boolean value) {
         dataStore.updateDataAsync(preferences -> {
             final MutablePreferences mutablePreferences = preferences.toMutablePreferences();

@@ -191,6 +191,16 @@ public class HelpActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+
+        final FeatureProvisionStateProvider providerToShutdown = this.featureProvisionStateProvider;
+        this.featureProvisionStateProvider = null;
+        providerToShutdown.shutdown();
+    }
+
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
