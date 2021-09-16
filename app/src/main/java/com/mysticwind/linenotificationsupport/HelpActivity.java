@@ -107,6 +107,10 @@ public class HelpActivity extends AppCompatActivity {
 
         getFeatureProvisionStateProvider()
                 .isDisablePowerOptimizationTipShown()
+                .onErrorReturn((error) -> {
+                    Timber.e(error, "Error returning isDisablePowerOptimizationTipShown: [%s]", error.getMessage());
+                    return false;
+                })
                 .subscribe(isShownBefore -> {
                     if (isShownBefore) {
                         dismissDisablePowerOptimizationTipDialog();
