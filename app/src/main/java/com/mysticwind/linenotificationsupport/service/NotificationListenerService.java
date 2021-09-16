@@ -870,7 +870,11 @@ public class NotificationListenerService
         this.notificationPublisher = NullNotificationPublisher.INSTANCE;
 
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+        try {
+            sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
+        } catch (final Exception e) {
+            Timber.w(e, "Errors thrown when unregistering listener: [%s]", e.getMessage());
+        }
         Timber.d("Unregistered onSharedPreferenceChangeListener");
 
         this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
