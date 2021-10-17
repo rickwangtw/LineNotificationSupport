@@ -125,6 +125,8 @@ import timber.log.Timber;
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
 
+    public static final String DELETE_FRIEND_NAME_CACHE_ACTION = "com.mysticwind.linenotificationsupport.action.deletefriendnamecache";
+
     private static final String GROUP_MESSAGE_GROUP_KEY = "NOTIFICATION_GROUP_MESSAGE";
     private static final long EMPTY_LINE_NOTIFICATION_RETRY_TIMEOUT = 200L;
     private static final int EMPTY_LINE_NOTIFICATION_RETRY_COUNT = 10;
@@ -269,6 +271,13 @@ public class NotificationListenerService
             Timber.i("Locale has been changed to %s", locale);
 
             NotificationListenerService.this.myPersonLabelProvider = new LocalizedMyPersonLabelProvider(locale);
+        }
+    };
+
+    private final BroadcastReceiver deleteFriendNameCacheBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            chatNameManager.deleteFriendNameCache();
         }
     };
 
@@ -466,6 +475,7 @@ public class NotificationListenerService
 
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
         registerReceiver(localeUpdateBroadcastReceiver, new IntentFilter(Intent.ACTION_LOCALE_CHANGED));
+        registerReceiver(deleteFriendNameCacheBroadcastReceiver, new IntentFilter(DELETE_FRIEND_NAME_CACHE_ACTION));
 
         isInitialized = true;
         Timber.d("Service completed initialization");
@@ -863,6 +873,7 @@ public class NotificationListenerService
 
         unregisterReceiver(replyActionBroadcastReceiver);
         unregisterReceiver(localeUpdateBroadcastReceiver);
+        unregisterReceiver(deleteFriendNameCacheBroadcastReceiver);
 
         this.incomingNotificationReactors.clear();
         this.dismissedNotificationReactors.clear();

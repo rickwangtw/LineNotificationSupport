@@ -8,4 +8,6 @@ public interface MultiPersonChatNameDataAccessor {
 
     Multimap<String, String> getAllChatIdToSenders();
 
+    void deleteAllEntries();
+
 }
