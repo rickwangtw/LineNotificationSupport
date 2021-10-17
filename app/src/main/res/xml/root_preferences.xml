@@ -194,8 +194,8 @@
         <Preference
             app:iconSpaceReserved="false"
             app:key="delete_cached_friend_names"
-            app:title="Delete cached friend names"
-            app:summary="Use this option when your friends changed their names and the notifications are showing the old ones.">
+            app:title="@string/delete_cached_friend_names_title"
+            app:summary="@string/delete_cached_friend_names_summary">
             <intent
                 android:targetPackage="com.mysticwind.linenotificationsupport"
                 android:targetClass="com.mysticwind.linenotificationsupport.DeleteCachedFriendNamesDialogActivity"/>
