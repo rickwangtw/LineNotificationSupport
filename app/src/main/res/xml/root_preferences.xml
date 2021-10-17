@@ -197,7 +197,7 @@
             app:title="@string/delete_cached_friend_names_title"
             app:summary="@string/delete_cached_friend_names_summary">
             <intent
-                android:targetPackage="com.mysticwind.linenotificationsupport"
+                android:targetPackage="com.mysticwind.linenotificationsupport.donate"
                 android:targetClass="com.mysticwind.linenotificationsupport.DeleteCachedFriendNamesDialogActivity"/>
         </Preference>
 
