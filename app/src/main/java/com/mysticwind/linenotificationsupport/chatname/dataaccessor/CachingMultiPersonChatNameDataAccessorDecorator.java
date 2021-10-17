@@ -43,4 +43,11 @@ public class CachingMultiPersonChatNameDataAccessorDecorator implements MultiPer
         return HashMultimap.create(chatIdToSenderMultimap);
     }
 
+    @Override
+    public void deleteAllEntries() {
+        multiPersonChatNameDataAccessor.deleteAllEntries();
+        // clear the map so that new entries will get persisted
+        chatIdToSenderMultimap.clear();
+    }
+
 }

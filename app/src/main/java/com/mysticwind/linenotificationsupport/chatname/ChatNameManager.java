@@ -50,4 +50,8 @@ public class ChatNameManager {
         return chatName;
     }
 
+    public void deleteFriendNameCache() {
+        multiPersonChatNameDataAccessor.deleteAllEntries();
+    }
+
 }

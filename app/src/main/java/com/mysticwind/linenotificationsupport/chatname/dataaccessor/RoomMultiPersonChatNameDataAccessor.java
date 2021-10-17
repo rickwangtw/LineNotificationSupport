@@ -43,4 +43,9 @@ public class RoomMultiPersonChatNameDataAccessor implements MultiPersonChatNameD
         return chatIdToSenderMultimap;
     }
 
+    @Override
+    public void deleteAllEntries() {
+        chatGroupDatabase.chatSenderDao().deleteAllEntries();
+    }
+
 }

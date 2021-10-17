@@ -21,6 +21,10 @@
     <string name="disable_power_optimization_tip_dialog_title">關閉最佳化電池用量</string>
     <string name="disable_power_optimization_tip_dialog_yes">更新</string>
 
+    <!-- Delete Cache Confirmation Dialog -->
+    <string name="delete_cache_confirmation_dialog_title">您即將刪除快取裡的好友名字</string>
+    <string name="delete_cache_confirmation_dialog_yes">確認刪除</string>
+
     <!-- Preference Titles -->
     <string name="messages_header">LINE 訊息</string>
     <string name="calls_header">LINE 通話</string>
@@ -76,6 +80,8 @@
     <!-- Other Preferences -->
     <string name="power_optimization_settings_title">最佳化電池用量</string>
     <string name="power_optimization_settings_summary">強烈建議關閉 LINE 及 LINE 通知小幫手的最佳化電池用量設定。若啟用最佳化電池用量，LINE 會錯過訊息或回覆訊息失敗。LINE 通知小幫手相似的也會導致訊息重送延遲。</string>
+    <string name="delete_cached_friend_names_title">刪除快取裡的好友名字</string>
+    <string name="delete_cached_friend_names_summary">好友更改名字會導致通知裡顯示舊的名字。利用這個選項來刪除快取裡的舊名字。</string>
 
     <!-- LINE version warnings -->
     <string name="line_version_warning_10_19_1">您使用的這個 LINE 版本 (10.19.1) 在訊息中不顯示群組名稱。應對這個問題，這個 app 會顯示之前在群組中傳過訊息的朋友列表。如果不顯示群組名稱對您造成困擾，請降版本至 10.18.2 或 10.19.2 以上。</string>

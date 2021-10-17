@@ -18,4 +18,7 @@ public interface ChatSenderDao {
     @Query("SELECT * FROM chat_senders")
     List<ChatSenderEntry> getAllEntries();
 
+    @Query("DELETE FROM chat_senders")
+    void deleteAllEntries();
+
 }

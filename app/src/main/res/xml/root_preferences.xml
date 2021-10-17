@@ -191,6 +191,16 @@
                 android:action="android.settings.IGNORE_BATTERY_OPTIMIZATION_SETTINGS" />
         </Preference>
 
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="delete_cached_friend_names"
+            app:title="@string/delete_cached_friend_names_title"
+            app:summary="@string/delete_cached_friend_names_summary">
+            <intent
+                android:targetPackage="com.mysticwind.linenotificationsupport"
+                android:targetClass="com.mysticwind.linenotificationsupport.DeleteCachedFriendNamesDialogActivity"/>
+        </Preference>
+
     </PreferenceCategory>
 
 

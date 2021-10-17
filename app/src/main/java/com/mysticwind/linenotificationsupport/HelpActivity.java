@@ -107,6 +107,10 @@ public class HelpActivity extends AppCompatActivity {
 
         getFeatureProvisionStateProvider()
                 .isDisablePowerOptimizationTipShown()
+                .onErrorReturn((error) -> {
+                    Timber.e(error, "Error returning isDisablePowerOptimizationTipShown: [%s]", error.getMessage());
+                    return false;
+                })
                 .subscribe(isShownBefore -> {
                     if (isShownBefore) {
                         dismissDisablePowerOptimizationTipDialog();
@@ -189,6 +193,16 @@ public class HelpActivity extends AppCompatActivity {
     private void redirectToNotificationSettingsPage() {
         startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        final FeatureProvisionStateProvider providerToShutdown = this.featureProvisionStateProvider;
+        this.featureProvisionStateProvider = null;
+        providerToShutdown.shutdown();
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
