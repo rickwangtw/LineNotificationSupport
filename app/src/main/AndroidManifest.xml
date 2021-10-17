@@ -54,6 +54,11 @@
             android:name=".NotificationSettingsLauncherActivity"
             android:exported="false" />
         <activity
+            android:name=".DeleteCachedFriendNamesDialogActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Transparent"
+            android:excludeFromRecents="true" />
+        <activity
             android:name=".SettingsActivity"
             android:label="@string/action_settings" />
         <activity
