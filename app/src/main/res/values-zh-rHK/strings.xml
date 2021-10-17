@@ -21,6 +21,10 @@
     <string name="reminder_for_enabling_line_message_notification">請記得將『訊息提醒』的設定改為『提醒』。</string>
     <string name="go_to_settings">前往通知設定</string>
 
+    <!-- Delete Cache Confirmation Dialog -->
+    <string name="delete_cache_confirmation_dialog_title">您即將刪除快取裡的好友名字</string>
+    <string name="delete_cache_confirmation_dialog_yes">確認刪除</string>
+
     <!-- Preference Titles -->
     <string name="messages_header">LINE 訊息</string>
     <string name="calls_header">LINE 通話</string>

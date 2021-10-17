@@ -25,14 +25,15 @@ public class DeleteCachedFriendNamesDialogActivity extends AppCompatActivity {
 
     private Dialog createConfirmationDialog() {
         return new AlertDialog.Builder(this)
-                .setMessage("Are you sure?")
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                .setMessage(R.string.delete_cache_confirmation_dialog_title)
+                .setPositiveButton(R.string.delete_cache_confirmation_dialog_yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         Timber.i("Confirmed cleaning database");
 
                         sendBroadcast(new Intent(NotificationListenerService.DELETE_FRIEND_NAME_CACHE_ACTION));
                     }
                 })
+                .setNegativeButton(android.R.string.cancel, null)
                 .setOnDismissListener((dialog) -> {
                     Timber.i("Dialog dismissed");
 

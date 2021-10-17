@@ -25,6 +25,10 @@
     <string name="disable_power_optimization_tip_dialog_title">Disable Power Optimization</string>
     <string name="disable_power_optimization_tip_dialog_yes">Update</string>
 
+    <!-- Delete Cache Confirmation Dialog -->
+    <string name="delete_cache_confirmation_dialog_title">Please confirm you would like to delete the cached friend names?</string>
+    <string name="delete_cache_confirmation_dialog_yes">Delete</string>
+
     <!-- LINE Notification Settings Dialog -->
     <string name="make_line_message_notification_silent">Highly recommend to update the \"Message notifications\" setting to \"Silent\"</string>
     <string name="reminder_for_enabling_line_message_notification">Please remember to update the \"Message notifications\" setting back to \"Alert\"</string>
