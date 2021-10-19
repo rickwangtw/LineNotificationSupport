@@ -200,7 +200,9 @@ public class HelpActivity extends AppCompatActivity {
 
         final FeatureProvisionStateProvider providerToShutdown = this.featureProvisionStateProvider;
         this.featureProvisionStateProvider = null;
-        providerToShutdown.shutdown();
+        if (providerToShutdown != null) {
+            providerToShutdown.shutdown();
+        }
     }
 
 
