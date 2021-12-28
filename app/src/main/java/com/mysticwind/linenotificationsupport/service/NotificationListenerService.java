@@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.mysticwind.linenotificationsupport.conversationstarter.InMemoryLineReplyActionDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothController;
@@ -485,7 +486,8 @@ public class NotificationListenerService
         conversationStarterNotificationManager = new ConversationStarterNotificationManager(
                 notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR, new InMemoryChatKeywordDao(), new StartConversationActionBuilder(this));
         conversationStarterNotificationManager.publishNotification();
-        startConversationActionBroadcastReceiver = new StartConversationBroadcastReceiver(lineRemoteInputReplier);
+        startConversationActionBroadcastReceiver = new StartConversationBroadcastReceiver(
+                lineRemoteInputReplier, new InMemoryChatKeywordDao(), new InMemoryLineReplyActionDao());
 
         registerReceiver(startConversationActionBroadcastReceiver, new IntentFilter(StartConversationActionBuilder.START_CONVERSATION_ACTION));
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
