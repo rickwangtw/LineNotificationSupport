@@ -36,9 +36,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
-import com.mysticwind.linenotificationsupport.conversationstarter.InMemoryLineReplyActionDao;
-import com.mysticwind.linenotificationsupport.conversationstarter.LineReplyActionDao;
-import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothController;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
@@ -50,7 +47,10 @@ import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomGroupCha
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomMultiPersonChatNameDataAccessor;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.InMemoryChatKeywordDao;
+import com.mysticwind.linenotificationsupport.conversationstarter.InMemoryLineReplyActionDao;
+import com.mysticwind.linenotificationsupport.conversationstarter.LineReplyActionDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.StartConversationActionBuilder;
+import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.debug.history.manager.impl.NullNotificationHistoryManager;
@@ -80,7 +80,6 @@ import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPu
 import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.reactor.CallInProgressTrackingReactor;
-import com.mysticwind.linenotificationsupport.notification.reactor.ChatReplyActionTrackingIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNamePersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
@@ -97,7 +96,6 @@ import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGrou
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.persistence.ChatGroupDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
-import com.mysticwind.linenotificationsupport.reply.ChatReplyActionManager;
 import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
@@ -441,9 +439,6 @@ public class NotificationListenerService
 
         final LineReplyActionDao lineReplyActionDao = new InMemoryLineReplyActionDao();
         this.incomingNotificationReactors.add(new LineReplyActionPersistenceIncomingNotificationReactor(lineReplyActionDao));
-
-        final ChatReplyActionManager chatReplyActionManager = new ChatReplyActionManager();
-        this.incomingNotificationReactors.add(new ChatReplyActionTrackingIncomingNotificationReactor(chatReplyActionManager));
 
         // TODO remove this after testing the stability of the dumb version
         final SmartNotificationCounterNotificationReactor smartNotificationCounterNotificationReactor =
