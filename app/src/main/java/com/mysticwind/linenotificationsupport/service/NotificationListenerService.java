@@ -37,6 +37,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.mysticwind.linenotificationsupport.conversationstarter.InMemoryLineReplyActionDao;
+import com.mysticwind.linenotificationsupport.conversationstarter.LineReplyActionDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothController;
@@ -85,6 +86,7 @@ import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNoti
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.LineNotificationLoggingIncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.LineReplyActionPersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.LoggingDismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNotificationIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
@@ -437,6 +439,9 @@ public class NotificationListenerService
         this.incomingNotificationReactors.add(
                 new ChatRoomNamePersistenceIncomingNotificationReactor(groupChatNameDataAccessor));
 
+        final LineReplyActionDao lineReplyActionDao = new InMemoryLineReplyActionDao();
+        this.incomingNotificationReactors.add(new LineReplyActionPersistenceIncomingNotificationReactor(lineReplyActionDao));
+
         final ChatReplyActionManager chatReplyActionManager = new ChatReplyActionManager();
         this.incomingNotificationReactors.add(new ChatReplyActionTrackingIncomingNotificationReactor(chatReplyActionManager));
 
@@ -487,7 +492,7 @@ public class NotificationListenerService
                 notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR, new InMemoryChatKeywordDao(), new StartConversationActionBuilder(this));
         conversationStarterNotificationManager.publishNotification();
         startConversationActionBroadcastReceiver = new StartConversationBroadcastReceiver(
-                lineRemoteInputReplier, new InMemoryChatKeywordDao(), new InMemoryLineReplyActionDao());
+                lineRemoteInputReplier, new InMemoryChatKeywordDao(), lineReplyActionDao);
 
         registerReceiver(startConversationActionBroadcastReceiver, new IntentFilter(StartConversationActionBuilder.START_CONVERSATION_ACTION));
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
