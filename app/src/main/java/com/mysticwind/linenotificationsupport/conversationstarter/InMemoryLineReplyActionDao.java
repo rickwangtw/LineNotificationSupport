@@ -2,8 +2,11 @@ package com.mysticwind.linenotificationsupport.conversationstarter;
 
 import android.app.Notification;
 
+import org.apache.commons.lang3.Validate;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class InMemoryLineReplyActionDao implements LineReplyActionDao {
@@ -12,6 +15,9 @@ public class InMemoryLineReplyActionDao implements LineReplyActionDao {
 
     @Override
     public void saveLineReplyAction(final String chatId, final Notification.Action lineReplyAction) {
+        Validate.notBlank(chatId);
+        Objects.requireNonNull(lineReplyAction);
+
         chatIdToNotificationActionMap.put(chatId, lineReplyAction);
     }
 
