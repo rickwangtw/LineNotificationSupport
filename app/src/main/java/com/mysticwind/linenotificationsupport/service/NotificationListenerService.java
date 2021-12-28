@@ -45,6 +45,8 @@ import com.mysticwind.linenotificationsupport.chatname.dataaccessor.GroupChatNam
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.MultiPersonChatNameDataAccessor;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomGroupChatNameDataAccessor;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomMultiPersonChatNameDataAccessor;
+import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
+import com.mysticwind.linenotificationsupport.conversationstarter.InMemoryChatKeywordDao;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.debug.history.manager.impl.NullNotificationHistoryManager;
@@ -162,6 +164,12 @@ public class NotificationListenerService
 
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
+    private Supplier<NotificationPublisher> notificationPublisherSupplier = new Supplier<NotificationPublisher>() {
+        @Override
+        public NotificationPublisher get() {
+            return notificationPublisher;
+        }
+    };
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
     private PreferenceProvider preferenceProvider;
@@ -281,6 +289,8 @@ public class NotificationListenerService
         }
     };
 
+    private ConversationStarterNotificationManager conversationStarterNotificationManager;
+
     private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
     private boolean isInitialized = false;
     private boolean isListenerConnected = false;
@@ -341,12 +351,7 @@ public class NotificationListenerService
     private ResendUnsentNotificationsNotificationSentListener buildResendUnsentNotificationsNotificationSentListener() {
         return new ResendUnsentNotificationsNotificationSentListener(
                 handler,
-                new Supplier<NotificationPublisher>() {
-                    @Override
-                    public NotificationPublisher get() {
-                        return notificationPublisher;
-                    }
-                });
+                notificationPublisherSupplier);
     }
 
     @Override
@@ -477,7 +482,12 @@ public class NotificationListenerService
         registerReceiver(localeUpdateBroadcastReceiver, new IntentFilter(Intent.ACTION_LOCALE_CHANGED));
         registerReceiver(deleteFriendNameCacheBroadcastReceiver, new IntentFilter(DELETE_FRIEND_NAME_CACHE_ACTION));
 
+        conversationStarterNotificationManager = new ConversationStarterNotificationManager(
+                notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR, new InMemoryChatKeywordDao());
+        conversationStarterNotificationManager.publishNotification();
+
         isInitialized = true;
+
         Timber.d("Service completed initialization");
     }
 
