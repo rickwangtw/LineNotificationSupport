@@ -18,14 +18,17 @@ public class ConversationStarterNotificationManager {
 
     private final Supplier<NotificationPublisher> notificationPublisherSupplier;
     private final ChatKeywordDao chatKeywordDao;
+    private final StartConversationActionBuilder startConversationActionBuilder;
     private final int notificationId;
 
     public ConversationStarterNotificationManager(final Supplier<NotificationPublisher> notificationPublisherSupplier,
                                                   final NotificationIdGenerator notificationIdGenerator,
-                                                  final ChatKeywordDao chatKeywordDao) {
+                                                  final ChatKeywordDao chatKeywordDao,
+                                                  final StartConversationActionBuilder startConversationActionBuilder) {
         this.notificationPublisherSupplier = Objects.requireNonNull(notificationPublisherSupplier);
         Objects.requireNonNull(notificationIdGenerator);
         this.chatKeywordDao = Objects.requireNonNull(chatKeywordDao);
+        this.startConversationActionBuilder = Objects.requireNonNull(startConversationActionBuilder);
         this.notificationId = notificationIdGenerator.getNextNotificationId();
     }
 
@@ -51,6 +54,7 @@ public class ConversationStarterNotificationManager {
                         .sender(new Person.Builder()
                                 .setName("Bot")
                                 .build())
+                        .action(startConversationActionBuilder.buildAction())
                         .build(),
                 notificationId);
     }

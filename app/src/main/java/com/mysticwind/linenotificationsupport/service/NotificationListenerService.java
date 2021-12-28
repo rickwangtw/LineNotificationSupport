@@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothController;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
@@ -47,6 +48,7 @@ import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomGroupCha
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomMultiPersonChatNameDataAccessor;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.InMemoryChatKeywordDao;
+import com.mysticwind.linenotificationsupport.conversationstarter.StartConversationActionBuilder;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.debug.history.manager.impl.NullNotificationHistoryManager;
@@ -190,6 +192,8 @@ public class NotificationListenerService
             }
         }
     };
+
+    private StartConversationBroadcastReceiver startConversationActionBroadcastReceiver;
 
     // TODO should this be in its own class?
     private final BroadcastReceiver replyActionBroadcastReceiver = new BroadcastReceiver() {
@@ -478,13 +482,15 @@ public class NotificationListenerService
 
         scheduleNotificationCounterCheck();
 
+        conversationStarterNotificationManager = new ConversationStarterNotificationManager(
+                notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR, new InMemoryChatKeywordDao(), new StartConversationActionBuilder(this));
+        conversationStarterNotificationManager.publishNotification();
+        startConversationActionBroadcastReceiver = new StartConversationBroadcastReceiver(lineRemoteInputReplier);
+
+        registerReceiver(startConversationActionBroadcastReceiver, new IntentFilter(StartConversationActionBuilder.START_CONVERSATION_ACTION));
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
         registerReceiver(localeUpdateBroadcastReceiver, new IntentFilter(Intent.ACTION_LOCALE_CHANGED));
         registerReceiver(deleteFriendNameCacheBroadcastReceiver, new IntentFilter(DELETE_FRIEND_NAME_CACHE_ACTION));
-
-        conversationStarterNotificationManager = new ConversationStarterNotificationManager(
-                notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR, new InMemoryChatKeywordDao());
-        conversationStarterNotificationManager.publishNotification();
 
         isInitialized = true;
 
@@ -881,6 +887,7 @@ public class NotificationListenerService
         isListenerConnected = false;
         Timber.w("NotificationListenerService onListenerDisconnected");
 
+        unregisterReceiver(startConversationActionBroadcastReceiver);
         unregisterReceiver(replyActionBroadcastReceiver);
         unregisterReceiver(localeUpdateBroadcastReceiver);
         unregisterReceiver(deleteFriendNameCacheBroadcastReceiver);
