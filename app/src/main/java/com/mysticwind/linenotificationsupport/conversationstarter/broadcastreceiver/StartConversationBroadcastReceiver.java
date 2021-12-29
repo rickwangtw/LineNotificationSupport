@@ -21,6 +21,7 @@ import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
+import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
@@ -46,6 +47,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
     private final String packageName;
     private final ChatNameManager chatNameManager;
     private final MyPersonLabelProvider myPersonLabelProvider;
+    private final ReplyActionBuilder replyActionBuilder;
     private final Supplier<NotificationPublisher> notificationPublisherSupplier;
     private final NotificationIdGenerator notificationIdGenerator;
 
@@ -56,6 +58,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
                                               final String packageName,
                                               final ChatNameManager chatNameManager,
                                               final MyPersonLabelProvider myPersonLabelProvider,
+                                              final ReplyActionBuilder replyActionBuilder,
                                               final Supplier<NotificationPublisher> notificationPublisherSupplier,
                                               final NotificationIdGenerator notificationIdGenerator) {
         this.lineRemoteInputReplier = Objects.requireNonNull(lineRemoteInputReplier);
@@ -64,6 +67,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
         this.notificationManager = Objects.requireNonNull(notificationManager);
         this.packageName = Validate.notBlank(packageName);
         this.chatNameManager = Objects.requireNonNull(chatNameManager);
+        this.replyActionBuilder = Objects.requireNonNull(replyActionBuilder);
         this.myPersonLabelProvider = Objects.requireNonNull(myPersonLabelProvider);
         this.notificationPublisherSupplier = Objects.requireNonNull(notificationPublisherSupplier);
         this.notificationIdGenerator = Objects.requireNonNull(notificationIdGenerator);
@@ -169,7 +173,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
                 .sender(new Person.Builder().setName(myPersonLabel).build())
                 .chatId(chatId)
                 .timestamp(Instant.now().toEpochMilli())
-                .actions(ImmutableList.of(lineReplyAction))
+                .actions(ImmutableList.of(replyActionBuilder.buildReplyAction(chatId, lineReplyAction)))
                 .isSelfResponse(true)
                 .build();
 
