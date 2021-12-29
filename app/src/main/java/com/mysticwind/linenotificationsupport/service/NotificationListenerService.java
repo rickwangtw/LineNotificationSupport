@@ -493,7 +493,10 @@ public class NotificationListenerService
         final ChatKeywordManager chatKeywordManager = new ChatKeywordManager(new InMemoryChatKeywordDao(), chatNameManager, lineReplyActionDao);
         conversationStarterNotificationManager = new ConversationStarterNotificationManager(
                 notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR, chatKeywordManager, new StartConversationActionBuilder(this));
-        this.incomingNotificationReactors.add(new ConversationStarterNotificationReactor(conversationStarterNotificationManager));
+        final ConversationStarterNotificationReactor conversationStarterNotificationReactor =
+                new ConversationStarterNotificationReactor(getPackageName(), conversationStarterNotificationManager);
+        this.incomingNotificationReactors.add(conversationStarterNotificationReactor);
+        this.dismissedNotificationReactors.add(conversationStarterNotificationReactor);
 
         startConversationActionBroadcastReceiver = new StartConversationBroadcastReceiver(
                 lineRemoteInputReplier, new InMemoryChatKeywordDao(), lineReplyActionDao,
