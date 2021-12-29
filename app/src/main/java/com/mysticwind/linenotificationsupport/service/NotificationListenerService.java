@@ -84,6 +84,7 @@ import com.mysticwind.linenotificationsupport.notification.impl.DumbNotification
 import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.reactor.CallInProgressTrackingReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNamePersistenceIncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.ConversationStarterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
@@ -492,7 +493,8 @@ public class NotificationListenerService
         final ChatKeywordManager chatKeywordManager = new ChatKeywordManager(new InMemoryChatKeywordDao(), chatNameManager, lineReplyActionDao);
         conversationStarterNotificationManager = new ConversationStarterNotificationManager(
                 notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR, chatKeywordManager, new StartConversationActionBuilder(this));
-        conversationStarterNotificationManager.publishNotification();
+        this.incomingNotificationReactors.add(new ConversationStarterNotificationReactor(conversationStarterNotificationManager));
+
         startConversationActionBroadcastReceiver = new StartConversationBroadcastReceiver(
                 lineRemoteInputReplier, new InMemoryChatKeywordDao(), lineReplyActionDao,
                 (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE), getPackageName(),

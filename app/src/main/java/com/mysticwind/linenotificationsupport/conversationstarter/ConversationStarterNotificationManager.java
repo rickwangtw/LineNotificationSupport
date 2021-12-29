@@ -7,8 +7,10 @@ import com.mysticwind.linenotificationsupport.notification.NotificationPublisher
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -32,16 +34,17 @@ public class ConversationStarterNotificationManager {
         this.notificationId = notificationIdGenerator.getNextNotificationId();
     }
 
-    public void publishNotification() {
-        final List<String> messages = chatKeywordManager.getAvailableKeywordToChatNameMap().entrySet().stream()
-                .map(entry ->
-                        String.format("Start a conversation for chat [%s] with keyword [%s]", entry.getValue(), entry.getKey()))
-                .collect(Collectors.toList());
-
+    public Set<String> publishNotification() {
+        final List<ChatKeywordManager.KeywordEntry> keywordEntryList = chatKeywordManager.getAvailableKeywordToChatNameMap();
         // don't create the notification for starting conversation if there are no available keywords
-        if (messages.isEmpty()) {
-            return;
+        if (keywordEntryList.isEmpty()) {
+            return Collections.EMPTY_SET;
         }
+
+        final List<String> messages = keywordEntryList.stream()
+                .map(entry ->
+                        String.format("Start a conversation for chat [%s] with keyword [%s]", entry.getChatName(), entry.getKeyword()))
+                .collect(Collectors.toList());
 
         // let's see if we get bitten by building a fake LineNotification
         notificationPublisherSupplier.get().publishNotification(
@@ -58,6 +61,9 @@ public class ConversationStarterNotificationManager {
                         .action(startConversationActionBuilder.buildAction())
                         .build(),
                 notificationId);
+        return keywordEntryList.stream()
+                .map(entry -> entry.getChatId())
+                .collect(Collectors.toSet());
     }
 
 }
