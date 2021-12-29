@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class ConversationStarterNotificationManager {
 
-    private static final String CONVERSATION_STARTER_CHAT_ID = "CONVERSATION-STARTER-CHAT-ID";
+    public static final String CONVERSATION_STARTER_CHAT_ID = "CONVERSATION-STARTER-CHAT-ID";
 
     private final Supplier<NotificationPublisher> notificationPublisherSupplier;
     private final ChatKeywordDao chatKeywordDao;

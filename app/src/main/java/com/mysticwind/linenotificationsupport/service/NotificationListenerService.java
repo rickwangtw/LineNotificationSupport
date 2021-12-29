@@ -487,7 +487,8 @@ public class NotificationListenerService
                 notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR, new InMemoryChatKeywordDao(), new StartConversationActionBuilder(this));
         conversationStarterNotificationManager.publishNotification();
         startConversationActionBroadcastReceiver = new StartConversationBroadcastReceiver(
-                lineRemoteInputReplier, new InMemoryChatKeywordDao(), lineReplyActionDao);
+                lineRemoteInputReplier, new InMemoryChatKeywordDao(), lineReplyActionDao,
+                (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE), getPackageName());
 
         registerReceiver(startConversationActionBroadcastReceiver, new IntentFilter(StartConversationActionBuilder.START_CONVERSATION_ACTION));
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
