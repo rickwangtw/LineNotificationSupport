@@ -17,30 +17,31 @@ public class ConversationStarterNotificationManager {
     public static final String CONVERSATION_STARTER_CHAT_ID = "CONVERSATION-STARTER-CHAT-ID";
 
     private final Supplier<NotificationPublisher> notificationPublisherSupplier;
-    private final ChatKeywordDao chatKeywordDao;
+    private final ChatKeywordManager chatKeywordManager;
     private final StartConversationActionBuilder startConversationActionBuilder;
     private final int notificationId;
 
     public ConversationStarterNotificationManager(final Supplier<NotificationPublisher> notificationPublisherSupplier,
                                                   final NotificationIdGenerator notificationIdGenerator,
-                                                  final ChatKeywordDao chatKeywordDao,
+                                                  final ChatKeywordManager chatKeywordManager,
                                                   final StartConversationActionBuilder startConversationActionBuilder) {
         this.notificationPublisherSupplier = Objects.requireNonNull(notificationPublisherSupplier);
         Objects.requireNonNull(notificationIdGenerator);
-        this.chatKeywordDao = Objects.requireNonNull(chatKeywordDao);
+        this.chatKeywordManager = Objects.requireNonNull(chatKeywordManager);
         this.startConversationActionBuilder = Objects.requireNonNull(startConversationActionBuilder);
         this.notificationId = notificationIdGenerator.getNextNotificationId();
     }
 
     public void publishNotification() {
-        if (!shouldPublishNotification()) {
-            return;
-        }
-
-        final List<String> messages = chatKeywordDao.getKeywordToChatNameMap().entrySet().stream()
+        final List<String> messages = chatKeywordManager.getAvailableKeywordToChatNameMap().entrySet().stream()
                 .map(entry ->
                         String.format("Start a conversation for chat [%s] with keyword [%s]", entry.getValue(), entry.getKey()))
                 .collect(Collectors.toList());
+
+        // don't create the notification for starting conversation if there are no available keywords
+        if (messages.isEmpty()) {
+            return;
+        }
 
         // let's see if we get bitten by building a fake LineNotification
         notificationPublisherSupplier.get().publishNotification(
@@ -57,11 +58,6 @@ public class ConversationStarterNotificationManager {
                         .action(startConversationActionBuilder.buildAction())
                         .build(),
                 notificationId);
-    }
-
-    // TODO
-    private boolean shouldPublishNotification() {
-        return true;
     }
 
 }

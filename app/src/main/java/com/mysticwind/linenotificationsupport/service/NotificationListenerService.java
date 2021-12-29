@@ -47,6 +47,7 @@ import com.mysticwind.linenotificationsupport.chatname.dataaccessor.GroupChatNam
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.MultiPersonChatNameDataAccessor;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomGroupChatNameDataAccessor;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomMultiPersonChatNameDataAccessor;
+import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.InMemoryChatKeywordDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.InMemoryLineReplyActionDao;
@@ -488,8 +489,9 @@ public class NotificationListenerService
 
         scheduleNotificationCounterCheck();
 
+        final ChatKeywordManager chatKeywordManager = new ChatKeywordManager(new InMemoryChatKeywordDao(), chatNameManager, lineReplyActionDao);
         conversationStarterNotificationManager = new ConversationStarterNotificationManager(
-                notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR, new InMemoryChatKeywordDao(), new StartConversationActionBuilder(this));
+                notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR, chatKeywordManager, new StartConversationActionBuilder(this));
         conversationStarterNotificationManager.publishNotification();
         startConversationActionBroadcastReceiver = new StartConversationBroadcastReceiver(
                 lineRemoteInputReplier, new InMemoryChatKeywordDao(), lineReplyActionDao,
