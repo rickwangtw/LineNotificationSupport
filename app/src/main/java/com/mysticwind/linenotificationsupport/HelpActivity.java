@@ -23,6 +23,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.common.collect.ImmutableMap;
+import com.mysticwind.linenotificationsupport.conversationstarter.activity.KeywordSettingActivity;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.provision.FeatureProvisionStateProvider;
 
@@ -236,10 +237,14 @@ public class HelpActivity extends AppCompatActivity {
             startActivity(intent);
             return true;
         } else if (id == R.id.action_test_notifications) {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-        return true;
-    }
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            return true;
+        } else if (id == R.id.action_keyword_settings) {
+            Intent intent = new Intent(this, KeywordSettingActivity.class);
+            startActivity(intent);
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
     }

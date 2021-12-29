@@ -18,12 +18,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LineNotificationSupport">
+        <activity
+            android:name=".conversationstarter.activity.KeywordSettingActivity"
+            android:exported="false" />
+
         <receiver
             android:name=".SettingsUpdateRequestBroadcastReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.mysticwind.linenotificationsupport.action.settings.update"/>
+                <action android:name="com.mysticwind.linenotificationsupport.action.settings.update" />
             </intent-filter>
         </receiver>
         <receiver
@@ -55,9 +59,9 @@
             android:exported="false" />
         <activity
             android:name=".DeleteCachedFriendNamesDialogActivity"
+            android:excludeFromRecents="true"
             android:exported="false"
-            android:theme="@style/Theme.Transparent"
-            android:excludeFromRecents="true" />
+            android:theme="@style/Theme.Transparent" />
         <activity
             android:name=".SettingsActivity"
             android:label="@string/action_settings" />
