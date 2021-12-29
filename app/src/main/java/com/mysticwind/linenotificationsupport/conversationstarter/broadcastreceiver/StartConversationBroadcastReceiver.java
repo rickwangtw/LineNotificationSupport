@@ -9,20 +9,30 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 
+import androidx.core.app.Person;
+
+import com.google.common.collect.ImmutableList;
+import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.LineReplyActionDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.StartConversationActionBuilder;
+import com.mysticwind.linenotificationsupport.model.LineNotification;
+import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
+import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
+import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import lombok.Value;
 import timber.log.Timber;
@@ -34,17 +44,29 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
     private final LineReplyActionDao lineReplyActionDao;
     private final NotificationManager notificationManager;
     private final String packageName;
+    private final ChatNameManager chatNameManager;
+    private final MyPersonLabelProvider myPersonLabelProvider;
+    private final Supplier<NotificationPublisher> notificationPublisherSupplier;
+    private final NotificationIdGenerator notificationIdGenerator;
 
     public StartConversationBroadcastReceiver(final LineRemoteInputReplier lineRemoteInputReplier,
                                               final ChatKeywordDao chatKeywordDao,
                                               final LineReplyActionDao lineReplyActionDao,
                                               final NotificationManager notificationManager,
-                                              final String packageName) {
+                                              final String packageName,
+                                              final ChatNameManager chatNameManager,
+                                              final MyPersonLabelProvider myPersonLabelProvider,
+                                              final Supplier<NotificationPublisher> notificationPublisherSupplier,
+                                              final NotificationIdGenerator notificationIdGenerator) {
         this.lineRemoteInputReplier = Objects.requireNonNull(lineRemoteInputReplier);
         this.chatKeywordDao = Objects.requireNonNull(chatKeywordDao);
         this.lineReplyActionDao = Objects.requireNonNull(lineReplyActionDao);
         this.notificationManager = Objects.requireNonNull(notificationManager);
         this.packageName = Validate.notBlank(packageName);
+        this.chatNameManager = Objects.requireNonNull(chatNameManager);
+        this.myPersonLabelProvider = Objects.requireNonNull(myPersonLabelProvider);
+        this.notificationPublisherSupplier = Objects.requireNonNull(notificationPublisherSupplier);
+        this.notificationIdGenerator = Objects.requireNonNull(notificationIdGenerator);
     }
 
     @Value
@@ -90,7 +112,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
         if (messageWithKeyword.isPresent() && lineReplyAction.isPresent()) {
             lineRemoteInputReplier.sendReply(lineReplyAction.get(), chatIdAndMessage.get().getMessage());
 
-            // TODO update the existing notification after conversations are started
+            generateNewConversationNotification(chatIdAndMessage.get().getChatId(), chatIdAndMessage.get().getMessage());
         }
     }
 
@@ -134,6 +156,24 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
 
     private Optional<Notification.Action> getLineReplyAction(final String chatId) {
         return lineReplyActionDao.getLineReplyAction(chatId);
+    }
+
+    private void generateNewConversationNotification(String chatId, String message) {
+        final String chatName = chatNameManager.getChatName(chatId);
+        final String myPersonLabel = myPersonLabelProvider.getMyPersonLabel().get();
+        final Notification.Action lineReplyAction = getLineReplyAction(chatId).get();
+        final LineNotification lineNotification = LineNotification.builder()
+                .lineMessageId(String.valueOf(Instant.now().toEpochMilli())) // just generate a fake one
+                .title(chatName)
+                .message(message)
+                .sender(new Person.Builder().setName(myPersonLabel).build())
+                .chatId(chatId)
+                .timestamp(Instant.now().toEpochMilli())
+                .actions(ImmutableList.of(lineReplyAction))
+                .isSelfResponse(true)
+                .build();
+
+        notificationPublisherSupplier.get().publishNotification(lineNotification, notificationIdGenerator.getNextNotificationId());
     }
 
     private void clearNotificationSpinner() {
