@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.Person;
+import androidx.core.graphics.drawable.IconCompat;
 import androidx.preference.PreferenceManager;
 import androidx.room.Room;
 
@@ -36,6 +37,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothController;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
@@ -210,7 +212,7 @@ public class NotificationListenerService
 
                 if (responseMessage.isPresent() && lineReplyAction.isPresent()) {
                     lineRemoteInputReplier.sendReply(lineReplyAction.get(), responseMessage.get());
-                    updateNotification(intent, responseMessage.get());
+                    updateNotification(context, intent, responseMessage.get());
                 }
             }
         }
@@ -238,7 +240,7 @@ public class NotificationListenerService
             return Optional.ofNullable(lineReplyAction);
         }
 
-        private void updateNotification(Intent intent, String response) {
+        private void updateNotification(Context context, Intent intent, String response) {
             final String chatId = intent.getStringExtra(DefaultReplyActionBuilder.CHAT_ID_KEY);
 
             final Optional<StatusBarNotification> statusBarNotification = findNotificationOfChatId(chatId);
@@ -258,7 +260,10 @@ public class NotificationListenerService
                     .lineMessageId(String.valueOf(Instant.now().toEpochMilli())) // just generate a fake one
                     .title(chatName)
                     .message(response)
-                    .sender(new Person.Builder().setName(personLabel).build())
+                    .sender(new Person.Builder()
+                            .setName(personLabel)
+                            .setIcon(IconCompat.createWithResource(context, R.drawable.outline_person_24))
+                            .build())
                     .chatId(chatId)
                     .timestamp(Instant.now().toEpochMilli())
                     .actions(ImmutableList.copyOf(statusBarNotification.get().getNotification().actions))

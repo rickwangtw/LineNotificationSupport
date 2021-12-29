@@ -10,8 +10,10 @@ import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
 
 import androidx.core.app.Person;
+import androidx.core.graphics.drawable.IconCompat;
 
 import com.google.common.collect.ImmutableList;
+import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
@@ -81,12 +83,12 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, final Intent intent) {
-        processInput(intent);
+        processInput(context, intent);
 
         clearNotificationSpinner();
     }
 
-    public void processInput(final Intent intent) {
+    public void processInput(final Context context, final Intent intent) {
         final String action = intent.getAction();
         if (!StartConversationActionBuilder.START_CONVERSATION_ACTION.equals(action)) {
             return;
@@ -116,7 +118,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
         if (messageWithKeyword.isPresent() && lineReplyAction.isPresent()) {
             lineRemoteInputReplier.sendReply(lineReplyAction.get(), chatIdAndMessage.get().getMessage());
 
-            generateNewConversationNotification(chatIdAndMessage.get().getChatId(), chatIdAndMessage.get().getMessage());
+            generateNewConversationNotification(context, chatIdAndMessage.get().getChatId(), chatIdAndMessage.get().getMessage());
         }
     }
 
@@ -162,7 +164,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
         return lineReplyActionDao.getLineReplyAction(chatId);
     }
 
-    private void generateNewConversationNotification(String chatId, String message) {
+    private void generateNewConversationNotification(final Context context, final String chatId, final String message) {
         final String chatName = chatNameManager.getChatName(chatId);
         final String myPersonLabel = myPersonLabelProvider.getMyPersonLabel().get();
         final Notification.Action lineReplyAction = getLineReplyAction(chatId).get();
@@ -170,7 +172,10 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
                 .lineMessageId(String.valueOf(Instant.now().toEpochMilli())) // just generate a fake one
                 .title(chatName)
                 .message(message)
-                .sender(new Person.Builder().setName(myPersonLabel).build())
+                .sender(new Person.Builder()
+                        .setName(myPersonLabel)
+                        .setIcon(IconCompat.createWithResource(context, R.drawable.outline_person_24))
+                        .build())
                 .chatId(chatId)
                 .timestamp(Instant.now().toEpochMilli())
                 .actions(ImmutableList.of(replyActionBuilder.buildReplyAction(chatId, lineReplyAction)))
