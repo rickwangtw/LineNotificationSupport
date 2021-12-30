@@ -41,17 +41,11 @@ import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothController;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
-import com.mysticwind.linenotificationsupport.chatname.dataaccessor.CachingGroupChatNameDataAccessorDecorator;
-import com.mysticwind.linenotificationsupport.chatname.dataaccessor.CachingMultiPersonChatNameDataAccessorDecorator;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.GroupChatNameDataAccessor;
-import com.mysticwind.linenotificationsupport.chatname.dataaccessor.MultiPersonChatNameDataAccessor;
-import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomGroupChatNameDataAccessor;
-import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomMultiPersonChatNameDataAccessor;
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.LineReplyActionDao;
-import com.mysticwind.linenotificationsupport.conversationstarter.RoomChatKeywordDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.StartConversationActionBuilder;
 import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
@@ -98,7 +92,6 @@ import com.mysticwind.linenotificationsupport.notification.reactor.SmartNotifica
 import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
-import com.mysticwind.linenotificationsupport.persistence.ChatGroupDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
@@ -122,7 +115,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -187,7 +179,6 @@ public class NotificationListenerService
     private PreferenceProvider preferenceProvider;
     private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
     private LineRemoteInputReplier lineRemoteInputReplier;
-    private ChatNameManager chatNameManager;
     private MyPersonLabelProvider myPersonLabelProvider;
 
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
@@ -315,6 +306,18 @@ public class NotificationListenerService
     @Inject
     LineReplyActionDao lineReplyActionDao;
 
+    @Inject
+    ChatKeywordManager chatKeywordManager;
+
+    @Inject
+    ChatKeywordDao chatKeywordDao;
+
+    @Inject
+    ChatNameManager chatNameManager;
+
+    @Inject
+    GroupChatNameDataAccessor groupChatNameDataAccessor;
+
     private NotificationPublisher buildNotificationPublisher() {
         return buildNotificationPublisherWithPreviousStateRestored(Collections.EMPTY_LIST);
     }
@@ -416,17 +419,6 @@ public class NotificationListenerService
             Timber.d("No existing notifications to restore");
         }
 
-        final ChatGroupDatabase chatGroupDatabase = Room.databaseBuilder(getApplicationContext(),
-                ChatGroupDatabase.class, "chat_group_database.db")
-                .allowMainThreadQueries()
-                .build();
-        final GroupChatNameDataAccessor groupChatNameDataAccessor =
-                new CachingGroupChatNameDataAccessorDecorator(
-                        new RoomGroupChatNameDataAccessor(chatGroupDatabase));
-        final MultiPersonChatNameDataAccessor multiPersonChatNameDataAccessor =
-                new CachingMultiPersonChatNameDataAccessorDecorator(
-                        new RoomMultiPersonChatNameDataAccessor(chatGroupDatabase));
-        chatNameManager = new ChatNameManager(groupChatNameDataAccessor, multiPersonChatNameDataAccessor);
         chatTitleAndSenderResolver = new ChatTitleAndSenderResolver(chatNameManager);
         myPersonLabelProvider = new LocalizedMyPersonLabelProvider(
                 Resources.getSystem().getConfiguration().getLocales().get(0).toLanguageTag());
@@ -452,8 +444,6 @@ public class NotificationListenerService
         this.incomingNotificationReactors.add(
                 new ChatRoomNamePersistenceIncomingNotificationReactor(groupChatNameDataAccessor));
 
-        // TODO remove after testing Hilt dependency injection
-        Objects.requireNonNull(lineReplyActionDao);
         this.incomingNotificationReactors.add(new LineReplyActionPersistenceIncomingNotificationReactor(lineReplyActionDao));
 
         // TODO remove this after testing the stability of the dumb version
@@ -499,9 +489,6 @@ public class NotificationListenerService
 
         scheduleNotificationCounterCheck();
 
-        final ChatKeywordDao chatKeywordDao = new RoomChatKeywordDao(getApplicationContext());
-
-        final ChatKeywordManager chatKeywordManager = new ChatKeywordManager(chatKeywordDao, chatNameManager, lineReplyActionDao);
         conversationStarterNotificationManager = new ConversationStarterNotificationManager(
                 notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR, chatKeywordManager, new StartConversationActionBuilder(this));
         final ConversationStarterNotificationReactor conversationStarterNotificationReactor =

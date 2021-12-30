@@ -10,7 +10,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class InMemoryLineReplyActionDao implements LineReplyActionDao {
 
     private final Map<String, Notification.Action> chatIdToNotificationActionMap = new HashMap<>();

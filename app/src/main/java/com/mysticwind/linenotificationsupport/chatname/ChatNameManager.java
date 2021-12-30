@@ -8,13 +8,18 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class ChatNameManager {
 
     private final GroupChatNameDataAccessor groupChatNameDataAccessor;
     private final MultiPersonChatNameDataAccessor multiPersonChatNameDataAccessor;
 
+    @Inject
     public ChatNameManager(final GroupChatNameDataAccessor groupChatNameDataAccessor,
                            final MultiPersonChatNameDataAccessor multiPersonChatNameDataAccessor) {
         this.groupChatNameDataAccessor = Objects.requireNonNull(groupChatNameDataAccessor);

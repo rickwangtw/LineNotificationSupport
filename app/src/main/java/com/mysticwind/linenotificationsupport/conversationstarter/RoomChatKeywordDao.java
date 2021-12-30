@@ -11,11 +11,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
+@Singleton
 public class RoomChatKeywordDao implements ChatKeywordDao {
 
     private final KeywordDao keywordDao;
 
-    public RoomChatKeywordDao(final Context context) {
+    @Inject
+    public RoomChatKeywordDao(@ApplicationContext final Context context) {
         final KeywordRoomDatabase database = KeywordRoomDatabase.getDatabase(context);
         keywordDao = database.keywordDao();
         KeywordRoomDatabase.databaseWriteExecutor.execute(

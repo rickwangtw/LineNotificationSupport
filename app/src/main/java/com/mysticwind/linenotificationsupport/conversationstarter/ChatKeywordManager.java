@@ -13,14 +13,19 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import lombok.Value;
 
+@Singleton
 public class ChatKeywordManager {
 
     private final ChatKeywordDao chatKeywordDao;
     private final ChatNameManager chatNameManager;
     private final LineReplyActionDao lineReplyActionDao;
 
+    @Inject
     public ChatKeywordManager(final ChatKeywordDao chatKeywordDao,
                               final ChatNameManager chatNameManager,
                               final LineReplyActionDao lineReplyActionDao) {
