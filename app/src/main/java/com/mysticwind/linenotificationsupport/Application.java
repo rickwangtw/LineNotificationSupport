@@ -8,8 +8,10 @@ import net.yslibrary.historian.tree.HistorianTree;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import dagger.hilt.android.HiltAndroidApp;
 import timber.log.Timber;
 
+@HiltAndroidApp
 public class Application extends android.app.Application {
 
     @Override
