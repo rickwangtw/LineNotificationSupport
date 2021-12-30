@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
+import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.line.LineLauncher;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
@@ -46,7 +47,8 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
 
     private static final Set<String> NOT_CHAT_IDS = ImmutableSet.of(
             LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID,
-            LineNotificationBuilder.DEFAULT_CHAT_ID
+            LineNotificationBuilder.DEFAULT_CHAT_ID,
+            ConversationStarterNotificationManager.CONVERSATION_STARTER_CHAT_ID
     );
 
     private static final LineLauncher LINE_LAUNCHER = new LineLauncher();
