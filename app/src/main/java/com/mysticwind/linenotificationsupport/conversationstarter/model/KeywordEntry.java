@@ -14,9 +14,10 @@ public class KeywordEntry {
     private final String chatId;
     private final String chatName;
     private final Optional<String> keyword;
+    private final boolean hasReplyAction;
 
     @Builder
-    public KeywordEntry(String chatId, String chatName, String keyword) {
+    public KeywordEntry(String chatId, String chatName, String keyword, boolean hasReplyAction) {
         this.chatId = Validate.notBlank(chatId);
         this.chatName = Validate.notBlank(chatName);
         if (StringUtils.isBlank(keyword)) {
@@ -24,6 +25,7 @@ public class KeywordEntry {
         } else {
             this.keyword = Optional.of(keyword);
         }
+        this.hasReplyAction = hasReplyAction;
     }
 
     public Optional<String> getKeyword() {

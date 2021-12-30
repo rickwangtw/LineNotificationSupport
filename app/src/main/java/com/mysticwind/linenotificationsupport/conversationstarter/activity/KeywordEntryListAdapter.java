@@ -22,7 +22,7 @@ public class KeywordEntryListAdapter extends ListAdapter<KeywordEntry, KeywordSe
     @Override
     public void onBindViewHolder(KeywordSettingViewHolder holder, int position) {
         KeywordEntry current = getItem(position);
-        holder.bind(current.getChatName(), current.getKeyword().orElse("N/A"));
+        holder.bind(current.isHasReplyAction(), current.getChatName(), current.getKeyword().orElse("N/A"));
     }
 
     static class KeywordEntryDiff extends DiffUtil.ItemCallback<KeywordEntry> {

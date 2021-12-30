@@ -74,11 +74,13 @@ public class ChatKeywordManager {
         List<KeywordEntry> keywordEntries = new ArrayList<>();
         for (final Chat chat : chats) {
             final String keyword = chatIdToKeywordMap.get(chat.getId());
+            final boolean hasReplyAction = lineReplyActionDao.getLineReplyAction(chat.getId()).isPresent();
             keywordEntries.add(
                     KeywordEntry.builder()
                             .chatId(chat.getId())
                             .chatName(chat.getName())
                             .keyword(keyword)
+                            .hasReplyAction(hasReplyAction)
                             .build()
             );
         }
