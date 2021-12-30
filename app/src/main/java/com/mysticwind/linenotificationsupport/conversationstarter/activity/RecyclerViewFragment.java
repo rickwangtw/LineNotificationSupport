@@ -4,9 +4,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioButton;
 
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,31 +16,21 @@ public class RecyclerViewFragment extends Fragment {
 
     private static final String TAG = "RecyclerViewFragment";
     private static final String KEY_LAYOUT_MANAGER = "layoutManager";
-    private static final int SPAN_COUNT = 2;
-    private static final int DATASET_COUNT = 60;
 
     private enum LayoutManagerType {
-        GRID_LAYOUT_MANAGER,
         LINEAR_LAYOUT_MANAGER
     }
 
     protected LayoutManagerType mCurrentLayoutManagerType;
 
-    protected RadioButton mLinearLayoutRadioButton;
-    protected RadioButton mGridLayoutRadioButton;
-
     protected RecyclerView mRecyclerView;
-    protected CustomAdapter mAdapter;
     protected RecyclerView.LayoutManager mLayoutManager;
-    protected String[] mDataset;
+
+    KeywordSettingViewModel keywordSettingViewModel;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Initialize dataset, this data would usually come from a local content provider or
-        // remote server.
-        initDataset();
     }
 
     @Override
@@ -66,9 +56,13 @@ public class RecyclerViewFragment extends Fragment {
         }
         setRecyclerViewLayoutManager();
 
-        mAdapter = new CustomAdapter(mDataset);
-        // Set CustomAdapter as the adapter for RecyclerView.
-        mRecyclerView.setAdapter(mAdapter);
+
+        final KeywordEntryListAdapter adapter = new KeywordEntryListAdapter(new KeywordEntryListAdapter.KeywordEntryDiff());
+
+        keywordSettingViewModel = new ViewModelProvider(this).get(KeywordSettingViewModel.class);
+        keywordSettingViewModel.getAllKeywords().observe(getViewLifecycleOwner(), keywords -> adapter.submitList(keywords));
+
+        mRecyclerView.setAdapter(adapter);
         // END_INCLUDE(initializeRecyclerView)
 
         return rootView;
@@ -76,8 +70,6 @@ public class RecyclerViewFragment extends Fragment {
 
     /**
      * Set RecyclerView's LayoutManager to the one given.
-     *
-     * @param layoutManagerType Type of layout manager to switch to.
      */
     public void setRecyclerViewLayoutManager() {
         int scrollPosition = 0;
@@ -101,14 +93,4 @@ public class RecyclerViewFragment extends Fragment {
         super.onSaveInstanceState(savedInstanceState);
     }
 
-    /**
-     * Generates Strings for RecyclerView's adapter. This data would usually come
-     * from a local content provider or remote server.
-     */
-    private void initDataset() {
-        mDataset = new String[DATASET_COUNT];
-        for (int i = 0; i < DATASET_COUNT; i++) {
-            mDataset[i] = "This is element #" + i;
-        }
-    }
 }
