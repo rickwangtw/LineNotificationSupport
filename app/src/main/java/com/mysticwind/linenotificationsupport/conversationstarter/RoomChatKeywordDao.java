@@ -26,12 +26,17 @@ public class RoomChatKeywordDao implements ChatKeywordDao {
     public RoomChatKeywordDao(@ApplicationContext final Context context) {
         final KeywordRoomDatabase database = KeywordRoomDatabase.getDatabase(context);
         keywordDao = database.keywordDao();
+    }
+
+    @Override
+    public void createOrUpdateKeyword(String chatId, String keyword) {
         KeywordRoomDatabase.databaseWriteExecutor.execute(
                 () -> keywordDao.insert(
                         KeywordEntry.builder()
-                                .chatId("caf2eecbb7109578bf0472dfcba4eca9e")
-                                .keyword("寶貝")
+                                .chatId(chatId)
+                                .keyword(keyword)
                                 .createdAtTimestamp(Instant.now().toEpochMilli())
+                                // TODO fix the updated timestamp
                                 .updatedAtTimestamp(Instant.now().toEpochMilli())
                                 .build()));
     }

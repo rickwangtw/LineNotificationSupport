@@ -14,6 +14,11 @@ public class InMemoryChatKeywordDao implements ChatKeywordDao {
     );
 
     @Override
+    public void createOrUpdateKeyword(String chatId, String keyword) {
+        KEYWORD_TO_CHAT_ID_MAP.put(keyword, chatId);
+    }
+
+    @Override
     public Set<String> getKeywords() {
         return KEYWORD_TO_CHAT_ID_MAP.keySet();
     }

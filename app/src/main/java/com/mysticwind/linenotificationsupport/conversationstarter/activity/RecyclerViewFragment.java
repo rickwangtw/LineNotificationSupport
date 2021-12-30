@@ -11,6 +11,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mysticwind.linenotificationsupport.R;
+import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordDao;
+
+import java.util.function.BiConsumer;
+
+import javax.inject.Inject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -30,6 +35,9 @@ public class RecyclerViewFragment extends Fragment {
     protected RecyclerView.LayoutManager mLayoutManager;
 
     KeywordSettingViewModel keywordSettingViewModel;
+
+    @Inject
+    ChatKeywordDao chatKeywordDao;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,8 +67,14 @@ public class RecyclerViewFragment extends Fragment {
         }
         setRecyclerViewLayoutManager();
 
+        final BiConsumer<String, String> chatIdAndKeywordUpdater = new BiConsumer<String, String>() {
+            @Override
+            public void accept(String chatId, String keyword) {
+                chatKeywordDao.createOrUpdateKeyword(chatId, keyword);
+            }
+        };
 
-        final KeywordEntryListAdapter adapter = new KeywordEntryListAdapter(new KeywordEntryListAdapter.KeywordEntryDiff());
+        final KeywordEntryListAdapter adapter = new KeywordEntryListAdapter(new KeywordEntryListAdapter.KeywordEntryDiff(), chatIdAndKeywordUpdater);
 
         keywordSettingViewModel = new ViewModelProvider(this).get(KeywordSettingViewModel.class);
         keywordSettingViewModel.getAllKeywords().observe(getViewLifecycleOwner(), keywords -> adapter.submitList(keywords));

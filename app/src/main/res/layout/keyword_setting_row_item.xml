@@ -26,11 +26,14 @@
             android:text="Chat ID"
             android:layout_toRightOf="@id/warning_icon" />
 
-        <TextView
-            android:id="@+id/keyword_text_view"
+        <EditText
+            android:id="@+id/keyword_edit_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Keyword"
+            android:ems="5"
+            android:maxLines="1"
+            android:inputType="text|textCapSentences"
             android:layout_alignParentRight="true"/>
 
     </RelativeLayout>

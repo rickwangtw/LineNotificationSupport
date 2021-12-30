@@ -6,6 +6,8 @@ import java.util.Set;
 
 public interface ChatKeywordDao {
 
+    void createOrUpdateKeyword(String chatId, String keyword);
+
     Set<String> getKeywords();
 
     /**
