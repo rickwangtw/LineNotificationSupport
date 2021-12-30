@@ -2,6 +2,7 @@ package com.mysticwind.linenotificationsupport.conversationstarter;
 
 import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
+import com.mysticwind.linenotificationsupport.conversationstarter.model.KeywordEntry;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -15,8 +16,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import lombok.Value;
 
 @Singleton
 public class ChatKeywordManager {
@@ -34,13 +33,6 @@ public class ChatKeywordManager {
         this.lineReplyActionDao = Objects.requireNonNull(lineReplyActionDao);
     }
 
-    @Value
-    public static class KeywordEntry {
-        String keyword;
-        String chatId;
-        String chatName;
-    }
-
     public List<KeywordEntry> getAvailableKeywordToChatNameMap() {
         final List<KeywordEntry> keywordEntryList = new ArrayList<>();
         Set<String> keywords = chatKeywordDao.getKeywords();
@@ -54,11 +46,17 @@ public class ChatKeywordManager {
             }
             final String chatName = chatNameManager.getChatName(chatId.get());
             if (StringUtils.isNotBlank(chatName)) {
-                keywordEntryList.add(new KeywordEntry(keyword, chatId.get(), chatName));
+                keywordEntryList.add(
+                        KeywordEntry.builder()
+                                .chatId(chatId.get())
+                                .chatName(chatName)
+                                .keyword(keyword)
+                                .build()
+                );
             }
         }
 
-        Collections.sort(keywordEntryList, Comparator.comparing(entry -> entry.chatName));
+        Collections.sort(keywordEntryList, Comparator.comparing(entry -> entry.getChatName()));
 
         return ImmutableList.copyOf(keywordEntryList);
     }

@@ -6,11 +6,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 
-import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordManager;
+import com.mysticwind.linenotificationsupport.conversationstarter.model.KeywordEntry;
 
-public class KeywordEntryListAdapter extends ListAdapter<ChatKeywordManager.KeywordEntry, KeywordSettingViewHolder> {
+public class KeywordEntryListAdapter extends ListAdapter<KeywordEntry, KeywordSettingViewHolder> {
 
-    public KeywordEntryListAdapter(@NonNull DiffUtil.ItemCallback<ChatKeywordManager.KeywordEntry> diffCallback) {
+    public KeywordEntryListAdapter(@NonNull DiffUtil.ItemCallback<KeywordEntry> diffCallback) {
         super(diffCallback);
     }
 
@@ -21,19 +21,19 @@ public class KeywordEntryListAdapter extends ListAdapter<ChatKeywordManager.Keyw
 
     @Override
     public void onBindViewHolder(KeywordSettingViewHolder holder, int position) {
-        ChatKeywordManager.KeywordEntry current = getItem(position);
-        holder.bind(current.getChatId(), current.getKeyword());
+        KeywordEntry current = getItem(position);
+        holder.bind(current.getChatId(), current.getKeyword().orElse("N/A"));
     }
 
-    static class KeywordEntryDiff extends DiffUtil.ItemCallback<ChatKeywordManager.KeywordEntry> {
+    static class KeywordEntryDiff extends DiffUtil.ItemCallback<KeywordEntry> {
 
         @Override
-        public boolean areItemsTheSame(@NonNull ChatKeywordManager.KeywordEntry oldItem, @NonNull ChatKeywordManager.KeywordEntry newItem) {
+        public boolean areItemsTheSame(@NonNull KeywordEntry oldItem, @NonNull KeywordEntry newItem) {
             return oldItem == newItem;
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull ChatKeywordManager.KeywordEntry oldItem, @NonNull ChatKeywordManager.KeywordEntry newItem) {
+        public boolean areContentsTheSame(@NonNull KeywordEntry oldItem, @NonNull KeywordEntry newItem) {
             return oldItem.getChatId().equals(newItem.getChatId());
         }
     }

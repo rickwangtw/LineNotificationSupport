@@ -2,6 +2,7 @@ package com.mysticwind.linenotificationsupport.conversationstarter;
 
 import androidx.core.app.Person;
 
+import com.mysticwind.linenotificationsupport.conversationstarter.model.KeywordEntry;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
@@ -35,7 +36,7 @@ public class ConversationStarterNotificationManager {
     }
 
     public Set<String> publishNotification() {
-        final List<ChatKeywordManager.KeywordEntry> keywordEntryList = chatKeywordManager.getAvailableKeywordToChatNameMap();
+        final List<KeywordEntry> keywordEntryList = chatKeywordManager.getAvailableKeywordToChatNameMap();
         // don't create the notification for starting conversation if there are no available keywords
         if (keywordEntryList.isEmpty()) {
             return Collections.EMPTY_SET;
