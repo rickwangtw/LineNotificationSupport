@@ -29,7 +29,7 @@ public class KeywordSettingViewModel extends AndroidViewModel {
 
         this.chatKeywordManager = Objects.requireNonNull(chatKeywordManager);
 
-        keywords = chatKeywordManager.getAvailableKeywordToChatNameMap();
+        keywords = chatKeywordManager.getAllChatsWithConfiguredKeywords();
     }
 
 

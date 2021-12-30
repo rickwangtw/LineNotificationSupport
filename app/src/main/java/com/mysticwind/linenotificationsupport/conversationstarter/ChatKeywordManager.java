@@ -2,6 +2,7 @@ package com.mysticwind.linenotificationsupport.conversationstarter;
 
 import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
+import com.mysticwind.linenotificationsupport.chatname.model.Chat;
 import com.mysticwind.linenotificationsupport.conversationstarter.model.KeywordEntry;
 
 import org.apache.commons.lang3.StringUtils;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -56,9 +58,32 @@ public class ChatKeywordManager {
             }
         }
 
-        Collections.sort(keywordEntryList, Comparator.comparing(entry -> entry.getChatName()));
+        sortKeywordEntryList(keywordEntryList);
 
         return ImmutableList.copyOf(keywordEntryList);
+    }
+
+    private void sortKeywordEntryList(List<KeywordEntry> keywordEntryList) {
+        Collections.sort(keywordEntryList, Comparator.comparing(entry -> entry.getChatName()));
+    }
+
+    public List<KeywordEntry> getAllChatsWithConfiguredKeywords() {
+        final Set<Chat> chats = chatNameManager.getAllChats();
+        final Map<String, String> chatIdToKeywordMap = chatKeywordDao.getAllKeywords();
+
+        List<KeywordEntry> keywordEntries = new ArrayList<>();
+        for (final Chat chat : chats) {
+            final String keyword = chatIdToKeywordMap.get(chat.getId());
+            keywordEntries.add(
+                    KeywordEntry.builder()
+                            .chatId(chat.getId())
+                            .chatName(chat.getName())
+                            .keyword(keyword)
+                            .build()
+            );
+        }
+        sortKeywordEntryList(keywordEntries);
+        return keywordEntries;
     }
 
 }

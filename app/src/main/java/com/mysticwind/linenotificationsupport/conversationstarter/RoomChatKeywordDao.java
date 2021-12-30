@@ -7,6 +7,7 @@ import com.mysticwind.linenotificationsupport.conversationstarter.persistence.da
 import com.mysticwind.linenotificationsupport.conversationstarter.persistence.dto.KeywordEntry;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,6 +41,12 @@ public class RoomChatKeywordDao implements ChatKeywordDao {
         return keywordDao.getAllEntries().stream()
                 .map(entry -> entry.getKeyword())
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Map<String, String> getAllKeywords() {
+        return keywordDao.getAllEntries().stream()
+                .collect(Collectors.toMap(entry -> entry.getChatId(), entry -> entry.getKeyword()));
     }
 
     @Override

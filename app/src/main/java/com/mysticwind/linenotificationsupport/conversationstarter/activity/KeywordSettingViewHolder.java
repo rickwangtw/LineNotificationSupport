@@ -11,17 +11,17 @@ import com.mysticwind.linenotificationsupport.R;
 
 class KeywordSettingViewHolder extends RecyclerView.ViewHolder {
 
-    private final TextView chatIdTextView;
+    private final TextView chatNameTextView;
     private final TextView keywordTextView;
 
     private KeywordSettingViewHolder(View itemView) {
         super(itemView);
-        chatIdTextView = itemView.findViewById(R.id.chat_id_text_view);
+        chatNameTextView = itemView.findViewById(R.id.chat_name_text_view);
         keywordTextView = itemView.findViewById(R.id.keyword_text_view);
     }
 
-    public void bind(String chatId, String keyword) {
-        chatIdTextView.setText(chatId);
+    public void bind(String chatName, String keyword) {
+        chatNameTextView.setText(chatName);
         keywordTextView.setText(keyword);
     }
 
