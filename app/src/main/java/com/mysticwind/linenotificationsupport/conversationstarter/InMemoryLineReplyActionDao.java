@@ -9,9 +9,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.inject.Inject;
+
 public class InMemoryLineReplyActionDao implements LineReplyActionDao {
 
     private final Map<String, Notification.Action> chatIdToNotificationActionMap = new HashMap<>();
+
+    @Inject
+    public InMemoryLineReplyActionDao() {
+    }
 
     @Override
     public void saveLineReplyAction(final String chatId, final Notification.Action lineReplyAction) {

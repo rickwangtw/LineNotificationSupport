@@ -50,7 +50,6 @@ import com.mysticwind.linenotificationsupport.chatname.dataaccessor.RoomMultiPer
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
-import com.mysticwind.linenotificationsupport.conversationstarter.InMemoryLineReplyActionDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.LineReplyActionDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.RoomChatKeywordDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.StartConversationActionBuilder;
@@ -123,6 +122,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -130,8 +130,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
 
+@AndroidEntryPoint
 public class NotificationListenerService
         extends android.service.notification.NotificationListenerService {
 
@@ -308,6 +312,9 @@ public class NotificationListenerService
     private boolean isInitialized = false;
     private boolean isListenerConnected = false;
 
+    @Inject
+    LineReplyActionDao lineReplyActionDao;
+
     private NotificationPublisher buildNotificationPublisher() {
         return buildNotificationPublisherWithPreviousStateRestored(Collections.EMPTY_LIST);
     }
@@ -445,7 +452,8 @@ public class NotificationListenerService
         this.incomingNotificationReactors.add(
                 new ChatRoomNamePersistenceIncomingNotificationReactor(groupChatNameDataAccessor));
 
-        final LineReplyActionDao lineReplyActionDao = new InMemoryLineReplyActionDao();
+        // TODO remove after testing Hilt dependency injection
+        Objects.requireNonNull(lineReplyActionDao);
         this.incomingNotificationReactors.add(new LineReplyActionPersistenceIncomingNotificationReactor(lineReplyActionDao));
 
         // TODO remove this after testing the stability of the dumb version
