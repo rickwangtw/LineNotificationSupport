@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="72dp"
+    android:layout_height="50dp"
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
     android:gravity="center_vertical">
@@ -14,27 +14,29 @@
         <ImageView
             android:id="@+id/warning_icon"
             android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_height="match_parent"
             app:srcCompat="@drawable/outline_warning_24"
-            android:visibility="invisible"
+            android:visibility="visible"
             android:layout_alignParentLeft="true"/>
 
         <TextView
             android:id="@+id/chat_name_text_view"
+            android:gravity="center_vertical"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Chat ID"
-            android:layout_toRightOf="@id/warning_icon" />
+            android:layout_height="match_parent"
+            android:layout_toLeftOf="@id/keyword_edit_text"
+            android:layout_toRightOf="@id/warning_icon"
+            android:text="Chat ID" />
 
         <EditText
             android:id="@+id/keyword_edit_text"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Keyword"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
             android:ems="5"
-            android:maxLines="1"
             android:inputType="text|textCapSentences"
-            android:layout_alignParentRight="true"/>
+            android:maxLines="1"
+            android:text="Keyword" />
 
     </RelativeLayout>
 

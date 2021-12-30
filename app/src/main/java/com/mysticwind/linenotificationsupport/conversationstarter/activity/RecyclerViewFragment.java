@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -80,6 +81,7 @@ public class RecyclerViewFragment extends Fragment {
         keywordSettingViewModel.getAllKeywords().observe(getViewLifecycleOwner(), keywords -> adapter.submitList(keywords));
 
         mRecyclerView.setAdapter(adapter);
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
         // END_INCLUDE(initializeRecyclerView)
 
         return rootView;
