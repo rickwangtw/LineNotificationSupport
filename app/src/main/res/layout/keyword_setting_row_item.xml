@@ -6,28 +6,24 @@
     android:layout_marginRight="16dp"
     android:gravity="center_vertical">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="test"/>
 
         <TextView
             android:id="@+id/chat_id_text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Chat ID"/>
+            android:text="Chat ID"
+            android:layout_alignParentLeft="true"/>
 
         <TextView
             android:id="@+id/keyword_text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Keyword"/>
+            android:text="Keyword"
+            android:layout_alignParentRight="true"/>
 
-    </LinearLayout>
+    </RelativeLayout>
 
 </FrameLayout>

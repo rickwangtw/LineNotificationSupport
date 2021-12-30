@@ -7,6 +7,9 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.mysticwind.linenotificationsupport.R;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class KeywordSettingActivity extends AppCompatActivity {
 
     @Override

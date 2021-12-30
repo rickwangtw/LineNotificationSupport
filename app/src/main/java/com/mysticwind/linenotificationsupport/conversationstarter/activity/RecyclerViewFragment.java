@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.mysticwind.linenotificationsupport.R;
 
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class RecyclerViewFragment extends Fragment {
 
     private static final String TAG = "RecyclerViewFragment";
