@@ -43,9 +43,7 @@ public class ChatKeywordManager {
             if (!chatId.isPresent()) {
                 continue;
             }
-            if (!lineReplyActionDao.getLineReplyAction(chatId.get()).isPresent()) {
-                continue;
-            }
+            final boolean hasReplyAction = lineReplyActionDao.getLineReplyAction(chatId.get()).isPresent();
             final String chatName = chatNameManager.getChatName(chatId.get());
             if (StringUtils.isNotBlank(chatName)) {
                 keywordEntryList.add(
@@ -53,6 +51,7 @@ public class ChatKeywordManager {
                                 .chatId(chatId.get())
                                 .chatName(chatName)
                                 .keyword(keyword)
+                                .hasReplyAction(hasReplyAction)
                                 .build()
                 );
             }

@@ -512,6 +512,8 @@ public class NotificationListenerService
 
         isInitialized = true;
 
+        conversationStarterNotificationManager.publishNotification();
+
         Timber.d("Service completed initialization");
     }
 
