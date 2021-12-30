@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mysticwind.linenotificationsupport.R;
+import com.mysticwind.linenotificationsupport.conversationstarter.model.KeywordEntry;
 
 class KeywordSettingViewHolder extends RecyclerView.ViewHolder {
 
@@ -23,10 +24,17 @@ class KeywordSettingViewHolder extends RecyclerView.ViewHolder {
         keywordTextView = itemView.findViewById(R.id.keyword_text_view);
     }
 
-    public void bind(boolean hasReplyAction, String chatName, String keyword) {
-        warningIcon.setVisibility(!hasReplyAction ? View.VISIBLE : View.INVISIBLE);
-        chatNameTextView.setText(chatName);
-        keywordTextView.setText(keyword);
+    public void bind(KeywordEntry keywordEntry) {
+        warningIcon.setVisibility(shouldShowWarning(keywordEntry) ? View.VISIBLE : View.INVISIBLE);
+        chatNameTextView.setText(keywordEntry.getChatName());
+        keywordTextView.setText(keywordEntry.getKeyword().orElse("N/A"));
+    }
+
+    private boolean shouldShowWarning(KeywordEntry keywordEntry) {
+        if (keywordEntry.getKeyword().isPresent() && !keywordEntry.isHasReplyAction()) {
+            return true;
+        }
+        return false;
     }
 
     static KeywordSettingViewHolder create(ViewGroup parent) {
