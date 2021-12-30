@@ -1,10 +1,12 @@
 package com.mysticwind.linenotificationsupport.notification.reactor;
 
+import android.os.Handler;
 import android.service.notification.StatusBarNotification;
 
 import com.google.common.collect.ImmutableSet;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.line.Constants;
+import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 
 import org.apache.commons.lang3.StringUtils;
@@ -16,22 +18,26 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import timber.log.Timber;
+
 public class ConversationStarterNotificationReactor implements IncomingNotificationReactor, DismissedNotificationReactor {
 
     private final Set<String> interestedPackages;
     private final String thisPackageName;
-
+    private final Handler handler;
 
     private final ConversationStarterNotificationManager conversationStarterNotificationManager;
 
     private Set<String> knownAvailableChatIds = new HashSet<>();
 
     public ConversationStarterNotificationReactor(final String thisPackageName,
-                                                  final ConversationStarterNotificationManager conversationStarterNotificationManager) {
+                                                  final ConversationStarterNotificationManager conversationStarterNotificationManager,
+                                                  final Handler handler) {
         this.thisPackageName = Validate.notBlank(thisPackageName);
         this.conversationStarterNotificationManager = Objects.requireNonNull(conversationStarterNotificationManager);
         // LINE for incoming and self for dismissing
         this.interestedPackages = ImmutableSet.of(Constants.LINE_PACKAGE_NAME, thisPackageName);
+        this.handler = Objects.requireNonNull(handler);
     }
 
     @Override
@@ -82,7 +88,14 @@ public class ConversationStarterNotificationReactor implements IncomingNotificat
         if (!ConversationStarterNotificationManager.CONVERSATION_STARTER_CHAT_ID.equals(chatId.get())) {
             return Reaction.NONE;
         }
-        publishNotification();
+        Timber.d("Detected dismiss of conversation starter notification");
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Timber.d("Republish conversation starter notification");
+                publishNotification();
+            }
+        }, MaxNotificationHandlingNotificationPublisherDecorator.DISMISS_COOL_DOWN_IN_MILLIS);
         return Reaction.NONE;
     }
 

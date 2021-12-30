@@ -19,6 +19,7 @@ public abstract class KeywordModule {
 
     /* Related classes using @Inject
       ChatKeywordManager
+      KeywordSettingActivityLauncher
      */
 
     @Singleton

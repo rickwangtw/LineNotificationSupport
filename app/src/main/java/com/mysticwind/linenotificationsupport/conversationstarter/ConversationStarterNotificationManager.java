@@ -23,16 +23,19 @@ public class ConversationStarterNotificationManager {
     private final ChatKeywordManager chatKeywordManager;
     private final StartConversationActionBuilder startConversationActionBuilder;
     private final int notificationId;
+    private final KeywordSettingActivityLauncher keywordSettingActivityLauncher;
 
     public ConversationStarterNotificationManager(final Supplier<NotificationPublisher> notificationPublisherSupplier,
                                                   final NotificationIdGenerator notificationIdGenerator,
                                                   final ChatKeywordManager chatKeywordManager,
-                                                  final StartConversationActionBuilder startConversationActionBuilder) {
+                                                  final StartConversationActionBuilder startConversationActionBuilder,
+                                                  final KeywordSettingActivityLauncher keywordSettingActivityLauncher) {
         this.notificationPublisherSupplier = Objects.requireNonNull(notificationPublisherSupplier);
         Objects.requireNonNull(notificationIdGenerator);
         this.chatKeywordManager = Objects.requireNonNull(chatKeywordManager);
         this.startConversationActionBuilder = Objects.requireNonNull(startConversationActionBuilder);
         this.notificationId = notificationIdGenerator.getNextNotificationId();
+        this.keywordSettingActivityLauncher = Objects.requireNonNull(keywordSettingActivityLauncher);
     }
 
     public Set<String> publishNotification() {
@@ -60,6 +63,7 @@ public class ConversationStarterNotificationManager {
                                 .setName("Bot")
                                 .build())
                         .action(startConversationActionBuilder.buildAction())
+                        .clickIntent(keywordSettingActivityLauncher.buildPendingIntent())
                         .build(),
                 notificationId);
         return keywordEntryList.stream()

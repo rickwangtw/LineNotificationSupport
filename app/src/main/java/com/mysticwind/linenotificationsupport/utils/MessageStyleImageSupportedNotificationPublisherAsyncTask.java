@@ -4,6 +4,7 @@ import static java.util.Collections.EMPTY_LIST;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -174,7 +175,7 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
                 .setGroup(resolveGroup())
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(lineNotification.getIcon())
-                .setContentIntent(LINE_LAUNCHER.buildPendingIntent(context, lineNotification.getChatId()))
+                .setContentIntent(resolveContentIntent(context, lineNotification))
                 .setChannelId(channelId.orElse(null))
                 .setAutoCancel(true)
                 .setWhen(lineNotification.getTimestamp())
@@ -199,6 +200,12 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
                 NotificationExtractor.getMessage(singleNotification),
                 singleNotification.when);
         notificationManager.notify(notificationId, singleNotification);
+    }
+
+    private PendingIntent resolveContentIntent(final Context context, final LineNotification lineNotification) {
+        return lineNotification.getClickIntent().orElse(
+                LINE_LAUNCHER.buildPendingIntent(context, lineNotification.getChatId())
+        );
     }
 
     private void addActionInNotification(Notification notification) {

@@ -45,6 +45,7 @@ import com.mysticwind.linenotificationsupport.chatname.dataaccessor.GroupChatNam
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
+import com.mysticwind.linenotificationsupport.conversationstarter.KeywordSettingActivityLauncher;
 import com.mysticwind.linenotificationsupport.conversationstarter.LineReplyActionDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.StartConversationActionBuilder;
 import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
@@ -318,6 +319,9 @@ public class NotificationListenerService
     @Inject
     GroupChatNameDataAccessor groupChatNameDataAccessor;
 
+    @Inject
+    KeywordSettingActivityLauncher keywordSettingActivityLauncher;
+
     private NotificationPublisher buildNotificationPublisher() {
         return buildNotificationPublisherWithPreviousStateRestored(Collections.EMPTY_LIST);
     }
@@ -489,10 +493,10 @@ public class NotificationListenerService
 
         scheduleNotificationCounterCheck();
 
-        conversationStarterNotificationManager = new ConversationStarterNotificationManager(
-                notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR, chatKeywordManager, new StartConversationActionBuilder(this));
+        conversationStarterNotificationManager = new ConversationStarterNotificationManager(notificationPublisherSupplier,
+                NOTIFICATION_ID_GENERATOR, chatKeywordManager, new StartConversationActionBuilder(this), keywordSettingActivityLauncher);
         final ConversationStarterNotificationReactor conversationStarterNotificationReactor =
-                new ConversationStarterNotificationReactor(getPackageName(), conversationStarterNotificationManager);
+                new ConversationStarterNotificationReactor(getPackageName(), conversationStarterNotificationManager, handler);
         this.incomingNotificationReactors.add(conversationStarterNotificationReactor);
         this.dismissedNotificationReactors.add(conversationStarterNotificationReactor);
 
