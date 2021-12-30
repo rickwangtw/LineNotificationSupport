@@ -10,7 +10,6 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mysticwind.linenotificationsupport.R;
-import com.mysticwind.linenotificationsupport.conversationstarter.model.KeywordEntry;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,25 +28,28 @@ class KeywordSettingViewHolder extends RecyclerView.ViewHolder {
         keywordEditText = itemView.findViewById(R.id.keyword_edit_text);
     }
 
-    public void bind(final KeywordEntry keywordEntry, BiConsumer<String, String> chatIdAndKeywordUpdater) {
+    public void bind(final MutableKeywordEntry keywordEntry, BiConsumer<String, String> chatIdAndKeywordUpdater) {
         warningIcon.setVisibility(shouldShowWarning(keywordEntry) ? View.VISIBLE : View.INVISIBLE);
         chatNameTextView.setText(keywordEntry.getChatName());
-        keywordEditText.setText(keywordEntry.getKeyword().orElse(""));
+        keywordEditText.setText(keywordEntry.getKeyword());
         keywordEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 final EditText editText = (EditText) v;
-                editText.setText(editText.getText().toString().trim());
+                final String originalKeyword = keywordEntry.getKeyword();
                 final String newKeyword = editText.getText().toString().trim();
-                if (StringUtils.isNotBlank(newKeyword) && !newKeyword.equals(keywordEntry.getKeyword())) {
+                keywordEntry.setKeyword(newKeyword);
+                editText.setText(newKeyword);
+                if (StringUtils.isNotBlank(newKeyword) && !newKeyword.equals(originalKeyword)) {
                     chatIdAndKeywordUpdater.accept(keywordEntry.getChatId(), newKeyword);
+                    warningIcon.setVisibility(shouldShowWarning(keywordEntry) ? View.VISIBLE : View.INVISIBLE);
                 }
             }
         });
     }
 
-    private boolean shouldShowWarning(KeywordEntry keywordEntry) {
-        if (keywordEntry.getKeyword().isPresent() && !keywordEntry.isHasReplyAction()) {
+    private boolean shouldShowWarning(MutableKeywordEntry keywordEntry) {
+        if (StringUtils.isNotBlank(keywordEntry.getKeyword()) && !keywordEntry.isHasReplyAction()) {
             return true;
         }
         return false;

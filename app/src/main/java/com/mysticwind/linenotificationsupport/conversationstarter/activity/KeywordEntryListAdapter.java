@@ -6,16 +6,14 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 
-import com.mysticwind.linenotificationsupport.conversationstarter.model.KeywordEntry;
-
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
-public class KeywordEntryListAdapter extends ListAdapter<KeywordEntry, KeywordSettingViewHolder> {
+public class KeywordEntryListAdapter extends ListAdapter<MutableKeywordEntry, KeywordSettingViewHolder> {
 
     private final BiConsumer<String, String> chatIdAndKeywordUpdater;
 
-    public KeywordEntryListAdapter(@NonNull DiffUtil.ItemCallback<KeywordEntry> diffCallback, BiConsumer<String, String> chatIdAndKeywordUpdater) {
+    public KeywordEntryListAdapter(@NonNull DiffUtil.ItemCallback<MutableKeywordEntry> diffCallback, BiConsumer<String, String> chatIdAndKeywordUpdater) {
         super(diffCallback);
         this.chatIdAndKeywordUpdater = Objects.requireNonNull(chatIdAndKeywordUpdater);
     }
@@ -27,19 +25,19 @@ public class KeywordEntryListAdapter extends ListAdapter<KeywordEntry, KeywordSe
 
     @Override
     public void onBindViewHolder(KeywordSettingViewHolder holder, int position) {
-        KeywordEntry current = getItem(position);
+        MutableKeywordEntry current = getItem(position);
         holder.bind(current, chatIdAndKeywordUpdater);
     }
 
-    static class KeywordEntryDiff extends DiffUtil.ItemCallback<KeywordEntry> {
+    static class KeywordEntryDiff extends DiffUtil.ItemCallback<MutableKeywordEntry> {
 
         @Override
-        public boolean areItemsTheSame(@NonNull KeywordEntry oldItem, @NonNull KeywordEntry newItem) {
+        public boolean areItemsTheSame(@NonNull MutableKeywordEntry oldItem, @NonNull MutableKeywordEntry newItem) {
             return oldItem == newItem;
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull KeywordEntry oldItem, @NonNull KeywordEntry newItem) {
+        public boolean areContentsTheSame(@NonNull MutableKeywordEntry oldItem, @NonNull MutableKeywordEntry newItem) {
             return oldItem.getChatId().equals(newItem.getChatId());
         }
     }

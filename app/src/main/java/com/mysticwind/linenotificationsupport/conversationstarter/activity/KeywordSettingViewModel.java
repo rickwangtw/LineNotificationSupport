@@ -6,10 +6,10 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.mysticwind.linenotificationsupport.Application;
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordManager;
-import com.mysticwind.linenotificationsupport.conversationstarter.model.KeywordEntry;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -19,7 +19,7 @@ import timber.log.Timber;
 @HiltViewModel
 public class KeywordSettingViewModel extends AndroidViewModel {
 
-    private final List<KeywordEntry> keywords;
+    private final KeywordEntryConverter keywordEntryConverter = new KeywordEntryConverter();
 
     private final ChatKeywordManager chatKeywordManager;
 
@@ -28,14 +28,16 @@ public class KeywordSettingViewModel extends AndroidViewModel {
         super(application);
 
         this.chatKeywordManager = Objects.requireNonNull(chatKeywordManager);
-
-        keywords = chatKeywordManager.getAllChatsWithConfiguredKeywords();
     }
 
 
-    public LiveData<List<KeywordEntry>> getAllKeywords() {
+    public LiveData<List<MutableKeywordEntry>> getAllKeywords() {
+        List<MutableKeywordEntry> keywords = chatKeywordManager.getAllChatsWithConfiguredKeywords().stream()
+                .map(keywordEntry -> keywordEntryConverter.convert(keywordEntry))
+                .collect(Collectors.toList());
+
         // TODO make this really LiveData
-        final MutableLiveData<List<KeywordEntry>> liveData = new MutableLiveData();
+        final MutableLiveData<List<MutableKeywordEntry>> liveData = new MutableLiveData();
         liveData.setValue(keywords);
         return liveData;
     }
