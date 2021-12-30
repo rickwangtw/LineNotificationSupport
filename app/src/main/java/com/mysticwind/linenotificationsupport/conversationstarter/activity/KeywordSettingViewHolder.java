@@ -40,7 +40,7 @@ class KeywordSettingViewHolder extends RecyclerView.ViewHolder {
                 final String newKeyword = editText.getText().toString().trim();
                 keywordEntry.setKeyword(newKeyword);
                 editText.setText(newKeyword);
-                if (StringUtils.isNotBlank(newKeyword) && !newKeyword.equals(originalKeyword)) {
+                if (!newKeyword.equals(originalKeyword)) {
                     chatIdAndKeywordUpdater.accept(keywordEntry.getChatId(), newKeyword);
                     warningIcon.setVisibility(shouldShowWarning(keywordEntry) ? View.VISIBLE : View.INVISIBLE);
                 }
