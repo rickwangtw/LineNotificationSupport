@@ -19,7 +19,7 @@ public interface KeywordDao {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     void update(KeywordEntry entry);
 
-    @Query("SELECT * FROM chat_id_keywords")
+    @Query("SELECT * FROM chat_id_keywords where keyword is not ''")
     List<KeywordEntry> getAllEntries();
 
 }
