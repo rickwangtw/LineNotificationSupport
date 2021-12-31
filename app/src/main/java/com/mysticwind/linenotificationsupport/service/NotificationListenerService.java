@@ -76,6 +76,7 @@ import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
+import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.ui.LocaleDao;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
@@ -252,6 +253,9 @@ public class NotificationListenerService
     private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
     private boolean isInitialized = false;
     private boolean isListenerConnected = false;
+
+    @Inject
+    ReplyActionBuilder replyActionBuilder;
 
     @Inject
     LocaleDao localeDao;
@@ -516,7 +520,7 @@ public class NotificationListenerService
 
     private void sendNotification(StatusBarNotification notificationFromLine) {
         final LineNotification lineNotification = new LineNotificationBuilder(this,
-                chatTitleAndSenderResolver, NOTIFICATION_PRINTER).from(notificationFromLine);
+                chatTitleAndSenderResolver, NOTIFICATION_PRINTER, replyActionBuilder).from(notificationFromLine);
 
         final int notificationId = notificationIdGenerator.getNextNotificationId();
 
@@ -829,7 +833,7 @@ public class NotificationListenerService
         }
 
         final LineNotification dismissedLineNotification = new LineNotificationBuilder(
-                this, chatTitleAndSenderResolver, NOTIFICATION_PRINTER)
+                this, chatTitleAndSenderResolver, NOTIFICATION_PRINTER, replyActionBuilder)
                 .from(statusBarNotification);
 
         if (LineNotification.CallState.INCOMING == dismissedLineNotification.getCallState() &&

@@ -6,7 +6,8 @@ import android.app.RemoteInput;
 import android.content.Context;
 import android.content.Intent;
 
-import org.apache.commons.lang3.Validate;
+import com.mysticwind.linenotificationsupport.R;
+import com.mysticwind.linenotificationsupport.ui.LocalizationDao;
 
 import java.util.Objects;
 
@@ -26,22 +27,19 @@ public class DefaultReplyActionBuilder implements  ReplyActionBuilder {
     private static final String DEFAULT_REPLY_LABEL = "Reply";
 
     private final Context context;
-    private final String replyLabel;
+    private final LocalizationDao localizationDao;
 
     @Inject
-    public DefaultReplyActionBuilder(@ApplicationContext final Context context) {
-        this(context, DEFAULT_REPLY_LABEL);
-    }
-
-    public DefaultReplyActionBuilder(final Context context, final String replyLabel) {
+    public DefaultReplyActionBuilder(@ApplicationContext final Context context,
+                                     final LocalizationDao localizationDao) {
         this.context = Objects.requireNonNull(context);
-        this.replyLabel = Validate.notBlank(replyLabel);
+        this.localizationDao = Objects.requireNonNull(localizationDao);
     }
 
     @Override
     public Notification.Action buildReplyAction(final String chatId, final Notification.Action originalLineReplyAction) {
         final RemoteInput remoteInput = new RemoteInput.Builder(RESPONSE_REMOTE_INPUT_KEY)
-                .setLabel(replyLabel)
+                .setLabel(localizationDao.getLocalizedString(R.string.conversation_notification_action_button_message))
                 .build();
 
         final PendingIntent replyPendingIntent =
@@ -50,7 +48,9 @@ public class DefaultReplyActionBuilder implements  ReplyActionBuilder {
                         getMessageReplyIntent(chatId, originalLineReplyAction),
                         PendingIntent.FLAG_UPDATE_CURRENT);
 
-        return new Notification.Action.Builder(null, replyLabel, replyPendingIntent)
+        final String buttonLabel = localizationDao.getLocalizedString(R.string.conversation_notification_action_button);
+
+        return new Notification.Action.Builder(null, buttonLabel, replyPendingIntent)
                 .addRemoteInput(remoteInput)
                 .build();
     }

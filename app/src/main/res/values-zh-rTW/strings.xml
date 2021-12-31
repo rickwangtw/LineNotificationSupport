@@ -95,6 +95,10 @@
     <string name="contribute_to_open_source">這是個開源專案，歡迎協助開發！https://github.com/rickwangtw/LineNotificationSupport"</string>
     <string name="support_donate_app">請透過捐贈版支持我的努力！ https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate</string>
 
+    <!-- Conversation notification -->
+    <string name="conversation_notification_action_button">回覆</string>
+    <string name="conversation_notification_action_button_message">回覆的訊息。</string>
+
     <!-- Conversation starter notification -->
     <string name="conversation_start_notification_title">開始新對話</string>
     <string name="conversation_start_notification_action_button">新對話</string>
