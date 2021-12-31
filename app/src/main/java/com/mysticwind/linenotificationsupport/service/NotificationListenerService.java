@@ -13,7 +13,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -61,7 +60,6 @@ import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStra
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisherFactory;
-import com.mysticwind.linenotificationsupport.notification.ResendUnsentNotificationsNotificationSentListener;
 import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.reactor.CallInProgressTrackingReactor;
@@ -141,13 +139,9 @@ public class NotificationListenerService
             PreferenceProvider.SINGLE_NOTIFICATION_CONVERSATIONS_KEY
     );
 
-    private final Handler handler = new Handler();
-
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
-    private PreferenceProvider preferenceProvider;
-    private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
     private LineRemoteInputReplier lineRemoteInputReplier;
     private MyPersonLabelProvider myPersonLabelProvider;
 
@@ -272,7 +266,13 @@ public class NotificationListenerService
     private boolean isListenerConnected = false;
 
     @Inject
+    Handler handler;
+
+    @Inject
     NotificationPublisherFactory notificationPublisherFactory;
+
+    @Inject
+    PreferenceProvider preferenceProvider;
 
     @Inject
     NotificationIdGenerator notificationIdGenerator;
@@ -358,7 +358,7 @@ public class NotificationListenerService
         this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
 
         final CallInProgressTrackingReactor callInProgressTrackingReactor = new CallInProgressTrackingReactor(
-                getPreferenceProvider(), new AndroidBluetoothController());
+                preferenceProvider, new AndroidBluetoothController());
         this.incomingNotificationReactors.add(callInProgressTrackingReactor);
         this.dismissedNotificationReactors.add(callInProgressTrackingReactor);
 
@@ -384,7 +384,7 @@ public class NotificationListenerService
 
         this.incomingNotificationReactors.add(
                 new ManageLineNotificationIncomingNotificationReactor(
-                        getPreferenceProvider(),
+                        preferenceProvider,
                         handler,
                         () -> getActiveNotificationsFromAllAppsSafely(),
                         key -> cancelNotification(key)));
@@ -395,7 +395,7 @@ public class NotificationListenerService
 
         new NotificationGroupCreator(
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
-                new AndroidFeatureProvider(), getPreferenceProvider())
+                new AndroidFeatureProvider(), preferenceProvider)
                 .createNotificationGroups();
 
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -433,14 +433,6 @@ public class NotificationListenerService
         isInitialized = false;
 
         Timber.w("NotificationListenerService onDestroy");
-    }
-
-    private long getMaxNotificationsPerApp() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            return 25;
-        } else {
-            return 50;
-        }
     }
 
     @Override
@@ -682,7 +674,7 @@ public class NotificationListenerService
     }
 
     private void cancelIncomingCallNotification(final Set<Integer> notificationIdsToCancel) {
-        if (getPreferenceProvider().shouldUseSingleNotificationForConversations()) {
+        if (preferenceProvider.shouldUseSingleNotificationForConversations()) {
             // so that we don't accidentally dismiss "call in progress" notifications
             return;
         }
@@ -855,17 +847,8 @@ public class NotificationListenerService
             this.autoIncomingCallNotificationState.cancel();
         }
 
-        if (getPreferenceProvider().shouldAutoDismissLineNotificationSupportNotifications()) {
+        if (preferenceProvider.shouldAutoDismissLineNotificationSupportNotifications()) {
             dismissLineNotificationSupportNotifications(dismissedLineNotification.getChatId());
-        }
-    }
-
-    private PreferenceProvider getPreferenceProvider() {
-        if (preferenceProvider == null) {
-            preferenceProvider = new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(this));
-            return preferenceProvider;
-        } else {
-            return preferenceProvider;
         }
     }
 
@@ -894,9 +877,7 @@ public class NotificationListenerService
         if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
             return;
         }
-        if (resendUnsentNotificationsNotificationSentListener != null) {
-            resendUnsentNotificationsNotificationSentListener.notificationReceived(statusBarNotification.getId());
-        }
+        notificationPublisherFactory.trackNotificationPublished(statusBarNotification.getId());
     }
 
     private void handleSelfNotificationDismissed(StatusBarNotification statusBarNotification) {

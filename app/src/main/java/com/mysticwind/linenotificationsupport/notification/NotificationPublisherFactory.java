@@ -32,6 +32,8 @@ public class NotificationPublisherFactory {
     private final GroupIdResolver groupIdResolver;
     private final String packageName;
 
+    private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
+
     @Inject
     public NotificationPublisherFactory(@ApplicationContext final Context context,
                                         final Handler handler,
@@ -66,7 +68,10 @@ public class NotificationPublisherFactory {
         // don't enable this for single notification conversations just yet because we may still
         // exceed 25 chats
         if (shouldExecuteMaxNotificationWorkaround) {
-            notificationSentListeners.add(new ResendUnsentNotificationsNotificationSentListener(handler, this));
+            resendUnsentNotificationsNotificationSentListener = new ResendUnsentNotificationsNotificationSentListener(handler, this);
+            notificationSentListeners.add(resendUnsentNotificationsNotificationSentListener);
+        } else {
+            resendUnsentNotificationsNotificationSentListener = null;
         }
 
         NotificationPublisher notificationPublisher =
@@ -102,6 +107,12 @@ public class NotificationPublisherFactory {
         notificationPublisher = new NotificationMergingNotificationPublisherDecorator(notificationPublisher);
 
         return notificationPublisher;
+    }
+
+    public void trackNotificationPublished(int id) {
+        if (resendUnsentNotificationsNotificationSentListener != null) {
+            resendUnsentNotificationsNotificationSentListener.notificationReceived(id);
+        }
     }
 
 }
