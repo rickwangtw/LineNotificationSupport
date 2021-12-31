@@ -33,6 +33,9 @@
 
     <!-- Messages Preferences -->
     <string name="identical_messages_title">重复的信息</string>
+    <string name="conversation_starter_title">开始新对话</string>
+    <string name="conversation_starter_summary_on">显示一个常驻信息来开始新的对话。回复信息时使用关键词开始即可开始新的对话。</string>
+    <string name="conversation_starter_summary_off">不要显示这个特殊的常驻信息。</string>
     <string name="generate_self_response_message_title">显示从我手錶寄出的信息</string>
     <string name="generate_self_response_message_summary_on">在手錶上显示由手錶传送出的信息。方便回忆起聊天内容和自己的答复。注意，LINE有时会传送信息失败，例如互联网不稳定的情况，请在LINE裡确认！</string>
     <string name="generate_self_response_message_summary_off">不要在手錶上显示由手錶传送出的信息。</string>
@@ -91,5 +94,26 @@
     <string name="recommended_settings">在<a href="https://github.com/rickwangtw/LineNotificationSupport/blob/main/README.zh-tw.md">此网页</a>找适合您手錶的配置！如果您的手錶不在名单内，欢迎提供您的配置！</string>
     <string name="contribute_to_open_source">这是个开源项目，欢迎协助开發！https://github.com/rickwangtw/LineNotificationSupport"</string>
     <string name="support_donate_app">请透过捐赠版支持我的努力！ https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate</string>
+
+    <!-- Conversation starter notification -->
+    <string name="conversation_start_notification_title">开始新对话</string>
+    <string name="conversation_start_notification_action_button">新对话</string>
+    <string name="conversation_start_notification_action_button_message">与群组关联的关键词开始的信息。</string>
+    <string name="conversation_start_notification_content_no_keywords">您尚未设定任何关键词。点我来设定！</string>
+    <string name="conversation_start_notification_content_no_reply_action">您尚未收到 LINE 信息，因此还无法开始新对话。收到新信息之后将会列出可使用的关键词。</string>
+    <string name="conversation_start_notification_content_guidance">利用关键词来开始新对话。若您传送 \"%1$s\"，这将会发送 \"%3$s\" 信息并开始给群组 \"%2$s\" 的对话。</string>
+    <string name="conversation_start_notification_content_sample_message">早安！</string>
+    <string name="conversation_start_notification_content_list_of_chat_prefix">以下为可使用的关键词列表：\n</string>
+
+    <!-- Conversation starter failures -->
+    <string name="conversation_start_remote_input_invalid_message">无法发送信息 [%1$s]</string>
+    <string name="conversation_start_remote_input_no_keyword">无法找到关键词 [%1$s]</string>
+    <string name="conversation_start_remote_input_no_reply_action">无法发送信息给 [%1$s]：尚未收到此群组的 LINE 对话</string>
+
+    <!-- Keyword Setting Activity -->
+    <string name="keyword_setting_activity_title">关键词设定</string>
+    <string name="keyword_setting_activity_header_chat">群组</string>
+    <string name="keyword_setting_activity_header_keyword">关键词</string>
+
 
 </resources>

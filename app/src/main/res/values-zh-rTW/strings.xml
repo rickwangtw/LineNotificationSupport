@@ -33,8 +33,8 @@
 
     <!-- Messages Preferences -->
     <string name="identical_messages_title">重複的訊息</string>
-    <string name="conversation_starter_title">創立新對話</string>
-    <string name="conversation_starter_summary_on">顯示一個常駐訊息來創立新的對話。回覆訊息時使用關鍵詞開始即可創立新的對話。</string>
+    <string name="conversation_starter_title">開始新對話</string>
+    <string name="conversation_starter_summary_on">顯示一個常駐訊息來開始新的對話。回覆訊息時使用關鍵詞開始即可開始新的對話。</string>
     <string name="conversation_starter_summary_off">不要顯示這個特殊的常駐訊息。</string>
     <string name="generate_self_response_message_title">顯示從我手錶寄出的訊息</string>
     <string name="generate_self_response_message_summary_on">在手錶上顯示由手錶傳送出的訊息。方便回憶起聊天內容和自己的答覆。注意，LINE有時會傳送訊息失敗，例如網路不穩的情況下，請在LINE裡面確認！</string>
