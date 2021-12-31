@@ -6,6 +6,8 @@ import android.os.Handler;
 
 import com.mysticwind.linenotificationsupport.notification.SlotAvailabilityChecker;
 import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
+import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
+import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
 
 import javax.inject.Singleton;
 
@@ -55,5 +57,9 @@ public abstract class NotificationPublisherModule {
     public static String providePackageName(@ApplicationContext final Context context) {
         return context.getPackageName();
     }
+
+    @Singleton
+    @Binds
+    public abstract ReplyActionBuilder bindReplyActionBuilder(DefaultReplyActionBuilder defaultReplyActionBuilder);
 
 }

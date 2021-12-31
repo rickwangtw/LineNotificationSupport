@@ -2,12 +2,16 @@ package com.mysticwind.linenotificationsupport.reply.impl;
 
 import com.google.common.collect.ImmutableMap;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
-
-import org.apache.commons.lang3.Validate;
+import com.mysticwind.linenotificationsupport.ui.LocaleDao;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class LocalizedMyPersonLabelProvider implements MyPersonLabelProvider {
 
     private static final String ENGLISH_PREFIX = "en-";
@@ -22,14 +26,16 @@ public class LocalizedMyPersonLabelProvider implements MyPersonLabelProvider {
             CHINESE_PREFIX, CHINESE_LABEL
     );
 
-    private final String locale;
+    private final LocaleDao localeDao;
 
-    public LocalizedMyPersonLabelProvider(final String locale) {
-        this.locale = Validate.notBlank(locale);
+    @Inject
+    public LocalizedMyPersonLabelProvider(final LocaleDao localeDao) {
+        this.localeDao = Objects.requireNonNull(localeDao);
     }
 
     @Override
     public Optional<String> getMyPersonLabel() {
+        final String locale = localeDao.getLocale();
         for (final Map.Entry<String, String> entry : PREFIX_TO_LABEL_MAP.entrySet()) {
             final String prefix = entry.getKey();
             final String label = entry.getValue();

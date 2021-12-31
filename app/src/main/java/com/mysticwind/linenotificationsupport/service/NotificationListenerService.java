@@ -12,7 +12,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -41,7 +40,6 @@ import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothController;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.GroupChatNameDataAccessor;
-import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.LineReplyActionDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.StartConversationActionBuilder;
@@ -82,6 +80,7 @@ import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.reply.impl.LocalizedMyPersonLabelProvider;
+import com.mysticwind.linenotificationsupport.ui.LocaleDao;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
@@ -142,9 +141,6 @@ public class NotificationListenerService
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
-    private LineRemoteInputReplier lineRemoteInputReplier;
-    private MyPersonLabelProvider myPersonLabelProvider;
-
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
 
@@ -157,8 +153,6 @@ public class NotificationListenerService
             }
         }
     };
-
-    private StartConversationBroadcastReceiver startConversationActionBroadcastReceiver;
 
     // TODO should this be in its own class?
     private final BroadcastReceiver replyActionBroadcastReceiver = new BroadcastReceiver() {
@@ -246,11 +240,9 @@ public class NotificationListenerService
     private final BroadcastReceiver localeUpdateBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            final String locale =
-                    Resources.getSystem().getConfiguration().getLocales().get(0).toLanguageTag();
+            localeDao.notifyLocaleChange();
+            final String locale = localeDao.getLocale();
             Timber.i("Locale has been changed to %s", locale);
-
-            NotificationListenerService.this.myPersonLabelProvider = new LocalizedMyPersonLabelProvider(locale);
         }
     };
 
@@ -264,6 +256,12 @@ public class NotificationListenerService
     private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
     private boolean isInitialized = false;
     private boolean isListenerConnected = false;
+
+    @Inject
+    LocaleDao localeDao;
+
+    @Inject
+    MyPersonLabelProvider myPersonLabelProvider;
 
     @Inject
     Handler handler;
@@ -287,9 +285,6 @@ public class NotificationListenerService
     LineReplyActionDao lineReplyActionDao;
 
     @Inject
-    ChatKeywordDao chatKeywordDao;
-
-    @Inject
     ChatNameManager chatNameManager;
 
     @Inject
@@ -297,6 +292,12 @@ public class NotificationListenerService
 
     @Inject
     ConversationStarterNotificationManager conversationStarterNotificationManager;
+
+    @Inject
+    LineRemoteInputReplier lineRemoteInputReplier;
+
+    @Inject
+    StartConversationBroadcastReceiver startConversationActionBroadcastReceiver;
 
     @Override
     public void onCreate() {
@@ -323,8 +324,6 @@ public class NotificationListenerService
             return;
         }
 
-        lineRemoteInputReplier = new LineRemoteInputReplier(this);
-
         // getting active notifications to restore previous state
         final List<StatusBarNotification> existingNotifications = getActiveNotificationsFromAllAppsSafely().stream()
                 .filter(notification -> notification.getPackageName().equals(getPackageName()))
@@ -341,8 +340,6 @@ public class NotificationListenerService
         }
 
         chatTitleAndSenderResolver = new ChatTitleAndSenderResolver(chatNameManager);
-        myPersonLabelProvider = new LocalizedMyPersonLabelProvider(
-                Resources.getSystem().getConfiguration().getLocales().get(0).toLanguageTag());
 
         if (DEBUG_MODE_PROVIDER.isDebugMode()) {
             AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
@@ -408,11 +405,6 @@ public class NotificationListenerService
                 new ConversationStarterNotificationReactor(getPackageName(), conversationStarterNotificationManager, handler);
         this.incomingNotificationReactors.add(conversationStarterNotificationReactor);
         this.dismissedNotificationReactors.add(conversationStarterNotificationReactor);
-
-        startConversationActionBroadcastReceiver = new StartConversationBroadcastReceiver(
-                lineRemoteInputReplier, chatKeywordDao, lineReplyActionDao,
-                (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE), getPackageName(),
-                chatNameManager, myPersonLabelProvider, new DefaultReplyActionBuilder(this), notificationPublisherFactory, notificationIdGenerator);
 
         registerReceiver(startConversationActionBroadcastReceiver, new IntentFilter(StartConversationActionBuilder.START_CONVERSATION_ACTION));
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));

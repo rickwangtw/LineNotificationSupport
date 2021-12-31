@@ -10,6 +10,12 @@ import org.apache.commons.lang3.Validate;
 
 import java.util.Objects;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
+@Singleton
 public class DefaultReplyActionBuilder implements  ReplyActionBuilder {
 
     public static final String REPLY_MESSAGE_ACTION = "reply_message";
@@ -22,7 +28,8 @@ public class DefaultReplyActionBuilder implements  ReplyActionBuilder {
     private final Context context;
     private final String replyLabel;
 
-    public DefaultReplyActionBuilder(final Context context) {
+    @Inject
+    public DefaultReplyActionBuilder(@ApplicationContext final Context context) {
         this(context, DEFAULT_REPLY_LABEL);
     }
 
