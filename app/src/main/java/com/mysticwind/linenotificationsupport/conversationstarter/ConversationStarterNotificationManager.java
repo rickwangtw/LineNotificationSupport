@@ -72,6 +72,8 @@ public class ConversationStarterNotificationManager {
                         .build(),
                 notificationId);
         return keywordEntryList.stream()
+                .filter(keywordEntry -> keywordEntry.isHasReplyAction())
+                .filter(keywordEntry -> keywordEntry.getKeyword().isPresent())
                 .map(entry -> entry.getChatId())
                 .collect(Collectors.toSet());
     }
