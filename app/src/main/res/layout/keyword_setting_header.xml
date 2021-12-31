@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:gravity="center_vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/warning_icon"
+            android:tooltipText="You cannot start this conversation yet because you have not received messages from this chat."
+            android:layout_width="24dp"
+            android:layout_height="match_parent"
+            app:srcCompat="@drawable/outline_warning_24"
+            android:visibility="invisible"
+            android:layout_alignParentLeft="true"/>
+
+        <TextView
+            android:id="@+id/chat_name_text_view"
+            android:textStyle="bold"
+            android:gravity="center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_toLeftOf="@id/keyword_edit_text"
+            android:layout_toRightOf="@id/warning_icon"
+            android:text="Chat" />
+
+        <TextView
+            android:id="@+id/keyword_edit_text"
+            android:textStyle="bold"
+            android:ems="5"
+            android:gravity="center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:text="Keyword" />
+
+    </RelativeLayout>
+
+</FrameLayout>
