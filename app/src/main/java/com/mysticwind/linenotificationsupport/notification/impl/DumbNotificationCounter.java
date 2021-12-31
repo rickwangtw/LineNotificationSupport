@@ -5,20 +5,26 @@ import android.service.notification.StatusBarNotification;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.mysticwind.linenotificationsupport.module.HiltQualifiers;
 import com.mysticwind.linenotificationsupport.notification.SlotAvailabilityChecker;
 
 import java.util.Collection;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class DumbNotificationCounter implements SlotAvailabilityChecker {
 
     private final Multimap<String, String> groupToNotificationKeyMultimap =
             Multimaps.synchronizedSetMultimap(HashMultimap.create());
     private final int maxNotifications;
 
-    public DumbNotificationCounter(final int maxNotifications) {
+    @Inject
+    public DumbNotificationCounter(@HiltQualifiers.MaxNotificationsPerApp final int maxNotifications) {
         this.maxNotifications = maxNotifications;
     }
 

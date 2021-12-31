@@ -4,8 +4,8 @@ import android.app.Notification;
 import android.service.notification.StatusBarNotification;
 
 import com.google.common.collect.ImmutableSet;
+import com.mysticwind.linenotificationsupport.conversationstarter.LineReplyActionDao;
 import com.mysticwind.linenotificationsupport.line.Constants;
-import com.mysticwind.linenotificationsupport.reply.ChatReplyActionManager;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 
@@ -14,20 +14,23 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import timber.log.Timber;
 
-public class ChatReplyActionTrackingIncomingNotificationReactor implements IncomingNotificationReactor {
+public class LineReplyActionPersistenceIncomingNotificationReactor implements IncomingNotificationReactor {
 
-    private final ChatReplyActionManager chatReplyActionManager;
+    private static final Set<String> INTERESTED_PACKAGES = ImmutableSet.of(Constants.LINE_PACKAGE_NAME);
 
-    public ChatReplyActionTrackingIncomingNotificationReactor(final ChatReplyActionManager chatReplyActionManager) {
-        this.chatReplyActionManager = Objects.requireNonNull(chatReplyActionManager);
+    private final LineReplyActionDao lineReplyActionDao;
+
+    public LineReplyActionPersistenceIncomingNotificationReactor(final LineReplyActionDao lineReplyActionDao) {
+        this.lineReplyActionDao = Objects.requireNonNull(lineReplyActionDao);
     }
 
     @Override
     public Collection<String> interestedPackages() {
-        return ImmutableSet.of(Constants.LINE_PACKAGE_NAME);
+        return INTERESTED_PACKAGES;
     }
 
     @Override
@@ -64,6 +67,7 @@ public class ChatReplyActionTrackingIncomingNotificationReactor implements Incom
         if (actions == null) {
             return Optional.empty();
         }
+        // mute and reply buttons
         if (actions.length < 2) {
             return Optional.empty();
         }
@@ -73,7 +77,7 @@ public class ChatReplyActionTrackingIncomingNotificationReactor implements Incom
     private void persistReplyAction(final String chatId, final Notification.Action action) {
         Timber.i("Persisted reply action chat ID [%s] title [%s] action [%s]", chatId, action.title, action);
 
-        chatReplyActionManager.persistReplyAction(chatId, action);
+        lineReplyActionDao.saveLineReplyAction(chatId, action);
     }
 
 }

@@ -4,6 +4,7 @@ import static java.util.Collections.EMPTY_LIST;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -21,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
+import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.line.LineLauncher;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
@@ -46,7 +48,8 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
 
     private static final Set<String> NOT_CHAT_IDS = ImmutableSet.of(
             LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID,
-            LineNotificationBuilder.DEFAULT_CHAT_ID
+            LineNotificationBuilder.DEFAULT_CHAT_ID,
+            ConversationStarterNotificationManager.CONVERSATION_STARTER_CHAT_ID
     );
 
     private static final LineLauncher LINE_LAUNCHER = new LineLauncher();
@@ -172,7 +175,7 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
                 .setGroup(resolveGroup())
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(lineNotification.getIcon())
-                .setContentIntent(LINE_LAUNCHER.buildPendingIntent(context, lineNotification.getChatId()))
+                .setContentIntent(resolveContentIntent(context, lineNotification))
                 .setChannelId(channelId.orElse(null))
                 .setAutoCancel(true)
                 .setWhen(lineNotification.getTimestamp())
@@ -197,6 +200,12 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
                 NotificationExtractor.getMessage(singleNotification),
                 singleNotification.when);
         notificationManager.notify(notificationId, singleNotification);
+    }
+
+    private PendingIntent resolveContentIntent(final Context context, final LineNotification lineNotification) {
+        return lineNotification.getClickIntent().orElse(
+                LINE_LAUNCHER.buildPendingIntent(context, lineNotification.getChatId())
+        );
     }
 
     private void addActionInNotification(Notification notification) {

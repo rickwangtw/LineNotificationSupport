@@ -10,10 +10,15 @@ import org.apache.commons.lang3.Validate;
 import java.time.Instant;
 import java.util.Objects;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class RoomMultiPersonChatNameDataAccessor implements MultiPersonChatNameDataAccessor {
 
     private final ChatGroupDatabase chatGroupDatabase;
 
+    @Inject
     public RoomMultiPersonChatNameDataAccessor(final ChatGroupDatabase chatGroupDatabase) {
         this.chatGroupDatabase = Objects.requireNonNull(chatGroupDatabase);
     }

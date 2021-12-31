@@ -9,12 +9,17 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class RoomGroupChatNameDataAccessor implements GroupChatNameDataAccessor {
 
     private final ChatGroupDatabase chatGroupDatabase;
 
+    @Inject
     public RoomGroupChatNameDataAccessor(ChatGroupDatabase chatGroupDatabase) {
         this.chatGroupDatabase = Objects.requireNonNull(chatGroupDatabase);
     }
