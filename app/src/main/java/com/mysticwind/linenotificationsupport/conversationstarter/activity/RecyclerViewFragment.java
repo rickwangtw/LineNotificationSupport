@@ -1,6 +1,7 @@
 package com.mysticwind.linenotificationsupport.conversationstarter.activity;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +45,9 @@ public class RecyclerViewFragment extends Fragment {
     @Inject
     ConversationStarterNotificationManager conversationStarterNotificationManager;
 
+    @Inject
+    Handler handler;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,7 +80,11 @@ public class RecyclerViewFragment extends Fragment {
             @Override
             public void accept(String chatId, String keyword) {
                 chatKeywordDao.createOrUpdateKeyword(chatId, keyword);
-                conversationStarterNotificationManager.publishNotification();
+
+                // delay the notification updates as keyword updates are async
+                // probably need to publish events whenever keyword dao finishes the updates
+                handler.postDelayed(() ->
+                        conversationStarterNotificationManager.publishNotification(), 500);
             }
         };
 
