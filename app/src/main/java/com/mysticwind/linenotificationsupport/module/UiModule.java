@@ -5,8 +5,10 @@ import android.content.res.Resources;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.reply.impl.LocalizedMyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.ui.LocaleDao;
+import com.mysticwind.linenotificationsupport.ui.LocalizationDao;
 import com.mysticwind.linenotificationsupport.ui.UserAlertDao;
 import com.mysticwind.linenotificationsupport.ui.impl.AndroidLocaleDao;
+import com.mysticwind.linenotificationsupport.ui.impl.AndroidLocalizationDao;
 import com.mysticwind.linenotificationsupport.ui.impl.ToastUserAlertDao;
 
 import javax.inject.Singleton;
@@ -41,5 +43,9 @@ public abstract class UiModule {
     @Singleton
     @Binds
     public abstract UserAlertDao bindUserAlertDao(ToastUserAlertDao toastUserAlertDao);
+
+    @Singleton
+    @Binds
+    public abstract LocalizationDao bindLocalizationDao(AndroidLocalizationDao androidLocalizationDao);
 
 }

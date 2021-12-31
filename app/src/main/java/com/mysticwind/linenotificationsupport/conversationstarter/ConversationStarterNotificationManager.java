@@ -1,11 +1,13 @@
 package com.mysticwind.linenotificationsupport.conversationstarter;
 
 import com.google.common.collect.ImmutableList;
+import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.conversationstarter.model.KeywordEntry;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.notification.AndroidNotificationManager;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisherFactory;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
+import com.mysticwind.linenotificationsupport.ui.LocalizationDao;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
 import java.time.Instant;
@@ -22,8 +24,6 @@ public class ConversationStarterNotificationManager {
 
     public static final String CONVERSATION_STARTER_CHAT_ID = "CONVERSATION-STARTER-CHAT-ID";
 
-    private static final String SAMPLE_MESSAGE = "Hello!";
-
     private final NotificationPublisherFactory notificationPublisherFactory;
     private final ChatKeywordManager chatKeywordManager;
     private final StartConversationActionBuilder startConversationActionBuilder;
@@ -31,6 +31,7 @@ public class ConversationStarterNotificationManager {
     private final KeywordSettingActivityLauncher keywordSettingActivityLauncher;
     private final MyPersonLabelProvider myPersonLabelProvider;
     private final AndroidNotificationManager androidNotificationManager;
+    private final LocalizationDao localizationDao;
 
     @Inject
     public ConversationStarterNotificationManager(final NotificationPublisherFactory notificationPublisherFactory,
@@ -39,7 +40,8 @@ public class ConversationStarterNotificationManager {
                                                   final StartConversationActionBuilder startConversationActionBuilder,
                                                   final KeywordSettingActivityLauncher keywordSettingActivityLauncher,
                                                   final MyPersonLabelProvider myPersonLabelProvider,
-                                                  final AndroidNotificationManager androidNotificationManager) {
+                                                  final AndroidNotificationManager androidNotificationManager,
+                                                  final LocalizationDao localizationDao) {
         this.notificationPublisherFactory = Objects.requireNonNull(notificationPublisherFactory);
         Objects.requireNonNull(notificationIdGenerator);
         this.chatKeywordManager = Objects.requireNonNull(chatKeywordManager);
@@ -48,6 +50,7 @@ public class ConversationStarterNotificationManager {
         this.keywordSettingActivityLauncher = Objects.requireNonNull(keywordSettingActivityLauncher);
         this.myPersonLabelProvider = Objects.requireNonNull(myPersonLabelProvider);
         this.androidNotificationManager = Objects.requireNonNull(androidNotificationManager);
+        this.localizationDao = Objects.requireNonNull(localizationDao);
     }
 
     public Set<String> publishNotification() {
@@ -58,8 +61,7 @@ public class ConversationStarterNotificationManager {
         // let's see if we get bitten by building a fake LineNotification
         notificationPublisherFactory.get().publishNotification(
                 LineNotification.builder()
-                        // TODO localization
-                        .title("Start a conversation")
+                        .title(localizationDao.getLocalizedString(R.string.conversation_start_notification_title))
                         .messages(messages)
                         .timestamp(Instant.now().toEpochMilli())
                         .isSelfResponse(true)
@@ -88,24 +90,23 @@ public class ConversationStarterNotificationManager {
                     .reduce((string1, string2) -> String.format("%s\n%s", string1, string2))
                     .orElse("");
             final KeywordEntry firstKeywordEntry = availableKeywordEntries.get(0);
+            final String sampleMessage = localizationDao.getLocalizedString(R.string.conversation_start_notification_content_sample_message);
+            final String sampleMessageWithKeyword = firstKeywordEntry.getKeyword().get() + " " + sampleMessage;
             return ImmutableList.of(
-                    // TODO localization
-                    String.format("Start a conversation by starting your message with the keyword, for example, send \"%s\" to start a conversation for chat \"%s\" with message \"%s\"",
-                            firstKeywordEntry.getKeyword().get() + " " + SAMPLE_MESSAGE, firstKeywordEntry.getChatName(), SAMPLE_MESSAGE),
-                    "This is a list of available chats and keywords:\n" + availableKeywordMessage
+                    localizationDao.getLocalizedString(R.string.conversation_start_notification_content_guidance,
+                            sampleMessageWithKeyword, firstKeywordEntry.getChatName(), sampleMessage),
+                    localizationDao.getLocalizedString(R.string.conversation_start_notification_content_list_of_chat_prefix) + availableKeywordMessage
             );
         }
 
         if (!keywordEntryList.isEmpty()) {
             return ImmutableList.of(
-                    // TODO localization
-                    "No messages from LINE received at the moment and you cannot start a conversation right now. A list of available chat will be shown here once you get LINE messages."
+                    localizationDao.getLocalizedString(R.string.conversation_start_notification_content_no_reply_action)
             );
         }
 
         return ImmutableList.of(
-                // TODO localization
-                "You have not configured any keywords to start conversations yet. Click me to configure keywords."
+                localizationDao.getLocalizedString(R.string.conversation_start_notification_content_no_keywords)
         );
     }
 

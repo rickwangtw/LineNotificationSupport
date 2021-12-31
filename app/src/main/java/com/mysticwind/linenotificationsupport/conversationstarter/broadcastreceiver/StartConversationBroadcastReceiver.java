@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.common.collect.ImmutableList;
+import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
@@ -19,6 +20,7 @@ import com.mysticwind.linenotificationsupport.notification.NotificationPublisher
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
+import com.mysticwind.linenotificationsupport.ui.LocalizationDao;
 import com.mysticwind.linenotificationsupport.ui.UserAlertDao;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
@@ -47,6 +49,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
     private final ReplyActionBuilder replyActionBuilder;
     private final NotificationPublisherFactory notificationPublisherFactory;
     private final NotificationIdGenerator notificationIdGenerator;
+    private final LocalizationDao localizationDao;
     private final UserAlertDao userAlertDao;
 
     @Inject
@@ -59,6 +62,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
                                               final ReplyActionBuilder replyActionBuilder,
                                               final NotificationPublisherFactory notificationPublisherFactory,
                                               final NotificationIdGenerator notificationIdGenerator,
+                                              final LocalizationDao localizationDao,
                                               final UserAlertDao userAlertDao) {
         this.lineRemoteInputReplier = Objects.requireNonNull(lineRemoteInputReplier);
         this.chatKeywordDao = Objects.requireNonNull(chatKeywordDao);
@@ -69,6 +73,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
         this.myPersonLabelProvider = Objects.requireNonNull(myPersonLabelProvider);
         this.notificationPublisherFactory = Objects.requireNonNull(notificationPublisherFactory);
         this.notificationIdGenerator = Objects.requireNonNull(notificationIdGenerator);
+        this.localizationDao = Objects.requireNonNull(localizationDao);
         this.userAlertDao = Objects.requireNonNull(userAlertDao);
     }
 
@@ -93,16 +98,14 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
 
         final Optional<String> messageWithKeyword = getInputMessageWithKeyword(intent);
         if (!messageWithKeyword.isPresent()) {
-            // TODO localization
-            userAlertDao.notify(String.format("Failed to find message to send from [%s].", messageWithKeyword));
+            userAlertDao.notify(localizationDao.getLocalizedString(R.string.conversation_start_remote_input_invalid_message, messageWithKeyword));
             return;
         }
 
         final Optional<ChatIdAndMessage> chatIdAndMessage = resolveChatIdAndMessage(messageWithKeyword.get());
         if (!chatIdAndMessage.isPresent()) {
             Timber.i("Cannot find matching chat ID from message [%s]", messageWithKeyword.get());
-            // TODO localization
-            userAlertDao.notify(String.format("Cannot find keyword from message [%s].", messageWithKeyword.get()));
+            userAlertDao.notify(localizationDao.getLocalizedString(R.string.conversation_start_remote_input_no_keyword, messageWithKeyword.get()));
             return;
         }
 
@@ -111,8 +114,8 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
         final Optional<Notification.Action> lineReplyAction = getLineReplyAction(chatIdAndMessage.get().getChatId());
         if (!lineReplyAction.isPresent()) {
             Timber.i("Cannot find matching Line Reply Action: chat ID [%s] message [%s]", chatIdAndMessage.get().getChatId(), messageWithKeyword.get());
-            // TODO localization
-            userAlertDao.notify(String.format("Failed to send message to [%s]: no message for this chat has been received.", chatNameManager.getChatName(chatIdAndMessage.get().getChatId())));
+            userAlertDao.notify(localizationDao.getLocalizedString(R.string.conversation_start_remote_input_no_reply_action,
+                    chatNameManager.getChatName(chatIdAndMessage.get().getChatId())));
             return;
         }
 
