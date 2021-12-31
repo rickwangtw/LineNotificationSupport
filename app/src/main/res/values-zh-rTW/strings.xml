@@ -96,12 +96,12 @@
     <string name="support_donate_app">請透過捐贈版支持我的努力！ https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate</string>
 
     <!-- Conversation starter notification -->
-    <string name="conversation_start_notification_title">創立新對話</string>
-    <string name="conversation_start_notification_action_button">創立</string>
-    <string name="conversation_start_notification_action_button_message">由關鍵詞開始的訊息。這個關鍵字必須與群組關聯。</string>
+    <string name="conversation_start_notification_title">開始新對話</string>
+    <string name="conversation_start_notification_action_button">新對話</string>
+    <string name="conversation_start_notification_action_button_message">與群組關聯的關鍵詞開始的訊息。</string>
     <string name="conversation_start_notification_content_no_keywords">您尚未設定任何關鍵詞。點我來設定！</string>
-    <string name="conversation_start_notification_content_no_reply_action">您尚未收到 LINE 訊息，因此還無法創立新對話。收到新訊息之後將會列出支援的關鍵詞。</string>
-    <string name="conversation_start_notification_content_guidance">利用關鍵詞來創立新對話。若您傳送 \"%1$s\"，這將會發送訊息 \"%3$s\" 並創立群組 \"%2$s\" 的對話。</string>
+    <string name="conversation_start_notification_content_no_reply_action">您尚未收到 LINE 訊息，因此還無法開始新對話。收到新訊息之後將會列出可使用的關鍵詞。</string>
+    <string name="conversation_start_notification_content_guidance">利用關鍵詞來開始新對話。若您傳送 \"%1$s\"，這將會發送訊息 \"%3$s\" 並開始給群組 \"%2$s\" 的對話。</string>
     <string name="conversation_start_notification_content_sample_message">早安！</string>
     <string name="conversation_start_notification_content_list_of_chat_prefix">以下為可使用的關鍵詞列表：\n</string>
 
