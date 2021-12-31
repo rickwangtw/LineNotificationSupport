@@ -215,6 +215,7 @@ public class HelpActivity extends AppCompatActivity {
         if (DEBUG_MODE_PROVIDER.isDebugMode()) {
             menu.getItem(1).setVisible(true);
             menu.getItem(2).setVisible(true);
+            menu.getItem(3).setVisible(true);
         }
 
         return true;
