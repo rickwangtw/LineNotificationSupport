@@ -151,6 +151,13 @@ public class NotificationListenerService
             if (PREFERENCE_KEYS_THAT_TRIGGER_REBUILDING_NOTIFICATION_PUBLISHER.contains(preferenceKey)) {
                 notificationPublisherFactory.notifyChange();
             }
+            if (PreferenceProvider.CONVERSATION_STARTER_KEY.equals(preferenceKey)) {
+                if (preferenceProvider.shouldShowConversationStarterNotification()) {
+                    conversationStarterNotificationManager.publishNotification();
+                } else {
+                    conversationStarterNotificationManager.cancelNotification();
+                }
+            }
         }
     };
 
@@ -402,7 +409,7 @@ public class NotificationListenerService
         scheduleNotificationCounterCheck();
 
         final ConversationStarterNotificationReactor conversationStarterNotificationReactor =
-                new ConversationStarterNotificationReactor(getPackageName(), conversationStarterNotificationManager, handler);
+                new ConversationStarterNotificationReactor(getPackageName(), conversationStarterNotificationManager, preferenceProvider, handler);
         this.incomingNotificationReactors.add(conversationStarterNotificationReactor);
         this.dismissedNotificationReactors.add(conversationStarterNotificationReactor);
 
@@ -413,7 +420,9 @@ public class NotificationListenerService
 
         isInitialized = true;
 
-        conversationStarterNotificationManager.publishNotification();
+        if (preferenceProvider.shouldShowConversationStarterNotification()) {
+            conversationStarterNotificationManager.publishNotification();
+        }
 
         Timber.d("Service completed initialization");
     }

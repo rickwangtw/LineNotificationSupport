@@ -32,6 +32,22 @@ public class DefaultAndroidNotificationManager implements AndroidNotificationMan
     }
 
     @Override
+    public void cancelNotification(final String chatId) {
+        Validate.notBlank(chatId);
+
+        final Optional<StatusBarNotification> statusBarNotification = Arrays.stream(notificationManager.getActiveNotifications())
+                .filter(notification -> packageName.equals(notification.getPackageName()))
+                .filter(notification -> chatId.equals(
+                        NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification()).orElse(null)))
+                .findFirst();
+        statusBarNotification.ifPresent(notification -> {
+                    Timber.d("Cancel notification with ID [%d] for chat [%s]", notification.getId(), chatId);
+                    notificationManager.cancel(notification.getId());
+                }
+        );
+    }
+
+    @Override
     public void clearRemoteInputNotificationSpinner(final String chatId) {
         Validate.notBlank(chatId);
 

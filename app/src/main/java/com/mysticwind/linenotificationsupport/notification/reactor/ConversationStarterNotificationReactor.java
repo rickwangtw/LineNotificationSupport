@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.line.Constants;
 import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
+import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,14 +28,17 @@ public class ConversationStarterNotificationReactor implements IncomingNotificat
     private final Handler handler;
 
     private final ConversationStarterNotificationManager conversationStarterNotificationManager;
+    private final PreferenceProvider preferenceProvider;
 
     private Set<String> knownAvailableChatIds = new HashSet<>();
 
     public ConversationStarterNotificationReactor(final String thisPackageName,
                                                   final ConversationStarterNotificationManager conversationStarterNotificationManager,
+                                                  final PreferenceProvider preferenceProvider,
                                                   final Handler handler) {
         this.thisPackageName = Validate.notBlank(thisPackageName);
         this.conversationStarterNotificationManager = Objects.requireNonNull(conversationStarterNotificationManager);
+        this.preferenceProvider = Objects.requireNonNull(preferenceProvider);
         // LINE for incoming and self for dismissing
         this.interestedPackages = ImmutableSet.of(Constants.LINE_PACKAGE_NAME, thisPackageName);
         this.handler = Objects.requireNonNull(handler);
@@ -53,6 +57,10 @@ public class ConversationStarterNotificationReactor implements IncomingNotificat
     @Override
     public Reaction reactToIncomingNotification(StatusBarNotification statusBarNotification) {
         Objects.requireNonNull(statusBarNotification);
+
+        if (!preferenceProvider.shouldShowConversationStarterNotification()) {
+            return Reaction.NONE;
+        }
 
         if (!Constants.LINE_PACKAGE_NAME.equals(statusBarNotification.getPackageName())) {
             return Reaction.NONE;
@@ -77,6 +85,10 @@ public class ConversationStarterNotificationReactor implements IncomingNotificat
     @Override
     public Reaction reactToDismissedNotification(StatusBarNotification statusBarNotification) {
         Objects.requireNonNull(statusBarNotification);
+
+        if (!preferenceProvider.shouldShowConversationStarterNotification()) {
+            return Reaction.NONE;
+        }
 
         if (!thisPackageName.equals(statusBarNotification.getPackageName())) {
             return Reaction.NONE;
