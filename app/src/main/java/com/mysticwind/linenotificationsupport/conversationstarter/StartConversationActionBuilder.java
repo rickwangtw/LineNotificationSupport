@@ -31,7 +31,7 @@ public class StartConversationActionBuilder {
 
     public Notification.Action buildAction() {
         final RemoteInput remoteInput = new RemoteInput.Builder(MESSAGE_REMOTE_INPUT_KEY)
-                .setLabel(START_CONVERSATION_ACTION)
+                .setLabel(DEFAULT_START_CONVERSATION_LABEL)
                 .build();
 
         final PendingIntent replyPendingIntent =
