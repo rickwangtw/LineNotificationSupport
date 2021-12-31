@@ -70,6 +70,7 @@ public class LineNotificationBuilder {
                 .lineStickerUrl(lineStickerUrl)
                 .chatId(resolveChatId(statusBarNotification, callState))
                 .timestamp(statusBarNotification.getNotification().when)
+                .clickIntent(statusBarNotification.getNotification().contentIntent)
                 .actions(actions)
                 .icon(largeIconBitmap)
                 .callState(callState)
