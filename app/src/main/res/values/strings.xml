@@ -119,4 +119,9 @@
     <string name="conversation_start_remote_input_no_keyword">Cannot find keyword from message [%1$s].</string>
     <string name="conversation_start_remote_input_no_reply_action">Failed to send message to [%1$s]: no message for this chat has been received.</string>
 
+    <!-- Keyword Setting Activity -->
+    <string name="keyword_setting_activity_title">Keyword Configurations</string>
+    <string name="keyword_setting_activity_header_chat">Chat</string>
+    <string name="keyword_setting_activity_header_keyword">Keyword</string>
+
 </resources>

@@ -20,7 +20,7 @@
         android:theme="@style/Theme.LineNotificationSupport">
         <activity
             android:name=".conversationstarter.activity.KeywordSettingActivity"
-            android:label="Keyword Configurations"
+            android:label="@string/keyword_setting_activity_title"
             android:exported="false" />
 
         <receiver

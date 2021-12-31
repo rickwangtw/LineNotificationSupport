@@ -28,7 +28,7 @@
             android:layout_height="match_parent"
             android:layout_toLeftOf="@id/keyword_edit_text"
             android:layout_toRightOf="@id/warning_icon"
-            android:text="Chat" />
+            android:text="@string/keyword_setting_activity_header_chat" />
 
         <TextView
             android:id="@+id/keyword_edit_text"
@@ -38,7 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true"
-            android:text="Keyword" />
+            android:text="@string/keyword_setting_activity_header_keyword" />
 
     </RelativeLayout>
 
