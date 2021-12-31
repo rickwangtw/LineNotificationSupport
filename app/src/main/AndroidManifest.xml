@@ -21,6 +21,7 @@
         <activity
             android:name=".conversationstarter.activity.KeywordSettingActivity"
             android:label="@string/keyword_setting_activity_title"
+            android:launchMode="singleTop"
             android:exported="false" />
 
         <receiver
