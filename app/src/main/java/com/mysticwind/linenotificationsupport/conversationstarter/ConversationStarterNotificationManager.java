@@ -86,7 +86,7 @@ public class ConversationStarterNotificationManager {
         if (!availableKeywordEntries.isEmpty()) {
             final String availableKeywordMessage = availableKeywordEntries.stream()
                     .map(entry ->
-                            String.format("%s -> %s", entry.getChatName(), entry.getKeyword().get()))
+                            String.format("%s -> %s", entry.getKeyword().get(), entry.getChatName()))
                     .reduce((string1, string2) -> String.format("%s\n%s", string1, string2))
                     .orElse("");
             final KeywordEntry firstKeywordEntry = availableKeywordEntries.get(0);
