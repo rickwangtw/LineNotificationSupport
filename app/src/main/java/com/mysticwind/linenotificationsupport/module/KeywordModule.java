@@ -18,8 +18,10 @@ import dagger.hilt.components.SingletonComponent;
 public abstract class KeywordModule {
 
     /* Related classes using @Inject
+      ConversationStarterNotificationManager
       ChatKeywordManager
       KeywordSettingActivityLauncher
+      StartConversationActionBuilder
      */
 
     @Singleton

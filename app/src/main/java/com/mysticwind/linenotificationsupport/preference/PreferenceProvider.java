@@ -2,6 +2,10 @@ package com.mysticwind.linenotificationsupport.preference;
 
 import android.content.SharedPreferences;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class PreferenceProvider {
 
     public static final String MANAGE_LINE_MESSAGE_NOTIFICATIONS_PREFERENCE_KEY = "manage_line_message_notifications";
@@ -18,6 +22,7 @@ public class PreferenceProvider {
 
     private final SharedPreferences sharedPreferences;
 
+    @Inject
     public PreferenceProvider(final SharedPreferences sharedPreferences) {
         this.sharedPreferences = sharedPreferences;
     }

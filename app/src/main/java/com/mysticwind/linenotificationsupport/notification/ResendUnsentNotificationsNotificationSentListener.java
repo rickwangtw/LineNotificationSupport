@@ -9,7 +9,6 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 import lombok.Value;
 import timber.log.Timber;
@@ -39,12 +38,12 @@ public class ResendUnsentNotificationsNotificationSentListener implements Notifi
 
     private final Map<Integer, Item> idToItemMap = new ConcurrentHashMap();
     private final Handler handler;
-    private final Supplier<NotificationPublisher> notificationPublisherSupplier;
+    private final NotificationPublisherFactory notificationPublisherFactory;
 
     public ResendUnsentNotificationsNotificationSentListener(final Handler handler,
-                                                             final Supplier<NotificationPublisher> notificationPublisherSupplier) {
+                                                             final NotificationPublisherFactory notificationPublisherFactory) {
         this.handler = Objects.requireNonNull(handler);
-        this.notificationPublisherSupplier = Objects.requireNonNull(notificationPublisherSupplier);
+        this.notificationPublisherFactory = Objects.requireNonNull(notificationPublisherFactory);
     }
 
     @Override
@@ -71,7 +70,7 @@ public class ResendUnsentNotificationsNotificationSentListener implements Notifi
                     Timber.w("Notification id [%d] message [%s] was not sent!", notificationId, notification.getMessage());
 
                     item.incrementRetryCount();
-                    notificationPublisherSupplier.get().republishNotification(lineNotification, notificationId);
+                    notificationPublisherFactory.get().republishNotification(lineNotification, notificationId);
                 }
             }
         }, NOTIFICATION_VERIFICATION_WAIT_TIME_MILLIS);

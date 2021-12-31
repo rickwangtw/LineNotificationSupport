@@ -9,6 +9,12 @@ import android.content.Intent;
 import java.time.Instant;
 import java.util.Objects;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
+@Singleton
 public class StartConversationActionBuilder {
 
     public static final String START_CONVERSATION_ACTION = "start_conversation_action";
@@ -18,7 +24,8 @@ public class StartConversationActionBuilder {
 
     private final Context context;
 
-    public StartConversationActionBuilder(final Context context) {
+    @Inject
+    public StartConversationActionBuilder(@ApplicationContext final Context context) {
         this.context = Objects.requireNonNull(context);
     }
 

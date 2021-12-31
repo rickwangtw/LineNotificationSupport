@@ -43,9 +43,7 @@ import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothCon
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
 import com.mysticwind.linenotificationsupport.chatname.dataaccessor.GroupChatNameDataAccessor;
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordDao;
-import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
-import com.mysticwind.linenotificationsupport.conversationstarter.KeywordSettingActivityLauncher;
 import com.mysticwind.linenotificationsupport.conversationstarter.LineReplyActionDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.StartConversationActionBuilder;
 import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
@@ -62,21 +60,10 @@ import com.mysticwind.linenotificationsupport.model.AutoIncomingCallNotification
 import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStrategy;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
-import com.mysticwind.linenotificationsupport.notification.BigNotificationSplittingNotificationPublisherDecorator;
-import com.mysticwind.linenotificationsupport.notification.DismissActionInjectorNotificationPublisherDecorator;
-import com.mysticwind.linenotificationsupport.notification.HistoryProvidingNotificationPublisherDecorator;
-import com.mysticwind.linenotificationsupport.notification.LinkActionInjectorNotificationPublisherDecorator;
-import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
-import com.mysticwind.linenotificationsupport.notification.NotificationMergingNotificationPublisherDecorator;
-import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
-import com.mysticwind.linenotificationsupport.notification.NotificationSentListener;
-import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.NotificationPublisherFactory;
 import com.mysticwind.linenotificationsupport.notification.ResendUnsentNotificationsNotificationSentListener;
-import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
-import com.mysticwind.linenotificationsupport.notification.SlotAvailabilityChecker;
 import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
-import com.mysticwind.linenotificationsupport.notification.impl.SmartNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.reactor.CallInProgressTrackingReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNamePersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ConversationStarterNotificationReactor;
@@ -89,7 +76,6 @@ import com.mysticwind.linenotificationsupport.notification.reactor.LoggingDismis
 import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNotificationIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
 import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
-import com.mysticwind.linenotificationsupport.notification.reactor.SmartNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
@@ -120,7 +106,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -134,14 +119,8 @@ public class NotificationListenerService
 
     public static final String DELETE_FRIEND_NAME_CACHE_ACTION = "com.mysticwind.linenotificationsupport.action.deletefriendnamecache";
 
-    private static final String GROUP_MESSAGE_GROUP_KEY = "NOTIFICATION_GROUP_MESSAGE";
-    private static final long EMPTY_LINE_NOTIFICATION_RETRY_TIMEOUT = 200L;
-    private static final int EMPTY_LINE_NOTIFICATION_RETRY_COUNT = 10;
-    private static final long VERIFY_NOTIFICATION_SENT_TIMEOUT = 1_000L;
     private static final long NOTIFICATION_COUNTER_CHECK_PERIOD = 60_000L;
 
-    private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver();
-    private static final NotificationIdGenerator NOTIFICATION_ID_GENERATOR = new NotificationIdGenerator();
     private static final StatusBarNotificationPrinter NOTIFICATION_PRINTER = new StatusBarNotificationPrinter();
     private static final DebugModeProvider DEBUG_MODE_PROVIDER = new DebugModeProvider();
 
@@ -163,18 +142,8 @@ public class NotificationListenerService
     );
 
     private final Handler handler = new Handler();
-    private final SmartNotificationCounter smartNotificationCounter = new SmartNotificationCounter((int) getMaxNotificationsPerApp());
-    private final DumbNotificationCounter dumbNotificationCounter = new DumbNotificationCounter((int) getMaxNotificationsPerApp());
-    private final SlotAvailabilityChecker slotAvailabilityChecker = dumbNotificationCounter;
 
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
-    private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
-    private Supplier<NotificationPublisher> notificationPublisherSupplier = new Supplier<NotificationPublisher>() {
-        @Override
-        public NotificationPublisher get() {
-            return notificationPublisher;
-        }
-    };
     private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
     private PreferenceProvider preferenceProvider;
@@ -190,7 +159,7 @@ public class NotificationListenerService
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String preferenceKey) {
             Timber.d("onSharedPreferenceChangeListener: updated preference [%s]", preferenceKey);
             if (PREFERENCE_KEYS_THAT_TRIGGER_REBUILDING_NOTIFICATION_PUBLISHER.contains(preferenceKey)) {
-                NotificationListenerService.this.notificationPublisher = buildNotificationPublisher();
+                notificationPublisherFactory.notifyChange();
             }
         }
     };
@@ -269,7 +238,7 @@ public class NotificationListenerService
                     .isSelfResponse(true)
                     .build();
 
-            sendNotification(responseLineNotification, NOTIFICATION_ID_GENERATOR.getNextNotificationId());
+            sendNotification(responseLineNotification, notificationIdGenerator.getNextNotificationId());
         }
 
         private Optional<StatusBarNotification> findNotificationOfChatId(final String chatId) {
@@ -298,17 +267,24 @@ public class NotificationListenerService
         }
     };
 
-    private ConversationStarterNotificationManager conversationStarterNotificationManager;
-
     private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
     private boolean isInitialized = false;
     private boolean isListenerConnected = false;
 
     @Inject
-    LineReplyActionDao lineReplyActionDao;
+    NotificationPublisherFactory notificationPublisherFactory;
 
     @Inject
-    ChatKeywordManager chatKeywordManager;
+    NotificationIdGenerator notificationIdGenerator;
+
+    @Inject
+    GroupIdResolver groupIdResolver;
+
+    @Inject
+    DumbNotificationCounter dumbNotificationCounter;
+
+    @Inject
+    LineReplyActionDao lineReplyActionDao;
 
     @Inject
     ChatKeywordDao chatKeywordDao;
@@ -320,66 +296,7 @@ public class NotificationListenerService
     GroupChatNameDataAccessor groupChatNameDataAccessor;
 
     @Inject
-    KeywordSettingActivityLauncher keywordSettingActivityLauncher;
-
-    private NotificationPublisher buildNotificationPublisher() {
-        return buildNotificationPublisherWithPreviousStateRestored(Collections.EMPTY_LIST);
-    }
-
-    private NotificationPublisher buildNotificationPublisherWithPreviousStateRestored(List<StatusBarNotification> existingNotifications) {
-        final boolean shouldExecuteMaxNotificationWorkaround =
-                getPreferenceProvider().shouldExecuteMaxNotificationWorkaround();
-
-        final List<NotificationSentListener> notificationSentListeners = new ArrayList<>();
-        // don't enable this for single notification conversations just yet because we may still
-        // exceed 25 chats
-        if (shouldExecuteMaxNotificationWorkaround) {
-            resendUnsentNotificationsNotificationSentListener = buildResendUnsentNotificationsNotificationSentListener();
-            notificationSentListeners.add(resendUnsentNotificationsNotificationSentListener);
-        } else {
-            resendUnsentNotificationsNotificationSentListener = null;
-        }
-
-        NotificationPublisher notificationPublisher =
-                new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER,
-                        getPreferenceProvider(), notificationSentListeners);
-
-        // this should come after HistoryProvidingNotificationPublisherDecorator as it changes the notification ID
-        notificationPublisher =
-                new DismissActionInjectorNotificationPublisherDecorator(
-                        notificationPublisher, this);
-
-        if (getPreferenceProvider().shouldUseSingleNotificationForConversations()) {
-            // do this before LinkActionInjectorNotificationPublisherDecorator
-            // so that link mutations are also persisted
-            notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher, existingNotifications);
-        }
-
-        notificationPublisher =
-                new LinkActionInjectorNotificationPublisherDecorator(
-                        notificationPublisher, this);
-
-        if (shouldExecuteMaxNotificationWorkaround) {
-            notificationPublisher = new MaxNotificationHandlingNotificationPublisherDecorator(
-                    handler, notificationPublisher, slotAvailabilityChecker);
-        }
-
-        if (getPreferenceProvider().shouldUseMessageSplitter()) {
-             notificationPublisher = new BigNotificationSplittingNotificationPublisherDecorator(
-                    notificationPublisher,
-                    getPreferenceProvider());
-        }
-
-        notificationPublisher = new NotificationMergingNotificationPublisherDecorator(notificationPublisher);
-
-        return notificationPublisher;
-    }
-
-    private ResendUnsentNotificationsNotificationSentListener buildResendUnsentNotificationsNotificationSentListener() {
-        return new ResendUnsentNotificationsNotificationSentListener(
-                handler,
-                notificationPublisherSupplier);
-    }
+    ConversationStarterNotificationManager conversationStarterNotificationManager;
 
     @Override
     public void onCreate() {
@@ -450,12 +367,6 @@ public class NotificationListenerService
 
         this.incomingNotificationReactors.add(new LineReplyActionPersistenceIncomingNotificationReactor(lineReplyActionDao));
 
-        // TODO remove this after testing the stability of the dumb version
-        final SmartNotificationCounterNotificationReactor smartNotificationCounterNotificationReactor =
-                new SmartNotificationCounterNotificationReactor(getPackageName(), smartNotificationCounter);
-        this.incomingNotificationReactors.add(smartNotificationCounterNotificationReactor);
-        this.dismissedNotificationReactors.add(smartNotificationCounterNotificationReactor);
-
         dumbNotificationCounter.updateStateFromExistingNotifications(existingNotifications);
 
         final DumbNotificationCounterNotificationReactor dumbNotificationCounterNotificationReactor =
@@ -465,7 +376,7 @@ public class NotificationListenerService
 
         final SummaryNotificationPublisher summaryNotificationPublisher = new SummaryNotificationPublisher(
                 this, (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
-                getPackageName(), GROUP_ID_RESOLVER);
+                getPackageName(), groupIdResolver);
         final SummaryNotificationPublisherNotificationReactor summaryNotificationPublisherNotificationReactor =
                 new SummaryNotificationPublisherNotificationReactor(getPackageName(), summaryNotificationPublisher);
         this.incomingNotificationReactors.add(summaryNotificationPublisherNotificationReactor);
@@ -480,7 +391,7 @@ public class NotificationListenerService
 
         this.incomingNotificationReactors.add(new SameLineMessageIdFilterIncomingNotificationReactor());
 
-        this.notificationPublisher = buildNotificationPublisherWithPreviousStateRestored(existingNotifications);
+        notificationPublisherFactory.notifyChangeWithExistingNotifications(existingNotifications);
 
         new NotificationGroupCreator(
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
@@ -493,8 +404,6 @@ public class NotificationListenerService
 
         scheduleNotificationCounterCheck();
 
-        conversationStarterNotificationManager = new ConversationStarterNotificationManager(notificationPublisherSupplier,
-                NOTIFICATION_ID_GENERATOR, chatKeywordManager, new StartConversationActionBuilder(this), keywordSettingActivityLauncher);
         final ConversationStarterNotificationReactor conversationStarterNotificationReactor =
                 new ConversationStarterNotificationReactor(getPackageName(), conversationStarterNotificationManager, handler);
         this.incomingNotificationReactors.add(conversationStarterNotificationReactor);
@@ -503,7 +412,7 @@ public class NotificationListenerService
         startConversationActionBroadcastReceiver = new StartConversationBroadcastReceiver(
                 lineRemoteInputReplier, chatKeywordDao, lineReplyActionDao,
                 (NotificationManager) this.getSystemService(NOTIFICATION_SERVICE), getPackageName(),
-                chatNameManager, myPersonLabelProvider, new DefaultReplyActionBuilder(this), notificationPublisherSupplier, NOTIFICATION_ID_GENERATOR);
+                chatNameManager, myPersonLabelProvider, new DefaultReplyActionBuilder(this), notificationPublisherFactory, notificationIdGenerator);
 
         registerReceiver(startConversationActionBroadcastReceiver, new IntentFilter(StartConversationActionBuilder.START_CONVERSATION_ACTION));
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
@@ -627,7 +536,7 @@ public class NotificationListenerService
         final LineNotification lineNotification = new LineNotificationBuilder(this,
                 chatTitleAndSenderResolver, NOTIFICATION_PRINTER).from(notificationFromLine);
 
-        final int notificationId = NOTIFICATION_ID_GENERATOR.getNextNotificationId();
+        final int notificationId = notificationIdGenerator.getNextNotificationId();
 
         final Optional<Pair<LineNotification, Integer>> notificationAndId =
                 handleDuplicate(lineNotification, notificationId);
@@ -643,7 +552,7 @@ public class NotificationListenerService
     }
 
     private void sendNotification(final LineNotification lineNotification, final int notificationId) {
-        notificationPublisher.publishNotification(lineNotification, notificationId);
+        notificationPublisherFactory.get().publishNotification(lineNotification, notificationId);
 
         if (lineNotification.getCallState() == null) {
             return;
@@ -762,7 +671,7 @@ public class NotificationListenerService
                             .timestamp(Instant.now().toEpochMilli())
                             .build();
 
-            notificationPublisher.publishNotification(
+            notificationPublisherFactory.get().publishNotification(
                     lineNotificationWithUpdatedTimestamp,
                     autoIncomingCallNotificationState.getIncomingCallNotificationIds().iterator().next());
         } catch (Exception e) {
@@ -915,8 +824,6 @@ public class NotificationListenerService
         this.incomingNotificationReactors.clear();
         this.dismissedNotificationReactors.clear();
 
-        this.notificationPublisher = NullNotificationPublisher.INSTANCE;
-
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         try {
             sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
@@ -999,7 +906,7 @@ public class NotificationListenerService
         if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
             return;
         }
-        notificationPublisher.updateNotificationDismissed(statusBarNotification);
+        notificationPublisherFactory.get().updateNotificationDismissed(statusBarNotification);
     }
 
 }

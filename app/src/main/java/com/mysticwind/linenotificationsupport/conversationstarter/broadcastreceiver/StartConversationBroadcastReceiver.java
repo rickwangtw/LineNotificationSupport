@@ -20,7 +20,7 @@ import com.mysticwind.linenotificationsupport.conversationstarter.ConversationSt
 import com.mysticwind.linenotificationsupport.conversationstarter.LineReplyActionDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.StartConversationActionBuilder;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
-import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.NotificationPublisherFactory;
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
@@ -35,7 +35,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import lombok.Value;
 import timber.log.Timber;
@@ -50,7 +49,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
     private final ChatNameManager chatNameManager;
     private final MyPersonLabelProvider myPersonLabelProvider;
     private final ReplyActionBuilder replyActionBuilder;
-    private final Supplier<NotificationPublisher> notificationPublisherSupplier;
+    private final NotificationPublisherFactory notificationPublisherFactory;
     private final NotificationIdGenerator notificationIdGenerator;
 
     public StartConversationBroadcastReceiver(final LineRemoteInputReplier lineRemoteInputReplier,
@@ -61,7 +60,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
                                               final ChatNameManager chatNameManager,
                                               final MyPersonLabelProvider myPersonLabelProvider,
                                               final ReplyActionBuilder replyActionBuilder,
-                                              final Supplier<NotificationPublisher> notificationPublisherSupplier,
+                                              final NotificationPublisherFactory notificationPublisherFactory,
                                               final NotificationIdGenerator notificationIdGenerator) {
         this.lineRemoteInputReplier = Objects.requireNonNull(lineRemoteInputReplier);
         this.chatKeywordDao = Objects.requireNonNull(chatKeywordDao);
@@ -71,7 +70,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
         this.chatNameManager = Objects.requireNonNull(chatNameManager);
         this.replyActionBuilder = Objects.requireNonNull(replyActionBuilder);
         this.myPersonLabelProvider = Objects.requireNonNull(myPersonLabelProvider);
-        this.notificationPublisherSupplier = Objects.requireNonNull(notificationPublisherSupplier);
+        this.notificationPublisherFactory = Objects.requireNonNull(notificationPublisherFactory);
         this.notificationIdGenerator = Objects.requireNonNull(notificationIdGenerator);
     }
 
@@ -182,7 +181,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
                 .isSelfResponse(true)
                 .build();
 
-        notificationPublisherSupplier.get().publishNotification(lineNotification, notificationIdGenerator.getNextNotificationId());
+        notificationPublisherFactory.get().publishNotification(lineNotification, notificationIdGenerator.getNextNotificationId());
     }
 
     private void clearNotificationSpinner() {

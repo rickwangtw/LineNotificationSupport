@@ -5,34 +5,38 @@ import androidx.core.app.Person;
 import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.conversationstarter.model.KeywordEntry;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
-import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.NotificationPublisherFactory;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class ConversationStarterNotificationManager {
 
     public static final String CONVERSATION_STARTER_CHAT_ID = "CONVERSATION-STARTER-CHAT-ID";
 
     private static final String SAMPLE_MESSAGE = "Hello!";
 
-    private final Supplier<NotificationPublisher> notificationPublisherSupplier;
+    private final NotificationPublisherFactory notificationPublisherFactory;
     private final ChatKeywordManager chatKeywordManager;
     private final StartConversationActionBuilder startConversationActionBuilder;
     private final int notificationId;
     private final KeywordSettingActivityLauncher keywordSettingActivityLauncher;
 
-    public ConversationStarterNotificationManager(final Supplier<NotificationPublisher> notificationPublisherSupplier,
+    @Inject
+    public ConversationStarterNotificationManager(final NotificationPublisherFactory notificationPublisherFactory,
                                                   final NotificationIdGenerator notificationIdGenerator,
                                                   final ChatKeywordManager chatKeywordManager,
                                                   final StartConversationActionBuilder startConversationActionBuilder,
                                                   final KeywordSettingActivityLauncher keywordSettingActivityLauncher) {
-        this.notificationPublisherSupplier = Objects.requireNonNull(notificationPublisherSupplier);
+        this.notificationPublisherFactory = Objects.requireNonNull(notificationPublisherFactory);
         Objects.requireNonNull(notificationIdGenerator);
         this.chatKeywordManager = Objects.requireNonNull(chatKeywordManager);
         this.startConversationActionBuilder = Objects.requireNonNull(startConversationActionBuilder);
@@ -46,7 +50,7 @@ public class ConversationStarterNotificationManager {
         final List<String> messages = resolveMessages(keywordEntryList);
 
         // let's see if we get bitten by building a fake LineNotification
-        notificationPublisherSupplier.get().publishNotification(
+        notificationPublisherFactory.get().publishNotification(
                 LineNotification.builder()
                         // TODO localization
                         .title("Start a conversation")
