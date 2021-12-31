@@ -23,6 +23,7 @@ import com.mysticwind.linenotificationsupport.notification.NotificationPublisher
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
+import com.mysticwind.linenotificationsupport.ui.UserAlertDao;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +51,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
     private final ReplyActionBuilder replyActionBuilder;
     private final NotificationPublisherFactory notificationPublisherFactory;
     private final NotificationIdGenerator notificationIdGenerator;
+    private final UserAlertDao userAlertDao;
 
     @Inject
     public StartConversationBroadcastReceiver(final LineRemoteInputReplier lineRemoteInputReplier,
@@ -60,7 +62,8 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
                                               final MyPersonLabelProvider myPersonLabelProvider,
                                               final ReplyActionBuilder replyActionBuilder,
                                               final NotificationPublisherFactory notificationPublisherFactory,
-                                              final NotificationIdGenerator notificationIdGenerator) {
+                                              final NotificationIdGenerator notificationIdGenerator,
+                                              final UserAlertDao userAlertDao) {
         this.lineRemoteInputReplier = Objects.requireNonNull(lineRemoteInputReplier);
         this.chatKeywordDao = Objects.requireNonNull(chatKeywordDao);
         this.lineReplyActionDao = Objects.requireNonNull(lineReplyActionDao);
@@ -70,6 +73,7 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
         this.myPersonLabelProvider = Objects.requireNonNull(myPersonLabelProvider);
         this.notificationPublisherFactory = Objects.requireNonNull(notificationPublisherFactory);
         this.notificationIdGenerator = Objects.requireNonNull(notificationIdGenerator);
+        this.userAlertDao = Objects.requireNonNull(userAlertDao);
     }
 
     @Value
@@ -93,12 +97,16 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
 
         final Optional<String> messageWithKeyword = getInputMessageWithKeyword(intent);
         if (!messageWithKeyword.isPresent()) {
+            // TODO localization
+            userAlertDao.notify(String.format("Failed to find message to send from [%s].", messageWithKeyword));
             return;
         }
 
         final Optional<ChatIdAndMessage> chatIdAndMessage = resolveChatIdAndMessage(messageWithKeyword.get());
         if (!chatIdAndMessage.isPresent()) {
             Timber.i("Cannot find matching chat ID from message [%s]", messageWithKeyword.get());
+            // TODO localization
+            userAlertDao.notify(String.format("Cannot find keyword from message [%s].", messageWithKeyword.get()));
             return;
         }
 
@@ -107,6 +115,8 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
         final Optional<Notification.Action> lineReplyAction = getLineReplyAction(chatIdAndMessage.get().getChatId());
         if (!lineReplyAction.isPresent()) {
             Timber.i("Cannot find matching Line Reply Action: chat ID [%s] message [%s]", chatIdAndMessage.get().getChatId(), messageWithKeyword.get());
+            // TODO localization
+            userAlertDao.notify(String.format("Failed to send message to [%s]: no message for this chat has been received.", chatNameManager.getChatName(chatIdAndMessage.get().getChatId())));
             return;
         }
 
