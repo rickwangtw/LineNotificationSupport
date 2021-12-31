@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordDao;
+import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 
 import java.util.function.BiConsumer;
 
@@ -39,6 +40,9 @@ public class RecyclerViewFragment extends Fragment {
 
     @Inject
     ChatKeywordDao chatKeywordDao;
+
+    @Inject
+    ConversationStarterNotificationManager conversationStarterNotificationManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -72,6 +76,7 @@ public class RecyclerViewFragment extends Fragment {
             @Override
             public void accept(String chatId, String keyword) {
                 chatKeywordDao.createOrUpdateKeyword(chatId, keyword);
+                conversationStarterNotificationManager.publishNotification();
             }
         };
 
