@@ -7,11 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.core.app.Person;
-import androidx.core.graphics.drawable.IconCompat;
-
 import com.google.common.collect.ImmutableList;
-import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.ChatKeywordDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
@@ -173,16 +169,12 @@ public class StartConversationBroadcastReceiver extends BroadcastReceiver {
 
     private void generateNewConversationNotification(final Context context, final String chatId, final String message) {
         final String chatName = chatNameManager.getChatName(chatId);
-        final String myPersonLabel = myPersonLabelProvider.getMyPersonLabel().get();
         final Notification.Action lineReplyAction = getLineReplyAction(chatId).get();
         final LineNotification lineNotification = LineNotification.builder()
                 .lineMessageId(String.valueOf(Instant.now().toEpochMilli())) // just generate a fake one
                 .title(chatName)
                 .message(message)
-                .sender(new Person.Builder()
-                        .setName(myPersonLabel)
-                        .setIcon(IconCompat.createWithResource(context, R.drawable.outline_person_24))
-                        .build())
+                .sender(myPersonLabelProvider.getMyPerson())
                 .chatId(chatId)
                 .timestamp(Instant.now().toEpochMilli())
                 .actions(ImmutableList.of(replyActionBuilder.buildReplyAction(chatId, lineReplyAction)))

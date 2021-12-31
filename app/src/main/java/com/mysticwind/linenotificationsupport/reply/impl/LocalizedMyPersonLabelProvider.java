@@ -1,6 +1,12 @@
 package com.mysticwind.linenotificationsupport.reply.impl;
 
+import android.content.Context;
+
+import androidx.core.app.Person;
+import androidx.core.graphics.drawable.IconCompat;
+
 import com.google.common.collect.ImmutableMap;
+import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.ui.LocaleDao;
 
@@ -10,6 +16,8 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import dagger.hilt.android.qualifiers.ApplicationContext;
 
 @Singleton
 public class LocalizedMyPersonLabelProvider implements MyPersonLabelProvider {
@@ -27,10 +35,12 @@ public class LocalizedMyPersonLabelProvider implements MyPersonLabelProvider {
     );
 
     private final LocaleDao localeDao;
+    private final Context context;
 
     @Inject
-    public LocalizedMyPersonLabelProvider(final LocaleDao localeDao) {
+    public LocalizedMyPersonLabelProvider(final LocaleDao localeDao, @ApplicationContext final Context context) {
         this.localeDao = Objects.requireNonNull(localeDao);
+        this.context = Objects.requireNonNull(context);
     }
 
     @Override
@@ -45,6 +55,14 @@ public class LocalizedMyPersonLabelProvider implements MyPersonLabelProvider {
             }
         }
         return Optional.of(DEFAULT_LABEL);
+    }
+
+    @Override
+    public Person getMyPerson() {
+        return new Person.Builder()
+                .setName(getMyPersonLabel().get())
+                .setIcon(IconCompat.createWithResource(context, R.drawable.outline_person_24))
+                .build();
     }
 
 }

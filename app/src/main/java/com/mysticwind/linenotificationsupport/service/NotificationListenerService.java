@@ -19,8 +19,6 @@ import android.service.notification.StatusBarNotification;
 import android.widget.Toast;
 
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.app.Person;
-import androidx.core.graphics.drawable.IconCompat;
 import androidx.preference.PreferenceManager;
 import androidx.room.Room;
 
@@ -35,7 +33,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
-import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothController;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
@@ -79,7 +76,6 @@ import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
-import com.mysticwind.linenotificationsupport.reply.impl.LocalizedMyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.ui.LocaleDao;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
@@ -214,19 +210,12 @@ public class NotificationListenerService
             }
 
             final String chatName = chatNameManager.getChatName(chatId);
-            final String personLabel = myPersonLabelProvider.getMyPersonLabel().orElseGet(() -> {
-                Timber.w("Cannot resolve my person label");
-                return LocalizedMyPersonLabelProvider.DEFAULT_LABEL;
-            });
 
             final LineNotification responseLineNotification = LineNotification.builder()
                     .lineMessageId(String.valueOf(Instant.now().toEpochMilli())) // just generate a fake one
                     .title(chatName)
                     .message(response)
-                    .sender(new Person.Builder()
-                            .setName(personLabel)
-                            .setIcon(IconCompat.createWithResource(context, R.drawable.outline_person_24))
-                            .build())
+                    .sender(myPersonLabelProvider.getMyPerson())
                     .chatId(chatId)
                     .timestamp(Instant.now().toEpochMilli())
                     .actions(ImmutableList.copyOf(statusBarNotification.get().getNotification().actions))

@@ -1,12 +1,11 @@
 package com.mysticwind.linenotificationsupport.conversationstarter;
 
-import androidx.core.app.Person;
-
 import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.conversationstarter.model.KeywordEntry;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.notification.AndroidNotificationManager;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisherFactory;
+import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 
 import java.time.Instant;
@@ -30,6 +29,7 @@ public class ConversationStarterNotificationManager {
     private final StartConversationActionBuilder startConversationActionBuilder;
     private final int notificationId;
     private final KeywordSettingActivityLauncher keywordSettingActivityLauncher;
+    private final MyPersonLabelProvider myPersonLabelProvider;
     private final AndroidNotificationManager androidNotificationManager;
 
     @Inject
@@ -38,6 +38,7 @@ public class ConversationStarterNotificationManager {
                                                   final ChatKeywordManager chatKeywordManager,
                                                   final StartConversationActionBuilder startConversationActionBuilder,
                                                   final KeywordSettingActivityLauncher keywordSettingActivityLauncher,
+                                                  final MyPersonLabelProvider myPersonLabelProvider,
                                                   final AndroidNotificationManager androidNotificationManager) {
         this.notificationPublisherFactory = Objects.requireNonNull(notificationPublisherFactory);
         Objects.requireNonNull(notificationIdGenerator);
@@ -45,6 +46,7 @@ public class ConversationStarterNotificationManager {
         this.startConversationActionBuilder = Objects.requireNonNull(startConversationActionBuilder);
         this.notificationId = notificationIdGenerator.getNextNotificationId();
         this.keywordSettingActivityLauncher = Objects.requireNonNull(keywordSettingActivityLauncher);
+        this.myPersonLabelProvider = Objects.requireNonNull(myPersonLabelProvider);
         this.androidNotificationManager = Objects.requireNonNull(androidNotificationManager);
     }
 
@@ -62,9 +64,7 @@ public class ConversationStarterNotificationManager {
                         .timestamp(Instant.now().toEpochMilli())
                         .isSelfResponse(true)
                         .chatId(CONVERSATION_STARTER_CHAT_ID)
-                        .sender(new Person.Builder()
-                                .setName("Bot")
-                                .build())
+                        .sender(myPersonLabelProvider.getMyPerson())
                         .action(startConversationActionBuilder.buildAction())
                         .clickIntent(keywordSettingActivityLauncher.buildPendingIntent())
                         .build(),
