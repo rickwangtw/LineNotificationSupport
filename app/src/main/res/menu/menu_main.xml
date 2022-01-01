@@ -23,4 +23,11 @@
         android:title="@string/action_test_notifications"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_keyword_settings"
+        android:visible="false"
+        android:orderInCategory="100"
+        android:title="Keyword Settings"
+        app:showAsAction="never" />
+
 </menu>

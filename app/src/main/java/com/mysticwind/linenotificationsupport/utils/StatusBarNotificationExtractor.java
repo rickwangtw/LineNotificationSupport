@@ -17,8 +17,8 @@ public class StatusBarNotificationExtractor {
         final String summaryText = statusBarNotification.getNotification().extras
                 .getString(Notification.EXTRA_SUMMARY_TEXT);
         if (StringUtils.isNotBlank(summaryText)) {
-            Timber.d(String.format("Summary notification with message [%s]: it contains summary text [%s]",
-                    NotificationExtractor.getMessage(statusBarNotification.getNotification()), summaryText));
+            Timber.d("Summary notification with message [%s]: it contains summary text [%s]",
+                    NotificationExtractor.getMessage(statusBarNotification.getNotification()), summaryText);
             return true;
         }
 

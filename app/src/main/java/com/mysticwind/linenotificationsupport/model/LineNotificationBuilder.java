@@ -13,7 +13,6 @@ import androidx.core.app.Person;
 import androidx.core.graphics.drawable.IconCompat;
 
 import com.google.common.collect.ImmutableList;
-import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
@@ -40,12 +39,6 @@ public class LineNotificationBuilder {
     private final ChatTitleAndSenderResolver chatTitleAndSenderResolver;
     private final StatusBarNotificationPrinter statusBarNotificationPrinter;
     private final ReplyActionBuilder replyActionBuilder;
-
-    public LineNotificationBuilder(final Context context,
-                                   final ChatTitleAndSenderResolver chatTitleAndSenderResolver,
-                                   final StatusBarNotificationPrinter statusBarNotificationPrinter) {
-        this(context, chatTitleAndSenderResolver, statusBarNotificationPrinter, new DefaultReplyActionBuilder(context));
-    }
 
     public LineNotificationBuilder(final Context context,
                                    final ChatTitleAndSenderResolver chatTitleAndSenderResolver,
@@ -77,6 +70,7 @@ public class LineNotificationBuilder {
                 .lineStickerUrl(lineStickerUrl)
                 .chatId(resolveChatId(statusBarNotification, callState))
                 .timestamp(statusBarNotification.getNotification().when)
+                .clickIntent(statusBarNotification.getNotification().contentIntent)
                 .actions(actions)
                 .icon(largeIconBitmap)
                 .callState(callState)

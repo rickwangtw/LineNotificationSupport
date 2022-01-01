@@ -3,11 +3,13 @@ package com.mysticwind.linenotificationsupport.model;
 import static java.util.Collections.EMPTY_LIST;
 
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.graphics.Bitmap;
 
 import androidx.core.app.Person;
 
 import java.util.List;
+import java.util.Optional;
 
 import lombok.Builder;
 import lombok.Singular;
@@ -32,6 +34,7 @@ public class LineNotification {
     private final String lineStickerUrl;
     private final String chatId;
     private final CallState callState;
+    private final PendingIntent clickIntent;
     private final long timestamp;
     // Actions ordered as defined during build time
     @Singular
@@ -56,6 +59,10 @@ public class LineNotification {
             return EMPTY_LIST;
         }
         return history;
+    }
+
+    public Optional<PendingIntent> getClickIntent() {
+        return Optional.ofNullable(clickIntent);
     }
 
 }

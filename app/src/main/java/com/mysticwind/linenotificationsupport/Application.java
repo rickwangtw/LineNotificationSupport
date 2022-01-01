@@ -8,9 +8,17 @@ import net.yslibrary.historian.tree.HistorianTree;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.HiltAndroidApp;
 import timber.log.Timber;
 
+@HiltAndroidApp
 public class Application extends android.app.Application {
+
+    @Inject
+    public Application() {
+    }
 
     @Override
     public void onCreate() {

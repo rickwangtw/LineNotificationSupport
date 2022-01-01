@@ -6,6 +6,7 @@ import com.google.common.base.CharMatcher;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.net.MalformedURLException;
@@ -29,6 +30,10 @@ public class BigNotificationSplittingNotificationPublisherDecorator implements N
 
     @Override
     public void publishNotification(LineNotification lineNotification, int notificationId) {
+        if (StringUtils.isBlank(lineNotification.getMessage())) {
+            notificationPublisher.publishNotification(lineNotification, notificationId);
+            return;
+        }
         String message = lineNotification.getMessage();
         final int messageSizeLimit = preferenceProvider.getMessageSizeLimit();
         if (message.length() <= messageSizeLimit) {
