@@ -1,5 +1,6 @@
 package com.mysticwind.linenotificationsupport.module;
 
+import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.bluetooth.BluetoothController;
 import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothController;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
@@ -16,7 +17,6 @@ import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNot
 import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherNotificationReactor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Singleton;
@@ -57,19 +57,19 @@ public abstract class ReactorModule {
                                                                                  ManageLineNotificationIncomingNotificationReactor manageLineNotificationIncomingNotificationReactor,
                                                                                  SameLineMessageIdFilterIncomingNotificationReactor sameLineMessageIdFilterIncomingNotificationReactor,
                                                                                  ConversationStarterNotificationReactor conversationStarterNotificationReactor) {
-        final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
+        final ImmutableList.Builder<IncomingNotificationReactor> reactorListBuilder = ImmutableList.builder();
         if (debugModeProvider.isDebugMode()) {
-            incomingNotificationReactors.add(lineNotificationLoggingIncomingNotificationReactor);
+            reactorListBuilder.add(lineNotificationLoggingIncomingNotificationReactor);
         }
-        incomingNotificationReactors.add(callInProgressTrackingReactor);
-        incomingNotificationReactors.add(chatRoomNamePersistenceIncomingNotificationReactor);
-        incomingNotificationReactors.add(lineReplyActionPersistenceIncomingNotificationReactor);
-        incomingNotificationReactors.add(dumbNotificationCounterNotificationReactor);
-        incomingNotificationReactors.add(summaryNotificationPublisherNotificationReactor);
-        incomingNotificationReactors.add(manageLineNotificationIncomingNotificationReactor);
-        incomingNotificationReactors.add(sameLineMessageIdFilterIncomingNotificationReactor);
-        incomingNotificationReactors.add(conversationStarterNotificationReactor);
-        return incomingNotificationReactors;
+        reactorListBuilder.add(callInProgressTrackingReactor);
+        reactorListBuilder.add(chatRoomNamePersistenceIncomingNotificationReactor);
+        reactorListBuilder.add(lineReplyActionPersistenceIncomingNotificationReactor);
+        reactorListBuilder.add(dumbNotificationCounterNotificationReactor);
+        reactorListBuilder.add(summaryNotificationPublisherNotificationReactor);
+        reactorListBuilder.add(manageLineNotificationIncomingNotificationReactor);
+        reactorListBuilder.add(sameLineMessageIdFilterIncomingNotificationReactor);
+        reactorListBuilder.add(conversationStarterNotificationReactor);
+        return reactorListBuilder.build();
     }
 
     @Singleton
@@ -84,15 +84,15 @@ public abstract class ReactorModule {
                                                                                    DumbNotificationCounterNotificationReactor dumbNotificationCounterNotificationReactor,
                                                                                    SummaryNotificationPublisherNotificationReactor  summaryNotificationPublisherNotificationReactor,
                                                                                    ConversationStarterNotificationReactor conversationStarterNotificationReactor) {
-        final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
+        final ImmutableList.Builder<DismissedNotificationReactor> reactorListBuilder = ImmutableList.builder();
         if (debugModeProvider.isDebugMode()) {
-            dismissedNotificationReactors.add(loggingDismissedNotificationReactor);
+            reactorListBuilder.add(loggingDismissedNotificationReactor);
         }
-        dismissedNotificationReactors.add(callInProgressTrackingReactor);
-        dismissedNotificationReactors.add(dumbNotificationCounterNotificationReactor);
-        dismissedNotificationReactors.add(summaryNotificationPublisherNotificationReactor);
-        dismissedNotificationReactors.add(conversationStarterNotificationReactor);
-        return dismissedNotificationReactors;
+        reactorListBuilder.add(callInProgressTrackingReactor);
+        reactorListBuilder.add(dumbNotificationCounterNotificationReactor);
+        reactorListBuilder.add(summaryNotificationPublisherNotificationReactor);
+        reactorListBuilder.add(conversationStarterNotificationReactor);
+        return reactorListBuilder.build();
     }
 
 }
