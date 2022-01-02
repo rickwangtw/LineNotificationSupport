@@ -1,14 +1,10 @@
 package com.mysticwind.linenotificationsupport;
 
-import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE_NAME;
-
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
@@ -25,12 +21,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.common.collect.ImmutableMap;
 import com.mysticwind.linenotificationsupport.conversationstarter.activity.KeywordSettingActivity;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
+import com.mysticwind.linenotificationsupport.line.LineAppVersionProvider;
 import com.mysticwind.linenotificationsupport.provision.FeatureProvisionStateProvider;
 
 import java.util.Map;
+import java.util.Optional;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
 
+@AndroidEntryPoint
 public class HelpActivity extends AppCompatActivity {
 
     private static final DebugModeProvider DEBUG_MODE_PROVIDER = new DebugModeProvider();
@@ -38,6 +40,9 @@ public class HelpActivity extends AppCompatActivity {
     private static final Map<String, Integer> LINE_VERSION_TO_WARNING_MESSAGE_ID = ImmutableMap.of(
             "10.19.1", R.string.line_version_warning_10_19_1
     );
+
+    @Inject
+    LineAppVersionProvider lineAppVersionProvider;
 
     private FeatureProvisionStateProvider featureProvisionStateProvider;
     private Dialog grantPermissionDialog;
@@ -62,28 +67,20 @@ public class HelpActivity extends AppCompatActivity {
     }
 
     private void showLineVersionWarning() {
-        final String lineVersion = getLineAppVersion();
-        Timber.d("Detected LINE with version: " + lineVersion);
+        final Optional<String> lineAppVersion = lineAppVersionProvider.getLineAppVersion();
+        if (!lineAppVersion.isPresent()) {
+            return;
+        }
 
-        final Integer warningMessageId = LINE_VERSION_TO_WARNING_MESSAGE_ID.get(lineVersion);
+        Timber.d("Detected LINE with version: " + lineAppVersion.get());
+
+        final Integer warningMessageId = LINE_VERSION_TO_WARNING_MESSAGE_ID.get(lineAppVersion.get());
         if (warningMessageId == null) {
             return;
         }
 
         ((TextView) findViewById(R.id.warning_message_text)).setText(warningMessageId);
         findViewById(R.id.warning_message_layout).setVisibility(View.VISIBLE);
-    }
-
-    private String getLineAppVersion() {
-        // https://stackoverflow.com/questions/50795458/android-how-to-get-any-application-version-by-package-name
-        final PackageManager packageManager = getPackageManager();
-        try {
-            final PackageInfo packageInfo = packageManager.getPackageInfo(LINE_PACKAGE_NAME, 0);
-            return packageInfo.versionName;
-        } catch (final PackageManager.NameNotFoundException e) {
-            Timber.e(e, "LINE not installed. Package: " + LINE_PACKAGE_NAME);
-            return null;
-        }
     }
 
     @Override

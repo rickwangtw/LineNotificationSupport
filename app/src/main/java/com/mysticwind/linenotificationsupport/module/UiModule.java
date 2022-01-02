@@ -1,5 +1,7 @@
 package com.mysticwind.linenotificationsupport.module;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
@@ -17,6 +19,7 @@ import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import dagger.hilt.components.SingletonComponent;
 
 @Module
@@ -24,6 +27,7 @@ import dagger.hilt.components.SingletonComponent;
 public abstract class UiModule {
 
     /* Related classes using @Inject
+      LineAppVersionProvider
      */
 
     @Singleton
@@ -47,5 +51,11 @@ public abstract class UiModule {
     @Singleton
     @Binds
     public abstract LocalizationDao bindLocalizationDao(AndroidLocalizationDao androidLocalizationDao);
+
+    @Singleton
+    @Provides
+    public static PackageManager providePackageManager(@ApplicationContext Context context) {
+        return context.getPackageManager();
+    }
 
 }

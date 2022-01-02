@@ -10,8 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -47,6 +45,7 @@ import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageE
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.IgnoreIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.MergeIdenticalMessageHandler;
+import com.mysticwind.linenotificationsupport.line.LineAppVersionProvider;
 import com.mysticwind.linenotificationsupport.model.AutoIncomingCallNotificationState;
 import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStrategy;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
@@ -296,6 +295,9 @@ public class NotificationListenerService
     @Inject
     NotificationHistoryManager notificationHistoryManager;
 
+    @Inject
+    LineAppVersionProvider lineAppVersionProvider;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -338,7 +340,7 @@ public class NotificationListenerService
 
         this.incomingNotificationReactors.add(
                 new LineNotificationLoggingIncomingNotificationReactor(
-                        statusBarNotificationPrinter, notificationHistoryManager, getLineAppVersion()));
+                        statusBarNotificationPrinter, notificationHistoryManager, lineAppVersionProvider));
 
         this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
 
@@ -491,19 +493,6 @@ public class NotificationListenerService
         }
 
         return false;
-    }
-
-    // TODO remove one of the duplicates
-    private String getLineAppVersion() {
-        // https://stackoverflow.com/questions/50795458/android-how-to-get-any-application-version-by-package-name
-        final PackageManager packageManager = getPackageManager();
-        try {
-            final PackageInfo packageInfo = packageManager.getPackageInfo(LINE_PACKAGE_NAME, 0);
-            return packageInfo.versionName;
-        } catch (final PackageManager.NameNotFoundException e) {
-            Timber.e(e, "LINE not installed. Package: " + LINE_PACKAGE_NAME);
-            return null;
-        }
     }
 
     private void sendNotification(StatusBarNotification notificationFromLine) {
