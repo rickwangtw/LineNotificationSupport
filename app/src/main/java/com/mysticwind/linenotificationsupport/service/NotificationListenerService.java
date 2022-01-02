@@ -232,6 +232,9 @@ public class NotificationListenerService
     List<DismissedNotificationReactor> dismissedNotificationReactors;
 
     @Inject
+    SharedPreferences sharedPreferences;
+
+    @Inject
     DefaultAndroidNotificationManager defaultAndroidNotificationManager;
 
     @Inject
@@ -325,7 +328,6 @@ public class NotificationListenerService
                 new AndroidFeatureProvider(), preferenceProvider)
                 .createNotificationGroups();
 
-        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
         Timber.d("Registered onSharedPreferenceChangeListener");
 
@@ -718,7 +720,6 @@ public class NotificationListenerService
         unregisterReceiver(localeUpdateBroadcastReceiver);
         unregisterReceiver(deleteFriendNameCacheBroadcastReceiver);
 
-        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         try {
             sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
         } catch (final Exception e) {
