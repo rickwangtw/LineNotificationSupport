@@ -48,14 +48,9 @@ import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisherFactory;
 import com.mysticwind.linenotificationsupport.notification.impl.DefaultAndroidNotificationManager;
 import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
-import com.mysticwind.linenotificationsupport.notification.reactor.CallInProgressTrackingReactor;
-import com.mysticwind.linenotificationsupport.notification.reactor.ConversationStarterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
-import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
-import com.mysticwind.linenotificationsupport.notification.reactor.LoggingDismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
-import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
@@ -114,8 +109,6 @@ public class NotificationListenerService
     );
 
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
-
-    private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
 
     private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
@@ -236,16 +229,7 @@ public class NotificationListenerService
     List<IncomingNotificationReactor> incomingNotificationReactors;
 
     @Inject
-    CallInProgressTrackingReactor callInProgressTrackingReactor;
-
-    @Inject
-    DumbNotificationCounterNotificationReactor dumbNotificationCounterNotificationReactor;
-
-    @Inject
-    SummaryNotificationPublisherNotificationReactor summaryNotificationPublisherNotificationReactor;
-
-    @Inject
-    ConversationStarterNotificationReactor conversationStarterNotificationReactor;
+    List<DismissedNotificationReactor> dismissedNotificationReactors;
 
     @Inject
     DefaultAndroidNotificationManager defaultAndroidNotificationManager;
@@ -332,15 +316,7 @@ public class NotificationListenerService
             Timber.d("No existing notifications to restore");
         }
 
-        this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
-
-        this.dismissedNotificationReactors.add(callInProgressTrackingReactor);
-
         dumbNotificationCounter.updateStateFromExistingNotifications(existingNotifications);
-
-        this.dismissedNotificationReactors.add(dumbNotificationCounterNotificationReactor);
-
-        this.dismissedNotificationReactors.add(summaryNotificationPublisherNotificationReactor);
 
         notificationPublisherFactory.notifyChangeWithExistingNotifications(existingNotifications);
 
@@ -354,8 +330,6 @@ public class NotificationListenerService
         Timber.d("Registered onSharedPreferenceChangeListener");
 
         scheduleNotificationCounterCheck();
-
-        this.dismissedNotificationReactors.add(conversationStarterNotificationReactor);
 
         registerReceiver(startConversationActionBroadcastReceiver, new IntentFilter(StartConversationActionBuilder.START_CONVERSATION_ACTION));
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
@@ -743,9 +717,6 @@ public class NotificationListenerService
         unregisterReceiver(replyActionBroadcastReceiver);
         unregisterReceiver(localeUpdateBroadcastReceiver);
         unregisterReceiver(deleteFriendNameCacheBroadcastReceiver);
-
-        this.incomingNotificationReactors.clear();
-        this.dismissedNotificationReactors.clear();
 
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         try {

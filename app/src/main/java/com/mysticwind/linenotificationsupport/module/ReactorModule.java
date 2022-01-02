@@ -6,10 +6,12 @@ import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.notification.reactor.CallInProgressTrackingReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNamePersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ConversationStarterNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.LineNotificationLoggingIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.LineReplyActionPersistenceIncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.LoggingDismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNotificationIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherNotificationReactor;
@@ -40,6 +42,7 @@ public abstract class ReactorModule {
         ManageLineNotificationIncomingNotificationReactor
         SameLineMessageIdFilterIncomingNotificationReactor
         ConversationStarterNotificationReactor
+        LoggingDismissedNotificationReactor
      */
 
     @Singleton
@@ -53,8 +56,7 @@ public abstract class ReactorModule {
                                                                                  SummaryNotificationPublisherNotificationReactor  summaryNotificationPublisherNotificationReactor,
                                                                                  ManageLineNotificationIncomingNotificationReactor manageLineNotificationIncomingNotificationReactor,
                                                                                  SameLineMessageIdFilterIncomingNotificationReactor sameLineMessageIdFilterIncomingNotificationReactor,
-                                                                                 ConversationStarterNotificationReactor conversationStarterNotificationReactor
-                                                                                 ) {
+                                                                                 ConversationStarterNotificationReactor conversationStarterNotificationReactor) {
         final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
         if (debugModeProvider.isDebugMode()) {
             incomingNotificationReactors.add(lineNotificationLoggingIncomingNotificationReactor);
@@ -74,5 +76,23 @@ public abstract class ReactorModule {
     @Binds
     public abstract BluetoothController bindBluetoothController(AndroidBluetoothController androidBluetoothController);
 
+    @Singleton
+    @Provides
+    public static List<DismissedNotificationReactor> dismissedNotificationReactors(DebugModeProvider debugModeProvider,
+                                                                                   LoggingDismissedNotificationReactor loggingDismissedNotificationReactor,
+                                                                                   CallInProgressTrackingReactor callInProgressTrackingReactor,
+                                                                                   DumbNotificationCounterNotificationReactor dumbNotificationCounterNotificationReactor,
+                                                                                   SummaryNotificationPublisherNotificationReactor  summaryNotificationPublisherNotificationReactor,
+                                                                                   ConversationStarterNotificationReactor conversationStarterNotificationReactor) {
+        final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
+        if (debugModeProvider.isDebugMode()) {
+            dismissedNotificationReactors.add(loggingDismissedNotificationReactor);
+        }
+        dismissedNotificationReactors.add(callInProgressTrackingReactor);
+        dismissedNotificationReactors.add(dumbNotificationCounterNotificationReactor);
+        dismissedNotificationReactors.add(summaryNotificationPublisherNotificationReactor);
+        dismissedNotificationReactors.add(conversationStarterNotificationReactor);
+        return dismissedNotificationReactors;
+    }
 
 }
