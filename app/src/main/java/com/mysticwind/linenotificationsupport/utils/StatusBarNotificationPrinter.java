@@ -11,9 +11,17 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Arrays;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class StatusBarNotificationPrinter {
+
+    @Inject
+    public StatusBarNotificationPrinter() {
+    }
 
     public void print(final String message, final StatusBarNotification statusBarNotification) {
         final String prefix = buildPrefix(message);

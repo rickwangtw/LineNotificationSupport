@@ -25,9 +25,12 @@ import dagger.hilt.components.SingletonComponent;
 public abstract class ChatNameModule {
 
     /* Related classes using @Inject
+      LineNotificationBuilder
+      StatusBarNotificationPrinter
       ChatNameManager
       RoomGroupChatNameDataAccessor
       RoomMultiPersonChatNameDataAccessor
+      ChatTitleAndSenderResolver
      */
 
     @Singleton

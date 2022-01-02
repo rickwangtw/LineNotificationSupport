@@ -20,7 +20,6 @@ import android.widget.Toast;
 
 import androidx.core.app.NotificationManagerCompat;
 import androidx.preference.PreferenceManager;
-import androidx.room.Room;
 
 import com.github.rholder.retry.Attempt;
 import com.github.rholder.retry.RetryListener;
@@ -43,8 +42,6 @@ import com.mysticwind.linenotificationsupport.conversationstarter.StartConversat
 import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
-import com.mysticwind.linenotificationsupport.debug.history.manager.impl.NullNotificationHistoryManager;
-import com.mysticwind.linenotificationsupport.debug.history.manager.impl.RoomNotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.identicalmessage.AsIsIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageEvaluator;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageHandler;
@@ -71,14 +68,11 @@ import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
 import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
-import com.mysticwind.linenotificationsupport.persistence.AppDatabase;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
-import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.ui.LocaleDao;
-import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
@@ -115,7 +109,6 @@ public class NotificationListenerService
 
     private static final long NOTIFICATION_COUNTER_CHECK_PERIOD = 60_000L;
 
-    private static final StatusBarNotificationPrinter NOTIFICATION_PRINTER = new StatusBarNotificationPrinter();
     private static final DebugModeProvider DEBUG_MODE_PROVIDER = new DebugModeProvider();
 
     private static final IdenticalMessageEvaluator IDENTICAL_MESSAGE_EVALUATOR = new IdenticalMessageEvaluator();
@@ -136,7 +129,6 @@ public class NotificationListenerService
     );
 
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
-    private NotificationHistoryManager notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
 
     private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
@@ -250,12 +242,14 @@ public class NotificationListenerService
         }
     };
 
-    private ChatTitleAndSenderResolver chatTitleAndSenderResolver;
     private boolean isInitialized = false;
     private boolean isListenerConnected = false;
 
     @Inject
-    ReplyActionBuilder replyActionBuilder;
+    LineNotificationBuilder lineNotificationBuilder;
+
+    @Inject
+    StatusBarNotificationPrinter statusBarNotificationPrinter;
 
     @Inject
     LocaleDao localeDao;
@@ -299,6 +293,9 @@ public class NotificationListenerService
     @Inject
     StartConversationBroadcastReceiver startConversationActionBroadcastReceiver;
 
+    @Inject
+    NotificationHistoryManager notificationHistoryManager;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -339,18 +336,9 @@ public class NotificationListenerService
             Timber.d("No existing notifications to restore");
         }
 
-        chatTitleAndSenderResolver = new ChatTitleAndSenderResolver(chatNameManager);
-
-        if (DEBUG_MODE_PROVIDER.isDebugMode()) {
-            AppDatabase appDatabase = Room.databaseBuilder(getApplicationContext(),
-                    AppDatabase.class, "database").build();
-
-            this.notificationHistoryManager = new RoomNotificationHistoryManager(appDatabase, NOTIFICATION_PRINTER);
-        }
-
         this.incomingNotificationReactors.add(
                 new LineNotificationLoggingIncomingNotificationReactor(
-                        NOTIFICATION_PRINTER, notificationHistoryManager, getLineAppVersion()));
+                        statusBarNotificationPrinter, notificationHistoryManager, getLineAppVersion()));
 
         this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
 
@@ -519,8 +507,7 @@ public class NotificationListenerService
     }
 
     private void sendNotification(StatusBarNotification notificationFromLine) {
-        final LineNotification lineNotification = new LineNotificationBuilder(this,
-                chatTitleAndSenderResolver, NOTIFICATION_PRINTER, replyActionBuilder).from(notificationFromLine);
+        final LineNotification lineNotification = lineNotificationBuilder.from(notificationFromLine);
 
         final int notificationId = notificationIdGenerator.getNextNotificationId();
 
@@ -818,8 +805,6 @@ public class NotificationListenerService
         }
         Timber.d("Unregistered onSharedPreferenceChangeListener");
 
-        this.notificationHistoryManager = NullNotificationHistoryManager.INSTANCE;
-
         isInitialized = false;
     }
 
@@ -832,9 +817,7 @@ public class NotificationListenerService
             return;
         }
 
-        final LineNotification dismissedLineNotification = new LineNotificationBuilder(
-                this, chatTitleAndSenderResolver, NOTIFICATION_PRINTER, replyActionBuilder)
-                .from(statusBarNotification);
+        final LineNotification dismissedLineNotification = lineNotificationBuilder.from(statusBarNotification);
 
         if (LineNotification.CallState.INCOMING == dismissedLineNotification.getCallState() &&
                 this.autoIncomingCallNotificationState != null) {
