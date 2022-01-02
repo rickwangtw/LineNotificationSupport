@@ -17,9 +17,13 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
 // TODO are we supposed to do a merge or a re-read instead of ignoring?
+@Singleton
 public class SameLineMessageIdFilterIncomingNotificationReactor implements IncomingNotificationReactor {
 
     private static final Set<String> INTERESTED_PACKAGES = ImmutableSet.of(Constants.LINE_PACKAGE_NAME);
@@ -37,6 +41,10 @@ public class SameLineMessageIdFilterIncomingNotificationReactor implements Incom
                 }
             })
             .build();
+
+    @Inject
+    public SameLineMessageIdFilterIncomingNotificationReactor() {
+    }
 
     @Override
     public Collection<String> interestedPackages() {

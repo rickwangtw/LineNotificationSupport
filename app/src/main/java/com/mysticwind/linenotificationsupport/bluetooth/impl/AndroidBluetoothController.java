@@ -4,12 +4,20 @@ import android.bluetooth.BluetoothAdapter;
 
 import com.mysticwind.linenotificationsupport.bluetooth.BluetoothController;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
 /**
  * Implemented by referencing https://stackoverflow.com/questions/3806536/how-to-enable-disable-bluetooth-programmatically-in-android
  */
+@Singleton
 public class AndroidBluetoothController implements BluetoothController {
+
+    @Inject
+    public AndroidBluetoothController() {
+    }
 
     @Override
     public void enableBluetooth() {

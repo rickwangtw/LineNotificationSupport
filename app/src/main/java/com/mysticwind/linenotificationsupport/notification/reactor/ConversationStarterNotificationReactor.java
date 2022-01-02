@@ -6,6 +6,7 @@ import android.service.notification.StatusBarNotification;
 import com.google.common.collect.ImmutableSet;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.line.Constants;
+import com.mysticwind.linenotificationsupport.module.HiltQualifiers;
 import com.mysticwind.linenotificationsupport.notification.MaxNotificationHandlingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
@@ -19,8 +20,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class ConversationStarterNotificationReactor implements IncomingNotificationReactor, DismissedNotificationReactor {
 
     private final Set<String> interestedPackages;
@@ -32,7 +37,8 @@ public class ConversationStarterNotificationReactor implements IncomingNotificat
 
     private Set<String> knownAvailableChatIds = new HashSet<>();
 
-    public ConversationStarterNotificationReactor(final String thisPackageName,
+    @Inject
+    public ConversationStarterNotificationReactor(@HiltQualifiers.PackageName final String thisPackageName,
                                                   final ConversationStarterNotificationManager conversationStarterNotificationManager,
                                                   final PreferenceProvider preferenceProvider,
                                                   final Handler handler) {

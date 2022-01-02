@@ -15,14 +15,19 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Collection;
 import java.util.Objects;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class LineNotificationLoggingIncomingNotificationReactor implements IncomingNotificationReactor {
 
     private final StatusBarNotificationPrinter statusBarNotificationPrinter;
     private final NotificationHistoryManager notificationHistoryManager;
     private final LineAppVersionProvider lineAppVersionProvider;
 
+    @Inject
     public LineNotificationLoggingIncomingNotificationReactor(final StatusBarNotificationPrinter statusBarNotificationPrinter,
                                                               final NotificationHistoryManager notificationHistoryManager,
                                                               final LineAppVersionProvider lineAppVersionProvider) {

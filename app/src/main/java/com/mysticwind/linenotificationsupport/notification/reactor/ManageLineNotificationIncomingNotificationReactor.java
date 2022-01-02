@@ -7,6 +7,7 @@ import android.service.notification.StatusBarNotification;
 
 import com.google.common.collect.ImmutableSet;
 import com.mysticwind.linenotificationsupport.line.Constants;
+import com.mysticwind.linenotificationsupport.notification.AndroidNotificationManager;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
@@ -14,15 +15,16 @@ import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtract
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import timber.log.Timber;
 
+@Singleton
 public class ManageLineNotificationIncomingNotificationReactor implements IncomingNotificationReactor {
 
     private static final long LINE_NOTIFICATION_DISMISS_RETRY_TIMEOUT = 500L;
@@ -32,17 +34,15 @@ public class ManageLineNotificationIncomingNotificationReactor implements Incomi
 
     private final PreferenceProvider preferenceProvider;
     private final Handler handler;
-    private final Supplier<List<StatusBarNotification>> activeStatusBarNotificationSupplier;
-    private final Consumer<String> notificationCanceller;
+    private final AndroidNotificationManager androidNotificationManager;
 
+    @Inject
     public ManageLineNotificationIncomingNotificationReactor(final PreferenceProvider preferenceProvider,
                                                              final Handler handler,
-                                                             final Supplier<List<StatusBarNotification>> activeStatusBarNotificationSupplier,
-                                                             final Consumer<String> notificationCanceller) {
+                                                             final AndroidNotificationManager androidNotificationManager) {
         this.preferenceProvider = Objects.requireNonNull(preferenceProvider);
         this.handler = Objects.requireNonNull(handler);
-        this.activeStatusBarNotificationSupplier = Objects.requireNonNull(activeStatusBarNotificationSupplier);
-        this.notificationCanceller = Objects.requireNonNull(notificationCanceller);
+        this.androidNotificationManager = Objects.requireNonNull(androidNotificationManager);
     }
 
     @Override
@@ -100,13 +100,13 @@ public class ManageLineNotificationIncomingNotificationReactor implements Incomi
         summaryKey.ifPresent(
                 key -> {
                     Timber.d("Cancelling LINE summary: [%s]", key);
-                    notificationCanceller.accept(key);
+                    androidNotificationManager.cancelNotificationOfPackage(key);
                 }
         );
 
         Timber.d("Dismiss LINE notification: key[%s] tag[%s] id[%d]",
                 statusBarNotification.getKey(), statusBarNotification.getTag(), statusBarNotification.getId());
-        notificationCanceller.accept(statusBarNotification.getKey());
+        androidNotificationManager.cancelNotificationOfPackage(statusBarNotification.getKey());
 
         handler.postDelayed(
                 () -> printLineNotifications(statusBarNotification.getNotification().getGroup()),
@@ -114,8 +114,7 @@ public class ManageLineNotificationIncomingNotificationReactor implements Incomi
     }
 
     private Optional<String> findLineNotificationSummary(String group) {
-        return activeStatusBarNotificationSupplier.get().stream()
-                .filter(notification -> notification.getPackageName().equals(LINE_PACKAGE_NAME))
+        return androidNotificationManager.getNotificationsOfPackage(LINE_PACKAGE_NAME).stream()
                 .peek(notification -> Timber.d("LINE notification key [%s] category [%s] group [%s] isSummary [%s] title [%s] message [%s]",
                         notification.getKey(), notification.getNotification().category,
                         notification.getNotification().getGroup(),
@@ -130,8 +129,7 @@ public class ManageLineNotificationIncomingNotificationReactor implements Incomi
     }
 
     private void printLineNotifications(final String groupThatShouldBeDismissed) {
-        activeStatusBarNotificationSupplier.get().stream()
-                .filter(notification -> notification.getPackageName().equals(LINE_PACKAGE_NAME))
+        androidNotificationManager.getNotificationsOfPackage(LINE_PACKAGE_NAME).stream()
                 .forEach(notification -> {
                     Timber.w("%sPrint LINE notification that are not dismissed key [%s] category [%s] group [%s] isSummary [%s] isClearable [%s] title [%s] message [%s]",
                             StringUtils.equals(notification.getNotification().getGroup(), groupThatShouldBeDismissed) ? "[SHOULD_DISMISS] " : "",

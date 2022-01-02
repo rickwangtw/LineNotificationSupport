@@ -16,14 +16,19 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class LineReplyActionPersistenceIncomingNotificationReactor implements IncomingNotificationReactor {
 
     private static final Set<String> INTERESTED_PACKAGES = ImmutableSet.of(Constants.LINE_PACKAGE_NAME);
 
     private final LineReplyActionDao lineReplyActionDao;
 
+    @Inject
     public LineReplyActionPersistenceIncomingNotificationReactor(final LineReplyActionDao lineReplyActionDao) {
         this.lineReplyActionDao = Objects.requireNonNull(lineReplyActionDao);
     }

@@ -14,14 +14,19 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class CallInProgressTrackingReactor implements IncomingNotificationReactor, DismissedNotificationReactor {
 
     private final PreferenceProvider preferenceProvider;
     private final BluetoothController bluetoothController;
     private final Set<String> callNotificationKeys = new HashSet<>();
 
+    @Inject
     public CallInProgressTrackingReactor(final PreferenceProvider preferenceProvider,
                                          final BluetoothController bluetoothController) {
         this.preferenceProvider = Objects.requireNonNull(preferenceProvider);

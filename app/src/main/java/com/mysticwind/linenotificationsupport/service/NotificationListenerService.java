@@ -31,40 +31,30 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
-import com.mysticwind.linenotificationsupport.bluetooth.impl.AndroidBluetoothController;
 import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
-import com.mysticwind.linenotificationsupport.chatname.dataaccessor.GroupChatNameDataAccessor;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
-import com.mysticwind.linenotificationsupport.conversationstarter.LineReplyActionDao;
 import com.mysticwind.linenotificationsupport.conversationstarter.StartConversationActionBuilder;
 import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
-import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.identicalmessage.AsIsIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageEvaluator;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.IgnoreIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.MergeIdenticalMessageHandler;
-import com.mysticwind.linenotificationsupport.line.LineAppVersionProvider;
 import com.mysticwind.linenotificationsupport.model.AutoIncomingCallNotificationState;
 import com.mysticwind.linenotificationsupport.model.IdenticalMessageHandlingStrategy;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisherFactory;
-import com.mysticwind.linenotificationsupport.notification.SummaryNotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.impl.DefaultAndroidNotificationManager;
 import com.mysticwind.linenotificationsupport.notification.impl.DumbNotificationCounter;
 import com.mysticwind.linenotificationsupport.notification.reactor.CallInProgressTrackingReactor;
-import com.mysticwind.linenotificationsupport.notification.reactor.ChatRoomNamePersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ConversationStarterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
-import com.mysticwind.linenotificationsupport.notification.reactor.LineNotificationLoggingIncomingNotificationReactor;
-import com.mysticwind.linenotificationsupport.notification.reactor.LineReplyActionPersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.LoggingDismissedNotificationReactor;
-import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNotificationIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
-import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherNotificationReactor;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -72,11 +62,9 @@ import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
 import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
 import com.mysticwind.linenotificationsupport.ui.LocaleDao;
-import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
-import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -108,8 +96,6 @@ public class NotificationListenerService
 
     private static final long NOTIFICATION_COUNTER_CHECK_PERIOD = 60_000L;
 
-    private static final DebugModeProvider DEBUG_MODE_PROVIDER = new DebugModeProvider();
-
     private static final IdenticalMessageEvaluator IDENTICAL_MESSAGE_EVALUATOR = new IdenticalMessageEvaluator();
     private static final MergeIdenticalMessageHandler MERGE_IDENTICAL_MESSAGE_HANDLER = new MergeIdenticalMessageHandler(IDENTICAL_MESSAGE_EVALUATOR);
     private static final IgnoreIdenticalMessageHandler IGNORE_IDENTICAL_MESSAGE_HANDLER = new IgnoreIdenticalMessageHandler(IDENTICAL_MESSAGE_EVALUATOR);
@@ -129,7 +115,6 @@ public class NotificationListenerService
 
     private AutoIncomingCallNotificationState autoIncomingCallNotificationState;
 
-    private final List<IncomingNotificationReactor> incomingNotificationReactors = new ArrayList<>();
     private final List<DismissedNotificationReactor> dismissedNotificationReactors = new ArrayList<>();
 
     private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
@@ -248,7 +233,22 @@ public class NotificationListenerService
     LineNotificationBuilder lineNotificationBuilder;
 
     @Inject
-    StatusBarNotificationPrinter statusBarNotificationPrinter;
+    List<IncomingNotificationReactor> incomingNotificationReactors;
+
+    @Inject
+    CallInProgressTrackingReactor callInProgressTrackingReactor;
+
+    @Inject
+    DumbNotificationCounterNotificationReactor dumbNotificationCounterNotificationReactor;
+
+    @Inject
+    SummaryNotificationPublisherNotificationReactor summaryNotificationPublisherNotificationReactor;
+
+    @Inject
+    ConversationStarterNotificationReactor conversationStarterNotificationReactor;
+
+    @Inject
+    DefaultAndroidNotificationManager defaultAndroidNotificationManager;
 
     @Inject
     LocaleDao localeDao;
@@ -269,19 +269,10 @@ public class NotificationListenerService
     NotificationIdGenerator notificationIdGenerator;
 
     @Inject
-    GroupIdResolver groupIdResolver;
-
-    @Inject
     DumbNotificationCounter dumbNotificationCounter;
 
     @Inject
-    LineReplyActionDao lineReplyActionDao;
-
-    @Inject
     ChatNameManager chatNameManager;
-
-    @Inject
-    GroupChatNameDataAccessor groupChatNameDataAccessor;
 
     @Inject
     ConversationStarterNotificationManager conversationStarterNotificationManager;
@@ -293,10 +284,7 @@ public class NotificationListenerService
     StartConversationBroadcastReceiver startConversationActionBroadcastReceiver;
 
     @Inject
-    NotificationHistoryManager notificationHistoryManager;
-
-    @Inject
-    LineAppVersionProvider lineAppVersionProvider;
+    DebugModeProvider debugModeProvider;
 
     @Override
     public void onCreate() {
@@ -323,6 +311,12 @@ public class NotificationListenerService
             return;
         }
 
+        // setup things that are only available through NotificationListenerServices
+        this.defaultAndroidNotificationManager.initialize(
+                () -> getActiveNotificationsFromAllAppsSafely(),
+                key -> cancelNotification(key)
+        );
+
         // getting active notifications to restore previous state
         final List<StatusBarNotification> existingNotifications = getActiveNotificationsFromAllAppsSafely().stream()
                 .filter(notification -> notification.getPackageName().equals(getPackageName()))
@@ -338,45 +332,15 @@ public class NotificationListenerService
             Timber.d("No existing notifications to restore");
         }
 
-        this.incomingNotificationReactors.add(
-                new LineNotificationLoggingIncomingNotificationReactor(
-                        statusBarNotificationPrinter, notificationHistoryManager, lineAppVersionProvider));
-
         this.dismissedNotificationReactors.add(new LoggingDismissedNotificationReactor(getPackageName()));
 
-        final CallInProgressTrackingReactor callInProgressTrackingReactor = new CallInProgressTrackingReactor(
-                preferenceProvider, new AndroidBluetoothController());
-        this.incomingNotificationReactors.add(callInProgressTrackingReactor);
         this.dismissedNotificationReactors.add(callInProgressTrackingReactor);
-
-        this.incomingNotificationReactors.add(
-                new ChatRoomNamePersistenceIncomingNotificationReactor(groupChatNameDataAccessor));
-
-        this.incomingNotificationReactors.add(new LineReplyActionPersistenceIncomingNotificationReactor(lineReplyActionDao));
 
         dumbNotificationCounter.updateStateFromExistingNotifications(existingNotifications);
 
-        final DumbNotificationCounterNotificationReactor dumbNotificationCounterNotificationReactor =
-                new DumbNotificationCounterNotificationReactor(getPackageName(), dumbNotificationCounter);
-        this.incomingNotificationReactors.add(dumbNotificationCounterNotificationReactor);
         this.dismissedNotificationReactors.add(dumbNotificationCounterNotificationReactor);
 
-        final SummaryNotificationPublisher summaryNotificationPublisher = new SummaryNotificationPublisher(
-                this, (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
-                getPackageName(), groupIdResolver);
-        final SummaryNotificationPublisherNotificationReactor summaryNotificationPublisherNotificationReactor =
-                new SummaryNotificationPublisherNotificationReactor(getPackageName(), summaryNotificationPublisher);
-        this.incomingNotificationReactors.add(summaryNotificationPublisherNotificationReactor);
         this.dismissedNotificationReactors.add(summaryNotificationPublisherNotificationReactor);
-
-        this.incomingNotificationReactors.add(
-                new ManageLineNotificationIncomingNotificationReactor(
-                        preferenceProvider,
-                        handler,
-                        () -> getActiveNotificationsFromAllAppsSafely(),
-                        key -> cancelNotification(key)));
-
-        this.incomingNotificationReactors.add(new SameLineMessageIdFilterIncomingNotificationReactor());
 
         notificationPublisherFactory.notifyChangeWithExistingNotifications(existingNotifications);
 
@@ -391,9 +355,6 @@ public class NotificationListenerService
 
         scheduleNotificationCounterCheck();
 
-        final ConversationStarterNotificationReactor conversationStarterNotificationReactor =
-                new ConversationStarterNotificationReactor(getPackageName(), conversationStarterNotificationManager, preferenceProvider, handler);
-        this.incomingNotificationReactors.add(conversationStarterNotificationReactor);
         this.dismissedNotificationReactors.add(conversationStarterNotificationReactor);
 
         registerReceiver(startConversationActionBroadcastReceiver, new IntentFilter(StartConversationActionBuilder.START_CONVERSATION_ACTION));
@@ -458,7 +419,7 @@ public class NotificationListenerService
             onNotificationPostedUnsafe(statusBarNotification);
         } catch (final Exception e) {
             Timber.e(e, "[ERROR] onNotificationPosted failed to handle exception [%s]", e.getMessage());
-            if (DEBUG_MODE_PROVIDER.isDebugMode()) {
+            if (debugModeProvider.isDebugMode()) {
                 Toast.makeText(this, "[ERROR] LNS onNotificationPosted", Toast.LENGTH_SHORT);
             }
         }
@@ -765,7 +726,7 @@ public class NotificationListenerService
             onNotificationRemovedUnsafe(statusBarNotification);
         } catch (final Exception e) {
             Timber.e(e, "[ERROR] onNotificationRemoved failed to handle exception [%s]", e.getMessage());
-            if (DEBUG_MODE_PROVIDER.isDebugMode()) {
+            if (debugModeProvider.isDebugMode()) {
                 Toast.makeText(this, "[ERROR] LNS onNotificationRemoved", Toast.LENGTH_SHORT);
             }
         }
