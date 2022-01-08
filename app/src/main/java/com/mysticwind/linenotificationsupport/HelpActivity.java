@@ -24,6 +24,9 @@ import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.line.LineAppVersionProvider;
 import com.mysticwind.linenotificationsupport.provision.FeatureProvisionStateProvider;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -182,10 +185,18 @@ public class HelpActivity extends AppCompatActivity {
 
     private boolean hasNotificationAccess() {
         final ContentResolver contentResolver = getContentResolver();
+        // it would look something like this: net.dinglisch.android.taskerm.NotificationListenerService:com.mysticwind.linenotificationsupport.donate/com.mysticwind.linenotificationsupport.service.NotificationListenerService
         String enabledNotificationListeners =
                 Settings.Secure.getString(contentResolver, "enabled_notification_listeners");
         String packageName = getPackageName();
-        return enabledNotificationListeners != null && enabledNotificationListeners.contains(packageName);
+        Timber.w("enabled_notification_listeners: " + enabledNotificationListeners);
+        if (StringUtils.isBlank(enabledNotificationListeners)) {
+            return false;
+        }
+        return Arrays.stream(enabledNotificationListeners.split(":"))
+                .filter(enabledNotificationListener -> enabledNotificationListener.startsWith(packageName + "/"))
+                .findAny()
+                .isPresent();
     }
 
     private void redirectToNotificationSettingsPage() {
