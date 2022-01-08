@@ -81,7 +81,10 @@ public class ChatNameManager {
                     }
                     // hack to get the merged name
                     final String chatName = multiPersonChatNameDataAccessor.addRelationshipAndGetChatGroupName(chatId, null);
-                    chats.add(new Chat(chatId, chatName));
+                    // chat name may be null. TODO fix API
+                    if (StringUtils.isNotBlank(chatName)) {
+                        chats.add(new Chat(chatId, chatName));
+                    }
                 });
 
         return chats;
