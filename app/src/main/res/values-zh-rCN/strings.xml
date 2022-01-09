@@ -103,6 +103,7 @@
     <string name="conversation_start_notification_title">开始新对话</string>
     <string name="conversation_start_notification_action_button">新对话</string>
     <string name="conversation_start_notification_action_button_message">与群组关联的关键词开始的信息。</string>
+    <string name="conversation_start_notification_disable_feature_action_button">关闭</string>
     <string name="conversation_start_notification_content_no_keywords">您尚未设定任何关键词。点我来设定！</string>
     <string name="conversation_start_notification_content_no_reply_action">您尚未收到 LINE 信息，因此还无法开始新对话。收到新信息之后将会列出可使用的关键词。</string>
     <string name="conversation_start_notification_content_guidance">利用关键词来开始新对话。若您传送 \"%1$s\"，这将会发送 \"%3$s\" 信息并开始给群组 \"%2$s\" 的对话。</string>
