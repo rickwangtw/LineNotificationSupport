@@ -13,7 +13,7 @@
 
         <ImageView
             android:id="@+id/warning_icon"
-            android:tooltipText="You cannot start this conversation yet because you have not received messages from this chat."
+            android:tooltipText="@string/keyword_setting_activity_warning_tooltip"
             android:layout_width="24dp"
             android:layout_height="match_parent"
             app:srcCompat="@drawable/outline_warning_24"

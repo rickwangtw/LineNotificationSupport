@@ -128,5 +128,6 @@
     <string name="keyword_setting_activity_title">Keyword Configurations</string>
     <string name="keyword_setting_activity_header_chat">Chat</string>
     <string name="keyword_setting_activity_header_keyword">Keyword</string>
+    <string name="keyword_setting_activity_warning_tooltip">You cannot start this conversation yet because you have not received messages from this chat.</string>
 
 </resources>

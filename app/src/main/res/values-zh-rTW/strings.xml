@@ -119,5 +119,6 @@
     <string name="keyword_setting_activity_title">關鍵詞設定</string>
     <string name="keyword_setting_activity_header_chat">群組</string>
     <string name="keyword_setting_activity_header_keyword">關鍵詞</string>
+    <string name="keyword_setting_activity_warning_tooltip">尚未收到此群組的 LINE 訊息因此無法開始新的對話。</string>
 
 </resources>
