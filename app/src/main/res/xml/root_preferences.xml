@@ -14,6 +14,15 @@
             app:title="@string/identical_messages_title"
             app:useSimpleSummaryProvider="true" />
 
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
+            app:singleLineTitle="false"
+            app:key="conversation_starter"
+            app:title="@string/conversation_starter_title"
+            app:defaultValue="true"
+            app:summaryOff="@string/conversation_starter_summary_off"
+            app:summaryOn="@string/conversation_starter_summary_on" />
+
         <!--
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"

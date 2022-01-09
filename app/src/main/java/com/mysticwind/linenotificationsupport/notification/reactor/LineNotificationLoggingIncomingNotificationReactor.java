@@ -5,6 +5,7 @@ import android.service.notification.StatusBarNotification;
 import com.google.common.collect.ImmutableSet;
 import com.mysticwind.linenotificationsupport.debug.history.manager.NotificationHistoryManager;
 import com.mysticwind.linenotificationsupport.line.Constants;
+import com.mysticwind.linenotificationsupport.line.LineAppVersionProvider;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationPrinter;
@@ -14,20 +15,25 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Collection;
 import java.util.Objects;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class LineNotificationLoggingIncomingNotificationReactor implements IncomingNotificationReactor {
 
     private final StatusBarNotificationPrinter statusBarNotificationPrinter;
     private final NotificationHistoryManager notificationHistoryManager;
-    private final String lineAppVersion;
+    private final LineAppVersionProvider lineAppVersionProvider;
 
+    @Inject
     public LineNotificationLoggingIncomingNotificationReactor(final StatusBarNotificationPrinter statusBarNotificationPrinter,
                                                               final NotificationHistoryManager notificationHistoryManager,
-                                                              final String lineAppVersion) {
+                                                              final LineAppVersionProvider lineAppVersionProvider) {
         this.statusBarNotificationPrinter = Objects.requireNonNull(statusBarNotificationPrinter);
         this.notificationHistoryManager = Objects.requireNonNull(notificationHistoryManager);
-        this.lineAppVersion = lineAppVersion;
+        this.lineAppVersionProvider = Objects.requireNonNull(lineAppVersionProvider);
     }
 
     @Override
@@ -46,7 +52,9 @@ public class LineNotificationLoggingIncomingNotificationReactor implements Incom
 
         statusBarNotificationPrinter.print("Received", statusBarNotification);
 
-        notificationHistoryManager.record(statusBarNotification, lineAppVersion);
+        // TODO potential waste in calling PackageManager everytime for this logging?
+        final String lineVersion = lineAppVersionProvider.getLineAppVersion().orElse("N/A");
+        notificationHistoryManager.record(statusBarNotification, lineVersion);
 
         if (isNewMessageWithoutContent(statusBarNotification)) {
             Timber.d("Detected potential new message without content: key [%s] title [%s] message [%s]",

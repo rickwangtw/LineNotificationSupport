@@ -9,12 +9,17 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Objects;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class ChatTitleAndSenderResolver {
 
     private ChatNameManager chatNameManager;
 
+    @Inject
     public ChatTitleAndSenderResolver(final ChatNameManager chatNameManager) {
         this.chatNameManager = Objects.requireNonNull(chatNameManager);
     }

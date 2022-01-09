@@ -2,6 +2,10 @@ package com.mysticwind.linenotificationsupport.preference;
 
 import android.content.SharedPreferences;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class PreferenceProvider {
 
     public static final String MANAGE_LINE_MESSAGE_NOTIFICATIONS_PREFERENCE_KEY = "manage_line_message_notifications";
@@ -15,9 +19,11 @@ public class PreferenceProvider {
     public static final String SINGLE_NOTIFICATION_CONVERSATIONS_KEY = "single_notification_with_history";
     public static final String GENERATE_SELF_RESPONSE_MESSAGE_KEY = "generate_self_response_message";
     public static final String BLUETOOTH_CONTROL_ONGOING_CALL_KEY = "bluetooth_control_in_calls";
+    public static final String CONVERSATION_STARTER_KEY = "conversation_starter";
 
     private final SharedPreferences sharedPreferences;
 
+    @Inject
     public PreferenceProvider(final SharedPreferences sharedPreferences) {
         this.sharedPreferences = sharedPreferences;
     }
@@ -86,6 +92,10 @@ public class PreferenceProvider {
 
     public boolean shouldControlBluetoothDuringCalls() {
         return sharedPreferences.getBoolean(BLUETOOTH_CONTROL_ONGOING_CALL_KEY, false);
+    }
+
+    public boolean shouldShowConversationStarterNotification() {
+        return sharedPreferences.getBoolean(CONVERSATION_STARTER_KEY, true);
     }
 
 }

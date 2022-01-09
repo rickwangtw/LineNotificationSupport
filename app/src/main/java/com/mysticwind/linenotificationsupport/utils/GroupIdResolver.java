@@ -3,8 +3,12 @@ package com.mysticwind.linenotificationsupport.utils;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class GroupIdResolver {
 
     private static final int GROUP_ID_START = 0x4000;
@@ -13,6 +17,7 @@ public class GroupIdResolver {
     private final Map<String, Integer> fallbackChatIdToGroupIdMap = new ConcurrentHashMap<>();
     private int lastGroupId = GROUP_ID_START;
 
+    @Inject
     public GroupIdResolver() {
     }
 

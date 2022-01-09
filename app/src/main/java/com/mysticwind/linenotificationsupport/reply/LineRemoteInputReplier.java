@@ -13,12 +13,17 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Objects;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import timber.log.Timber;
 
 /**
  * https://medium.com/@polidea/how-to-respond-to-any-messaging-notification-on-android-7befa483e2d7
  * https://stackoverflow.com/questions/59251922/how-to-send-a-reply-from-a-notification
  */
+@Singleton
 public class LineRemoteInputReplier {
 
     private static final String LINE_TEXT_REMOTE_INPUT_KEY = "line.text";
@@ -34,7 +39,8 @@ public class LineRemoteInputReplier {
 
     private final Context context;
 
-    public LineRemoteInputReplier(final Context context) {
+    @Inject
+    public LineRemoteInputReplier(@ApplicationContext final Context context) {
         this.context = Objects.requireNonNull(context);
     }
 

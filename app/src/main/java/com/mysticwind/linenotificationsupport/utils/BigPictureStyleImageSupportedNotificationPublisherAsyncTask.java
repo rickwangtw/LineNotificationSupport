@@ -2,6 +2,7 @@ package com.mysticwind.linenotificationsupport.utils;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -85,7 +86,7 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
                 .setGroup(lineNotification.getChatId())
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(lineNotification.getIcon())
-                .setContentIntent(LINE_LAUNCHER.buildPendingIntent(context, lineNotification.getChatId()))
+                .setContentIntent(resolveContentIntent(context, lineNotification))
                 .setChannelId(channelId.orElse(null))
                 .setAutoCancel(true)
                 .setWhen(lineNotification.getTimestamp())
@@ -169,6 +170,12 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
         } else {
             return notificationGroupCreator.createNotificationChannel(lineNotification.getChatId(), lineNotification.getTitle());
         }
+    }
+
+    private PendingIntent resolveContentIntent(final Context context, final LineNotification lineNotification) {
+        return lineNotification.getClickIntent().orElse(
+                LINE_LAUNCHER.buildPendingIntent(context, lineNotification.getChatId())
+        );
     }
 
 }

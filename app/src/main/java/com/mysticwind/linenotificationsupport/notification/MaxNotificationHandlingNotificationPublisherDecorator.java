@@ -19,7 +19,8 @@ import timber.log.Timber;
 public class MaxNotificationHandlingNotificationPublisherDecorator implements NotificationPublisher {
 
     // without the cool down, messages may not get sent if messages of the same group was just dismissed
-    private static final long DISMISS_COOL_DOWN_IN_MILLIS = 500L;
+    public static final long DISMISS_COOL_DOWN_IN_MILLIS = 500L;
+
     private static final long NOTIFICATION_CHECK_PERIOD_IN_MILLIS = 500L;
 
     // tracks the messages that has not been sent

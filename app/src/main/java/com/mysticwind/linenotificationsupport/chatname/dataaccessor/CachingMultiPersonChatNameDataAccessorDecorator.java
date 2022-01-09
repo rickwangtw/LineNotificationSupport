@@ -28,6 +28,7 @@ public class CachingMultiPersonChatNameDataAccessorDecorator implements MultiPer
         this.chatIdToSenderMultimap.put(chatId, sender);
         // TODO make this async
         multiPersonChatNameDataAccessor.addRelationshipAndGetChatGroupName(chatId, sender);
+        // TODO this logic would essentially break the interface contract and should be in upper level class
         return sortAndMerge(this.chatIdToSenderMultimap.get(chatId));
     }
 
@@ -35,7 +36,9 @@ public class CachingMultiPersonChatNameDataAccessorDecorator implements MultiPer
         return new HashSet<>(senders).stream()
                 .sorted()
                 .reduce((sender1, sender2) -> sender1 + "," + sender2)
-                .get(); // there should always be at least one sender
+                // there should always be at least one sender
+                // edge case: client called without sender and returning an empty list due to cleaning of cache
+                .orElse("");
     }
 
     @Override

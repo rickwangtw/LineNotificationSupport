@@ -3,19 +3,25 @@ package com.mysticwind.linenotificationsupport.notification.reactor;
 import android.service.notification.StatusBarNotification;
 
 import com.google.common.collect.ImmutableSet;
+import com.mysticwind.linenotificationsupport.module.HiltQualifiers;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 
 import java.util.Collection;
 import java.util.Set;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class LoggingDismissedNotificationReactor implements DismissedNotificationReactor {
 
     private final Set<String> interestedPackages;
 
-    public LoggingDismissedNotificationReactor(final String packageName) {
+    @Inject
+    public LoggingDismissedNotificationReactor(@HiltQualifiers.PackageName final String packageName) {
         this.interestedPackages = ImmutableSet.of(packageName);
     }
 

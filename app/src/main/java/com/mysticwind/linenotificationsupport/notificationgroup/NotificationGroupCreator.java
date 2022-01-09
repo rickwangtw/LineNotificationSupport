@@ -91,6 +91,17 @@ public class NotificationGroupCreator {
     }
 
     @SuppressLint("NewApi")
+    private void createNotificationChannelGroupIfNotExist(final String notificationGroupId) {
+        final Optional<String> notificationChannelGroup = notificationManager.getNotificationChannelGroups().stream()
+                .map(group -> group.getId())
+                .findFirst();
+        if (!notificationChannelGroup.isPresent()) {
+            final String notificationGroupName = NOTIFICATION_GROUP_ID_TO_NAME_MAP.get(notificationGroupId);
+            notificationManager.createNotificationChannelGroup(new NotificationChannelGroup(notificationGroupId, notificationGroupName));
+        }
+    }
+
+    @SuppressLint("NewApi")
     private void addGroupToNotificationChannel(final NotificationChannel notificationChannel) {
         final String notificationGroupId = resolveNotificationChannelGroup(notificationChannel.getId());
         notificationChannel.setGroup(notificationGroupId);
@@ -178,6 +189,7 @@ public class NotificationGroupCreator {
         channel.enableVibration(vibrate);
 
         final String group = resolveNotificationChannelGroup(channelId);
+        createNotificationChannelGroupIfNotExist(group);
         channel.setGroup(group);
 
         // Register the channel with the system; you can't change the importance

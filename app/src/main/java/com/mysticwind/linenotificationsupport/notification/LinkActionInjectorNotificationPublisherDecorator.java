@@ -82,6 +82,9 @@ public class LinkActionInjectorNotificationPublisherDecorator implements Notific
     }
 
     private Optional<String> findUrl(final String message) {
+        if (StringUtils.isBlank(message)) {
+            return Optional.empty();
+        }
         final Optional<Integer> httpIndex = getHttpIndex(message);
         if (!httpIndex.isPresent()) {
             return Optional.empty();

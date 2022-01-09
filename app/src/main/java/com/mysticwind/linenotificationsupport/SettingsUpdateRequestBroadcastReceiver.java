@@ -16,8 +16,12 @@ import com.mysticwind.linenotificationsupport.preference.PreferenceWriter;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
 
+@AndroidEntryPoint
 public class SettingsUpdateRequestBroadcastReceiver extends BroadcastReceiver {
 
     private static final Map<String, BiConsumer<PreferenceWriter, Boolean>> BOOLEAN_SETTING_TO_WRITER_FUNCTION_MAP = ImmutableMap.of(
@@ -26,6 +30,9 @@ public class SettingsUpdateRequestBroadcastReceiver extends BroadcastReceiver {
 
     private static final String SETTING_KEY_KEY = "setting-key";
     private static final String SETTING_VALUE_KEY = "setting-value";
+
+    @Inject
+    PreferenceWriter preferenceWriter;
 
     @Override
     public void onReceive(final Context context, final Intent intent) {
@@ -39,7 +46,7 @@ public class SettingsUpdateRequestBroadcastReceiver extends BroadcastReceiver {
             final boolean value = Boolean.parseBoolean(settingValue);
 
             final BiConsumer<PreferenceWriter, Boolean> writerFunction = BOOLEAN_SETTING_TO_WRITER_FUNCTION_MAP.get(settingKey);
-            writerFunction.accept(getPreferenceWriter(context), value);
+            writerFunction.accept(preferenceWriter, value);
 
             Timber.i("Successfully updated preference setting key [%s] value [%s]", settingKey, settingValue);
             setResultCode(RESULT_OK);
@@ -49,10 +56,6 @@ public class SettingsUpdateRequestBroadcastReceiver extends BroadcastReceiver {
         Timber.e("Unsupported intent action [%s] key [%s] value [%s]",
                 intent.getAction(), settingKey, settingValue);
         setResultCode(RESULT_CANCELED);
-    }
-
-    private PreferenceWriter getPreferenceWriter(final Context context) {
-        return new PreferenceWriter(PreferenceManager.getDefaultSharedPreferences(context));
     }
 
 }

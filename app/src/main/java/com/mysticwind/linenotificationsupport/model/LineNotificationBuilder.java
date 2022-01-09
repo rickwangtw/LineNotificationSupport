@@ -13,7 +13,6 @@ import androidx.core.app.Person;
 import androidx.core.graphics.drawable.IconCompat;
 
 import com.google.common.collect.ImmutableList;
-import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.reply.ReplyActionBuilder;
 import com.mysticwind.linenotificationsupport.utils.ChatTitleAndSenderResolver;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
@@ -27,6 +26,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
+@Singleton
 public class LineNotificationBuilder {
 
     public static final String CALL_VIRTUAL_CHAT_ID = "call_virtual_chat_id";
@@ -41,13 +46,8 @@ public class LineNotificationBuilder {
     private final StatusBarNotificationPrinter statusBarNotificationPrinter;
     private final ReplyActionBuilder replyActionBuilder;
 
-    public LineNotificationBuilder(final Context context,
-                                   final ChatTitleAndSenderResolver chatTitleAndSenderResolver,
-                                   final StatusBarNotificationPrinter statusBarNotificationPrinter) {
-        this(context, chatTitleAndSenderResolver, statusBarNotificationPrinter, new DefaultReplyActionBuilder(context));
-    }
-
-    public LineNotificationBuilder(final Context context,
+    @Inject
+    public LineNotificationBuilder(@ApplicationContext final Context context,
                                    final ChatTitleAndSenderResolver chatTitleAndSenderResolver,
                                    final StatusBarNotificationPrinter statusBarNotificationPrinter,
                                    final ReplyActionBuilder replyActionBuilder) {
@@ -77,6 +77,7 @@ public class LineNotificationBuilder {
                 .lineStickerUrl(lineStickerUrl)
                 .chatId(resolveChatId(statusBarNotification, callState))
                 .timestamp(statusBarNotification.getNotification().when)
+                .clickIntent(statusBarNotification.getNotification().contentIntent)
                 .actions(actions)
                 .icon(largeIconBitmap)
                 .callState(callState)

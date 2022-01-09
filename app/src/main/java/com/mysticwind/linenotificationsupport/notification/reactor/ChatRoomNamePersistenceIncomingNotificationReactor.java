@@ -14,14 +14,19 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import timber.log.Timber;
 
+@Singleton
 public class ChatRoomNamePersistenceIncomingNotificationReactor implements IncomingNotificationReactor {
 
     private static final Set<String> INTERESTED_PACKAGES = ImmutableSet.of(Constants.LINE_PACKAGE_NAME);
 
     private final GroupChatNameDataAccessor groupChatNameDataAccessor;
 
+    @Inject
     public ChatRoomNamePersistenceIncomingNotificationReactor(final GroupChatNameDataAccessor groupChatNameDataAccessor) {
         this.groupChatNameDataAccessor = Objects.requireNonNull(groupChatNameDataAccessor);
     }
