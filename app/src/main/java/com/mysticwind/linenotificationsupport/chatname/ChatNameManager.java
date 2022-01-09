@@ -58,6 +58,9 @@ public class ChatNameManager {
             return highConfidenceChatGroupName;
         }
         final String chatName = multiPersonChatNameDataAccessor.addRelationshipAndGetChatGroupName(chatId, sender);
+        if (StringUtils.isBlank(chatName)) {
+            Timber.w("No chat name returned for chat ID [%s]", chatId);
+        }
         return chatName;
     }
 
