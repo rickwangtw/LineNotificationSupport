@@ -9,6 +9,7 @@ import android.service.notification.StatusBarNotification;
 import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.DismissNotificationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.R;
+import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +41,12 @@ public class DismissActionInjectorNotificationPublisherDecorator implements Noti
 
         // don't add dismiss button for incoming call state
         if (lineNotification.getCallState() == LineNotification.CallState.INCOMING) {
+            this.notificationPublisher.publishNotification(lineNotification, notificationId);
+            return;
+        }
+
+        // conversation start chats restarts itself and dismiss action don't make sense
+        if (ConversationStarterNotificationManager.CONVERSATION_STARTER_CHAT_ID.equals(lineNotification.getChatId())) {
             this.notificationPublisher.publishNotification(lineNotification, notificationId);
             return;
         }
