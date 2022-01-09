@@ -67,7 +67,7 @@ public class ConversationStarterNotificationManager {
                         .isSelfResponse(true)
                         .chatId(CONVERSATION_STARTER_CHAT_ID)
                         .sender(myPersonLabelProvider.getMyPerson())
-                        .action(startConversationActionBuilder.buildAction())
+                        .actions(startConversationActionBuilder.buildActions())
                         .clickIntent(keywordSettingActivityLauncher.buildPendingIntent())
                         .build(),
                 notificationId);

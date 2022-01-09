@@ -19,6 +19,7 @@ public class PreferenceModule {
 
     /* Related classes using @Inject
       PreferenceProvider
+      PreferenceWriter
      */
 
     @Singleton

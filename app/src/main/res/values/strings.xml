@@ -112,6 +112,7 @@
     <string name="conversation_start_notification_title">Start a conversation</string>
     <string name="conversation_start_notification_action_button">Start conversation</string>
     <string name="conversation_start_notification_action_button_message">Message that starts with keyword configured for the chat.</string>
+    <string name="conversation_start_notification_disable_feature_action_button">Disable feature</string>
     <string name="conversation_start_notification_content_no_keywords">You have not configured any keywords to start conversations yet. Click me to configure keywords.</string>
     <string name="conversation_start_notification_content_no_reply_action">No messages from LINE received previously so you cannot start a conversation. A list of available chat will be shown here after you receive LINE messages.</string>
     <string name="conversation_start_notification_content_guidance">Start a conversation by starting your message with the keyword, for example, send \"%1$s\" to start a conversation for chat \"%2$s\" with message \"%3$s\"</string>
