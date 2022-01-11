@@ -1,5 +1,7 @@
 package com.mysticwind.linenotificationsupport;
 
+import static android.content.Intent.FLAG_RECEIVER_FOREGROUND;
+
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,7 +35,9 @@ public class DeleteCachedFriendNamesDialogActivity extends AppCompatActivity {
 
                         final Intent intent = new Intent(getApplicationContext(), DeleteFriendNameCacheBroadcastReceiver.class);
                         intent.setAction(NotificationListenerService.DELETE_FRIEND_NAME_CACHE_ACTION);
+                        intent.setFlags(FLAG_RECEIVER_FOREGROUND);
                         sendBroadcast(intent);
+
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, null)
