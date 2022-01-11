@@ -203,15 +203,6 @@ public class NotificationListenerService
         }
     };
 
-    private final BroadcastReceiver localeUpdateBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            localeDao.notifyLocaleChange();
-            final String locale = localeDao.getLocale();
-            Timber.i("Locale has been changed to %s", locale);
-        }
-    };
-
     private final BroadcastReceiver deleteFriendNameCacheBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -331,7 +322,6 @@ public class NotificationListenerService
         scheduleNotificationCounterCheck();
 
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
-        registerReceiver(localeUpdateBroadcastReceiver, new IntentFilter(Intent.ACTION_LOCALE_CHANGED));
         registerReceiver(deleteFriendNameCacheBroadcastReceiver, new IntentFilter(DELETE_FRIEND_NAME_CACHE_ACTION));
 
         isInitialized = true;
@@ -712,7 +702,6 @@ public class NotificationListenerService
         Timber.w("NotificationListenerService onListenerDisconnected");
 
         unregisterReceiver(replyActionBroadcastReceiver);
-        unregisterReceiver(localeUpdateBroadcastReceiver);
         unregisterReceiver(deleteFriendNameCacheBroadcastReceiver);
 
         try {

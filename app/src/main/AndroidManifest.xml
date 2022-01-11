@@ -18,7 +18,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.LineNotificationSupport">
-
+        <receiver
+            android:name=".ui.broadcastreceiver.LocaleChangeBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+            </intent-filter>
+        </receiver>
         <receiver
             android:name=".conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver"
             android:enabled="true"
@@ -27,7 +34,6 @@
                 <action android:name="start_conversation_action" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name=".conversationstarter.broadcastreceiver.DisableStartConversationFeatureBroadcastReceiver"
             android:enabled="true"
@@ -36,7 +42,6 @@
                 <action android:name="disable_start_conversation_feature_action" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name=".conversationstarter.broadcastreceiver.DisableStartConversationFeatureBroadcastReceiver"
             android:enabled="true"
