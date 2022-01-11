@@ -7,6 +7,7 @@ import java.util.List;
 public interface AndroidNotificationManager {
 
     List<StatusBarNotification> getNotificationsOfPackage(String packageName);
+    List<StatusBarNotification> getOrderedLineNotificationSupportNotificationsOfChatId(final String chatId, int filterStrategy);
     List<StatusBarNotification> getOrderedLineNotificationSupportNotifications(String group, int filterStrategy);
     void cancelNotificationById(int notificationId);
     void cancelNotification(String chatId);

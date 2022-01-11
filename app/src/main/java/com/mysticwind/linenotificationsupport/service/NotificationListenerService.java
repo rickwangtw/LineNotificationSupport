@@ -4,13 +4,9 @@ import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE
 
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.RemoteInput;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.service.notification.StatusBarNotification;
@@ -26,15 +22,11 @@ import com.github.rholder.retry.RetryerBuilder;
 import com.github.rholder.retry.StopStrategies;
 import com.github.rholder.retry.WaitStrategies;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
-import com.mysticwind.linenotificationsupport.chatname.ChatNameManager;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
-import com.mysticwind.linenotificationsupport.conversationstarter.StartConversationActionBuilder;
-import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.identicalmessage.AsIsIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageEvaluator;
@@ -53,10 +45,6 @@ import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotif
 import com.mysticwind.linenotificationsupport.notification.reactor.Reaction;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
-import com.mysticwind.linenotificationsupport.reply.DefaultReplyActionBuilder;
-import com.mysticwind.linenotificationsupport.reply.LineRemoteInputReplier;
-import com.mysticwind.linenotificationsupport.reply.MyPersonLabelProvider;
-import com.mysticwind.linenotificationsupport.ui.LocaleDao;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
@@ -69,7 +57,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -127,82 +114,6 @@ public class NotificationListenerService
         }
     };
 
-    // TODO should this be in its own class?
-    private final BroadcastReceiver replyActionBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(final Context context, final Intent intent) {
-            final String action = intent.getAction();
-            if (DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION.equals(action)){
-
-                final Optional<String> responseMessage = getResponseMessage(intent);
-                final Optional<Notification.Action> lineReplyAction = getLineReplyAction(intent);
-                Timber.i("Received reply action with response [%s] and line reply action [%s]",
-                        responseMessage, lineReplyAction);
-
-                if (responseMessage.isPresent() && lineReplyAction.isPresent()) {
-                    lineRemoteInputReplier.sendReply(lineReplyAction.get(), responseMessage.get());
-                    updateNotification(context, intent, responseMessage.get());
-                }
-            }
-        }
-
-        private Optional<String> getResponseMessage(final Intent intent) {
-            final Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
-            if (remoteInput == null) {
-                Timber.d("ReplyActionBroadcastReceiver: Null RemoteInput");
-                return Optional.empty();
-            }
-            final CharSequence response = remoteInput.getCharSequence(DefaultReplyActionBuilder.RESPONSE_REMOTE_INPUT_KEY);
-            if (response == null) {
-                Timber.d("ReplyActionBroadcastReceiver: Null response from %s", DefaultReplyActionBuilder.RESPONSE_REMOTE_INPUT_KEY);
-                return Optional.empty();
-            }
-            if (StringUtils.isBlank(response.toString())) {
-                Timber.d("ReplyActionBroadcastReceiver: Blank response: [%s]", response.toString());
-                return Optional.empty();
-            }
-            return Optional.of(response.toString());
-        }
-
-        private Optional<Notification.Action> getLineReplyAction(final Intent intent) {
-            final Notification.Action lineReplyAction = intent.getParcelableExtra(DefaultReplyActionBuilder.LINE_REPLY_ACTION_KEY);
-            return Optional.ofNullable(lineReplyAction);
-        }
-
-        private void updateNotification(Context context, Intent intent, String response) {
-            final String chatId = intent.getStringExtra(DefaultReplyActionBuilder.CHAT_ID_KEY);
-
-            final Optional<StatusBarNotification> statusBarNotification = findNotificationOfChatId(chatId);
-
-            if (!statusBarNotification.isPresent()) {
-                Timber.e("Cannot find corresponding notification for chat ID [%s]", chatId);
-                return;
-            }
-
-            final String chatName = chatNameManager.getChatName(chatId);
-
-            final LineNotification responseLineNotification = LineNotification.builder()
-                    .lineMessageId(String.valueOf(Instant.now().toEpochMilli())) // just generate a fake one
-                    .title(chatName)
-                    .message(response)
-                    .sender(myPersonLabelProvider.getMyPerson())
-                    .chatId(chatId)
-                    .timestamp(Instant.now().toEpochMilli())
-                    .actions(ImmutableList.copyOf(statusBarNotification.get().getNotification().actions))
-                    .isSelfResponse(true)
-                    .build();
-
-            sendNotification(responseLineNotification, notificationIdGenerator.getNextNotificationId());
-        }
-
-        private Optional<StatusBarNotification> findNotificationOfChatId(final String chatId) {
-            return getActiveNotificationsFromAllAppsSafely().stream()
-                    .filter(notification -> notification.getPackageName().equals(getPackageName()))
-                    .filter(notification -> chatId.equals(NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification()).orElse(null)))
-                    .max(Comparator.comparing(notification -> notification.getNotification().when));
-        }
-    };
-
     private boolean isInitialized = false;
     private boolean isListenerConnected = false;
 
@@ -222,12 +133,6 @@ public class NotificationListenerService
     DefaultAndroidNotificationManager defaultAndroidNotificationManager;
 
     @Inject
-    LocaleDao localeDao;
-
-    @Inject
-    MyPersonLabelProvider myPersonLabelProvider;
-
-    @Inject
     Handler handler;
 
     @Inject
@@ -243,13 +148,7 @@ public class NotificationListenerService
     DumbNotificationCounter dumbNotificationCounter;
 
     @Inject
-    ChatNameManager chatNameManager;
-
-    @Inject
     ConversationStarterNotificationManager conversationStarterNotificationManager;
-
-    @Inject
-    LineRemoteInputReplier lineRemoteInputReplier;
 
     @Inject
     DebugModeProvider debugModeProvider;
@@ -313,8 +212,6 @@ public class NotificationListenerService
         Timber.d("Registered onSharedPreferenceChangeListener");
 
         scheduleNotificationCounterCheck();
-
-        registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
 
         isInitialized = true;
 
@@ -692,8 +589,6 @@ public class NotificationListenerService
 
         isListenerConnected = false;
         Timber.w("NotificationListenerService onListenerDisconnected");
-
-        unregisterReceiver(replyActionBroadcastReceiver);
 
         try {
             sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);

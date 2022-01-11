@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.mysticwind.linenotificationsupport.R;
+import com.mysticwind.linenotificationsupport.reply.broadcastreceiver.ReplyActionBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.ui.LocalizationDao;
 
 import java.util.Objects;
@@ -56,7 +57,7 @@ public class DefaultReplyActionBuilder implements  ReplyActionBuilder {
     }
 
     private Intent getMessageReplyIntent(final String chatId, final Notification.Action originalLineReplyAction) {
-        Intent intent = new Intent();
+        Intent intent = new Intent(context, ReplyActionBroadcastReceiver.class);
         intent.setAction(REPLY_MESSAGE_ACTION);
         intent.putExtra(CHAT_ID_KEY, chatId);
         intent.putExtra(LINE_REPLY_ACTION_KEY, originalLineReplyAction);
