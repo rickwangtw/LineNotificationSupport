@@ -203,13 +203,6 @@ public class NotificationListenerService
         }
     };
 
-    private final BroadcastReceiver deleteFriendNameCacheBroadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            chatNameManager.deleteFriendNameCache();
-        }
-    };
-
     private boolean isInitialized = false;
     private boolean isListenerConnected = false;
 
@@ -322,7 +315,6 @@ public class NotificationListenerService
         scheduleNotificationCounterCheck();
 
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
-        registerReceiver(deleteFriendNameCacheBroadcastReceiver, new IntentFilter(DELETE_FRIEND_NAME_CACHE_ACTION));
 
         isInitialized = true;
 
@@ -702,7 +694,6 @@ public class NotificationListenerService
         Timber.w("NotificationListenerService onListenerDisconnected");
 
         unregisterReceiver(replyActionBroadcastReceiver);
-        unregisterReceiver(deleteFriendNameCacheBroadcastReceiver);
 
         try {
             sharedPreferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);

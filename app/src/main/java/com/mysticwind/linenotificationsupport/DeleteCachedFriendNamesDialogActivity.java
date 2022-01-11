@@ -8,6 +8,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.mysticwind.linenotificationsupport.chatname.broadcastreceiver.DeleteFriendNameCacheBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.service.NotificationListenerService;
 
 import timber.log.Timber;
@@ -30,7 +31,9 @@ public class DeleteCachedFriendNamesDialogActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int which) {
                         Timber.i("Confirmed cleaning database");
 
-                        sendBroadcast(new Intent(NotificationListenerService.DELETE_FRIEND_NAME_CACHE_ACTION));
+                        final Intent intent = new Intent(getApplicationContext(), DeleteFriendNameCacheBroadcastReceiver.class);
+                        intent.setAction(NotificationListenerService.DELETE_FRIEND_NAME_CACHE_ACTION);
+                        sendBroadcast(intent);
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, null)

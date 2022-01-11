@@ -27,6 +27,14 @@
             </intent-filter>
         </receiver>
         <receiver
+            android:name=".chatname.broadcastreceiver.DeleteFriendNameCacheBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.mysticwind.linenotificationsupport.action.deletefriendnamecache" />
+            </intent-filter>
+        </receiver>
+        <receiver
             android:name=".conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver"
             android:enabled="true"
             android:exported="false">
