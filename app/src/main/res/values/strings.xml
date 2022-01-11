@@ -105,7 +105,7 @@
     <string name="support_donate_app">Please support my effort through the donate version: https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate</string>
 
     <!-- Conversation notification -->
-    <string name="conversation_notification_action_button">reply</string>
+    <string name="conversation_notification_action_button">Reply</string>
     <string name="conversation_notification_action_button_message">Message to reply</string>
 
     <!-- Conversation starter notification -->
