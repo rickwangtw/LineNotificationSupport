@@ -20,6 +20,24 @@
         android:theme="@style/Theme.LineNotificationSupport">
 
         <receiver
+            android:name=".conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="start_conversation_action" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".conversationstarter.broadcastreceiver.DisableStartConversationFeatureBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="disable_start_conversation_feature_action" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
             android:name=".conversationstarter.broadcastreceiver.DisableStartConversationFeatureBroadcastReceiver"
             android:enabled="true"
             android:exported="false">

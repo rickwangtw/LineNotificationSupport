@@ -40,47 +40,43 @@ import timber.log.Timber;
 @AndroidEntryPoint
 public class StartConversationBroadcastReceiver extends BroadcastReceiver {
 
-    private final LineRemoteInputReplier lineRemoteInputReplier;
-    private final ChatKeywordDao chatKeywordDao;
-    private final LineReplyActionDao lineReplyActionDao;
-    private final AndroidNotificationManager notificationManager;
-    private final ChatNameManager chatNameManager;
-    private final MyPersonLabelProvider myPersonLabelProvider;
-    private final ReplyActionBuilder replyActionBuilder;
-    private final NotificationPublisherFactory notificationPublisherFactory;
-    private final NotificationIdGenerator notificationIdGenerator;
-    private final LocalizationDao localizationDao;
-    private final UserAlertDao userAlertDao;
+    @Inject
+    LineRemoteInputReplier lineRemoteInputReplier;
 
     @Inject
-    public StartConversationBroadcastReceiver(final LineRemoteInputReplier lineRemoteInputReplier,
-                                              final ChatKeywordDao chatKeywordDao,
-                                              final LineReplyActionDao lineReplyActionDao,
-                                              final AndroidNotificationManager notificationManager,
-                                              final ChatNameManager chatNameManager,
-                                              final MyPersonLabelProvider myPersonLabelProvider,
-                                              final ReplyActionBuilder replyActionBuilder,
-                                              final NotificationPublisherFactory notificationPublisherFactory,
-                                              final NotificationIdGenerator notificationIdGenerator,
-                                              final LocalizationDao localizationDao,
-                                              final UserAlertDao userAlertDao) {
-        this.lineRemoteInputReplier = Objects.requireNonNull(lineRemoteInputReplier);
-        this.chatKeywordDao = Objects.requireNonNull(chatKeywordDao);
-        this.lineReplyActionDao = Objects.requireNonNull(lineReplyActionDao);
-        this.notificationManager = Objects.requireNonNull(notificationManager);
-        this.chatNameManager = Objects.requireNonNull(chatNameManager);
-        this.replyActionBuilder = Objects.requireNonNull(replyActionBuilder);
-        this.myPersonLabelProvider = Objects.requireNonNull(myPersonLabelProvider);
-        this.notificationPublisherFactory = Objects.requireNonNull(notificationPublisherFactory);
-        this.notificationIdGenerator = Objects.requireNonNull(notificationIdGenerator);
-        this.localizationDao = Objects.requireNonNull(localizationDao);
-        this.userAlertDao = Objects.requireNonNull(userAlertDao);
-    }
+    ChatKeywordDao chatKeywordDao;
+
+    @Inject
+    LineReplyActionDao lineReplyActionDao;
+
+    @Inject
+    AndroidNotificationManager notificationManager;
+
+    @Inject
+    ChatNameManager chatNameManager;
+
+    @Inject
+    MyPersonLabelProvider myPersonLabelProvider;
+
+    @Inject
+    ReplyActionBuilder replyActionBuilder;
+
+    @Inject
+    NotificationPublisherFactory notificationPublisherFactory;
+
+    @Inject
+    NotificationIdGenerator notificationIdGenerator;
+
+    @Inject
+    LocalizationDao localizationDao;
+
+    @Inject
+    UserAlertDao userAlertDao;
 
     @Value
     class ChatIdAndMessage {
-        private final String chatId;
-        private final String message;
+        String chatId;
+        String message;
     }
 
     @Override

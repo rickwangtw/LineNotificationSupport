@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.DismissNotificationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.DisableStartConversationFeatureBroadcastReceiver;
+import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.ui.LocalizationDao;
 
 import java.time.Instant;
@@ -64,7 +65,7 @@ public class StartConversationActionBuilder {
     }
 
     private Intent getMessageReplyIntent() {
-        Intent intent = new Intent();
+        Intent intent = new Intent(context, StartConversationBroadcastReceiver.class);
         intent.setAction(START_CONVERSATION_ACTION);
         return intent;
     }

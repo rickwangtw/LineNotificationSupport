@@ -268,9 +268,6 @@ public class NotificationListenerService
     LineRemoteInputReplier lineRemoteInputReplier;
 
     @Inject
-    StartConversationBroadcastReceiver startConversationActionBroadcastReceiver;
-
-    @Inject
     DebugModeProvider debugModeProvider;
 
     @Override
@@ -333,7 +330,6 @@ public class NotificationListenerService
 
         scheduleNotificationCounterCheck();
 
-        registerReceiver(startConversationActionBroadcastReceiver, new IntentFilter(StartConversationActionBuilder.START_CONVERSATION_ACTION));
         registerReceiver(replyActionBroadcastReceiver, new IntentFilter(DefaultReplyActionBuilder.REPLY_MESSAGE_ACTION));
         registerReceiver(localeUpdateBroadcastReceiver, new IntentFilter(Intent.ACTION_LOCALE_CHANGED));
         registerReceiver(deleteFriendNameCacheBroadcastReceiver, new IntentFilter(DELETE_FRIEND_NAME_CACHE_ACTION));
@@ -715,7 +711,6 @@ public class NotificationListenerService
         isListenerConnected = false;
         Timber.w("NotificationListenerService onListenerDisconnected");
 
-        unregisterReceiver(startConversationActionBroadcastReceiver);
         unregisterReceiver(replyActionBroadcastReceiver);
         unregisterReceiver(localeUpdateBroadcastReceiver);
         unregisterReceiver(deleteFriendNameCacheBroadcastReceiver);
