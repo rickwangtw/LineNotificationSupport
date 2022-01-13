@@ -277,8 +277,6 @@ public class NotificationListenerService
     }
 
     public void onNotificationPostedUnsafe(final StatusBarNotification statusBarNotification) {
-        handleSelfNotificationPublished(statusBarNotification);
-
         // ignore messages from ourselves
         if (statusBarNotification.getPackageName().startsWith(getPackageName())) {
             return;
@@ -637,16 +635,6 @@ public class NotificationListenerService
             Timber.d("Cancelling notification: " + notificationId);
             notificationManager.cancel(notificationId.intValue());
         }
-    }
-
-    private void handleSelfNotificationPublished(StatusBarNotification statusBarNotification) {
-        if (!StringUtils.equals(statusBarNotification.getPackageName(), getPackageName())) {
-            return;
-        }
-        if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
-            return;
-        }
-        notificationPublisherFactory.trackNotificationPublished(statusBarNotification.getId());
     }
 
     private void handleSelfNotificationDismissed(StatusBarNotification statusBarNotification) {

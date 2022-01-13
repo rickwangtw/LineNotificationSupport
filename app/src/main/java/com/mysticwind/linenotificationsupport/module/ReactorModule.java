@@ -14,6 +14,7 @@ import com.mysticwind.linenotificationsupport.notification.reactor.LineNotificat
 import com.mysticwind.linenotificationsupport.notification.reactor.LineReplyActionPersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.LoggingDismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNotificationIncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.PublishedNotificationTrackerIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SameLineMessageIdFilterIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.SummaryNotificationPublisherNotificationReactor;
 
@@ -43,6 +44,7 @@ public abstract class ReactorModule {
         SameLineMessageIdFilterIncomingNotificationReactor
         ConversationStarterNotificationReactor
         LoggingDismissedNotificationReactor
+        PublishedNotificationTrackerIncomingNotificationReactor
      */
 
     @Singleton
@@ -56,7 +58,8 @@ public abstract class ReactorModule {
                                                                                  SummaryNotificationPublisherNotificationReactor  summaryNotificationPublisherNotificationReactor,
                                                                                  ManageLineNotificationIncomingNotificationReactor manageLineNotificationIncomingNotificationReactor,
                                                                                  SameLineMessageIdFilterIncomingNotificationReactor sameLineMessageIdFilterIncomingNotificationReactor,
-                                                                                 ConversationStarterNotificationReactor conversationStarterNotificationReactor) {
+                                                                                 ConversationStarterNotificationReactor conversationStarterNotificationReactor,
+                                                                                 PublishedNotificationTrackerIncomingNotificationReactor publishedNotificationTrackerIncomingNotificationReactor) {
         final ImmutableList.Builder<IncomingNotificationReactor> reactorListBuilder = ImmutableList.builder();
         if (debugModeProvider.isDebugMode()) {
             reactorListBuilder.add(lineNotificationLoggingIncomingNotificationReactor);
@@ -69,6 +72,7 @@ public abstract class ReactorModule {
         reactorListBuilder.add(manageLineNotificationIncomingNotificationReactor);
         reactorListBuilder.add(sameLineMessageIdFilterIncomingNotificationReactor);
         reactorListBuilder.add(conversationStarterNotificationReactor);
+        reactorListBuilder.add(publishedNotificationTrackerIncomingNotificationReactor);
         return reactorListBuilder.build();
     }
 
