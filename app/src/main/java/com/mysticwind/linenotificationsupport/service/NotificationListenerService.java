@@ -50,7 +50,6 @@ import com.mysticwind.linenotificationsupport.utils.NotificationIdGenerator;
 import com.mysticwind.linenotificationsupport.utils.StatusBarNotificationExtractor;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.Instant;
@@ -601,8 +600,6 @@ public class NotificationListenerService
     public void onNotificationRemovedUnsafe(final StatusBarNotification statusBarNotification) {
         super.onNotificationRemoved(statusBarNotification);
 
-        handleSelfNotificationDismissed(statusBarNotification);
-
         if (shouldIgnoreNotification(statusBarNotification)) {
             return;
         }
@@ -635,16 +632,6 @@ public class NotificationListenerService
             Timber.d("Cancelling notification: " + notificationId);
             notificationManager.cancel(notificationId.intValue());
         }
-    }
-
-    private void handleSelfNotificationDismissed(StatusBarNotification statusBarNotification) {
-        if (!StringUtils.equals(statusBarNotification.getPackageName(), getPackageName())) {
-            return;
-        }
-        if (StatusBarNotificationExtractor.isSummary(statusBarNotification)) {
-            return;
-        }
-        notificationPublisherFactory.get().updateNotificationDismissed(statusBarNotification);
     }
 
 }
