@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
                 PendingIntent.getBroadcast(getApplicationContext(),
                         requestCode,
                         messageReplyIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT);
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
         return new Notification.Action.Builder(
                 android.R.drawable.btn_default, "Reply", actionIntent)
                 .addRemoteInput(

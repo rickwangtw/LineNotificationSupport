@@ -92,7 +92,7 @@ public class DismissActionInjectorNotificationPublisherDecorator implements Noti
                 PendingIntent.getBroadcast(context,
                         0,
                         buttonIntent,
-                        PendingIntent.FLAG_ONE_SHOT);
+                        PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
         final String dismissButtonText = context.getString(R.string.dismiss_button_text);
         return new Notification.Action.Builder(android.R.drawable.btn_default, dismissButtonText, actionIntent)
                 .build();

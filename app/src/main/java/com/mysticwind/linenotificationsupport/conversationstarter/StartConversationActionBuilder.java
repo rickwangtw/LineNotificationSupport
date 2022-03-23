@@ -56,7 +56,7 @@ public class StartConversationActionBuilder {
                 PendingIntent.getBroadcast(context,
                         (int) Instant.now().toEpochMilli(),
                         getMessageReplyIntent(),
-                        PendingIntent.FLAG_UPDATE_CURRENT);
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
         return new Notification.Action.Builder(null,
                 localizationDao.getLocalizedString(R.string.conversation_start_notification_action_button), replyPendingIntent)
@@ -73,7 +73,7 @@ public class StartConversationActionBuilder {
     private Notification.Action buildDisableFeatureAction() {
         final Intent intent = new Intent(context, DisableStartConversationFeatureBroadcastReceiver.class);
         intent.setAction(DISABLE_START_CONVERSATION_FEATURE_ACTION);
-        final PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        final PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
         return new Notification.Action.Builder(
                 null,
                 localizationDao.getLocalizedString(R.string.conversation_start_notification_disable_feature_action_button),

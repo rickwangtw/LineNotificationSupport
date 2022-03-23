@@ -126,7 +126,7 @@ public class LinkActionInjectorNotificationPublisherDecorator implements Notific
         intent.setData(Uri.parse(url));
 
         final PendingIntent pendingIntent = PendingIntent.getActivity(
-                context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         final String buttonText = context.getString(R.string.link_button_text);
         return new Notification.Action.Builder(android.R.drawable.btn_default, buttonText, pendingIntent)

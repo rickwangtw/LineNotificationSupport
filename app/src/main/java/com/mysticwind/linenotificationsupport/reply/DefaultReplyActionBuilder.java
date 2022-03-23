@@ -47,7 +47,7 @@ public class DefaultReplyActionBuilder implements  ReplyActionBuilder {
                 PendingIntent.getBroadcast(context,
                         chatId.hashCode(),
                         getMessageReplyIntent(chatId, originalLineReplyAction),
-                        PendingIntent.FLAG_UPDATE_CURRENT);
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
         final String buttonLabel = localizationDao.getLocalizedString(R.string.conversation_notification_action_button);
 
