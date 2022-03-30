@@ -75,6 +75,7 @@ public class SummaryNotificationPublisher {
                 .setChannelId(lastNotification.getChannelId())
                 .setAutoCancel(true)
                 .setContentIntent(lastNotification.contentIntent)
+                .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
                 .build();
 
 
