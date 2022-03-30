@@ -62,6 +62,10 @@ public class ChatRoomNamePersistenceIncomingNotificationReactor implements Incom
 
     // TODO this is copied from ChatTitleAndSenderResolver
     private String getGroupChatTitle(final StatusBarNotification statusBarNotification) {
+        final String subText = NotificationExtractor.getSubText(statusBarNotification.getNotification());
+        if (StringUtils.isNotBlank(subText)) {
+            return subText;
+        }
         // chat groups will have a conversationTitle (but not groups of people)
         return NotificationExtractor.getConversationTitle(statusBarNotification.getNotification());
     }

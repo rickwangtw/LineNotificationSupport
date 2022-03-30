@@ -17,6 +17,11 @@ public class NotificationExtractor {
         return notification.extras.getString(Notification.EXTRA_TEXT);
     }
 
+    public static String getSubText(Notification notification) {
+        // around LINE version 12.2.2, the conversation title has been replaced by subtext
+        return notification.extras.getString(Notification.EXTRA_SUB_TEXT);
+    }
+
     public static String getConversationTitle(Notification notification) {
         return notification.extras.getString(Notification.EXTRA_CONVERSATION_TITLE);
     }
