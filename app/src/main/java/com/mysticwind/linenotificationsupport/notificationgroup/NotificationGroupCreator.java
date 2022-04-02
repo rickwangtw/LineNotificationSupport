@@ -21,6 +21,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class NotificationGroupCreator {
 
     protected static final String MESSAGE_NOTIFICATION_GROUP_ID = "message_notification_group";
@@ -50,6 +54,7 @@ public class NotificationGroupCreator {
     private final AndroidFeatureProvider androidFeatureProvider;
     private final PreferenceProvider preferenceProvider;
 
+    @Inject
     public NotificationGroupCreator(final NotificationManager notificationManager,
                                     final AndroidFeatureProvider androidFeatureProvider,
                                     final PreferenceProvider preferenceProvider) {
@@ -110,6 +115,8 @@ public class NotificationGroupCreator {
     private String resolveNotificationChannelGroup(final String notificationChannelId) {
         if (isCallNotificationChannel(notificationChannelId)) {
             return CALL_NOTIFICATION_GROUP_ID;
+        } else if (SELF_RESPONSE_CHANNEL_ID.equals(notificationChannelId)) {
+            return OTHERS_NOTIFICATION_GROUP_ID;
         } else if (isMessageNotificationChannel(notificationChannelId)) {
             return MESSAGE_NOTIFICATION_GROUP_ID;
         } else {
@@ -175,7 +182,15 @@ public class NotificationGroupCreator {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void createNotificationChannelWithChannelIdAndName(final String channelId, final String channelName) {
-        createNotificationChannelWithChannelIdAndName(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT, true);
+        boolean vibrate = false;
+        int importanceLevel = NotificationManager.IMPORTANCE_DEFAULT;
+        // TODO should this apply to calls and others?
+        if (preferenceProvider.shouldManageLineMessageNotifications()) {
+            vibrate = true;
+            importanceLevel = NotificationManager.IMPORTANCE_HIGH;
+        }
+
+        createNotificationChannelWithChannelIdAndName(channelId, channelName, importanceLevel, vibrate);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

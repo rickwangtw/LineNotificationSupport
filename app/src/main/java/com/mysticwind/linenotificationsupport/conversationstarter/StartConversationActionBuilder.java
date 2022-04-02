@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.DismissNotificationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.R;
 import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.DisableStartConversationFeatureBroadcastReceiver;
+import com.mysticwind.linenotificationsupport.conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver;
 import com.mysticwind.linenotificationsupport.ui.LocalizationDao;
 
 import java.time.Instant;
@@ -55,7 +56,7 @@ public class StartConversationActionBuilder {
                 PendingIntent.getBroadcast(context,
                         (int) Instant.now().toEpochMilli(),
                         getMessageReplyIntent(),
-                        PendingIntent.FLAG_UPDATE_CURRENT);
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
         return new Notification.Action.Builder(null,
                 localizationDao.getLocalizedString(R.string.conversation_start_notification_action_button), replyPendingIntent)
@@ -64,7 +65,7 @@ public class StartConversationActionBuilder {
     }
 
     private Intent getMessageReplyIntent() {
-        Intent intent = new Intent();
+        Intent intent = new Intent(context, StartConversationBroadcastReceiver.class);
         intent.setAction(START_CONVERSATION_ACTION);
         return intent;
     }
@@ -72,7 +73,7 @@ public class StartConversationActionBuilder {
     private Notification.Action buildDisableFeatureAction() {
         final Intent intent = new Intent(context, DisableStartConversationFeatureBroadcastReceiver.class);
         intent.setAction(DISABLE_START_CONVERSATION_FEATURE_ACTION);
-        final PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+        final PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
         return new Notification.Action.Builder(
                 null,
                 localizationDao.getLocalizedString(R.string.conversation_start_notification_disable_feature_action_button),

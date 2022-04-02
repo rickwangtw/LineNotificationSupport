@@ -105,7 +105,7 @@
     <string name="contribute_to_open_source">This is an open source project! Feel free to contribute! https://github.com/rickwangtw/LineNotificationSupport"</string>
 
     <!-- Conversation notification -->
-    <string name="conversation_notification_action_button">reply</string>
+    <string name="conversation_notification_action_button">Reply</string>
     <string name="conversation_notification_action_button_message">Message to reply</string>
 
     <!-- Conversation starter notification -->

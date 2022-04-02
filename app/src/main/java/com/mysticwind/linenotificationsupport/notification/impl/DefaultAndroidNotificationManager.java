@@ -61,6 +61,17 @@ public class DefaultAndroidNotificationManager implements AndroidNotificationMan
     }
 
     @Override
+    public List<StatusBarNotification> getOrderedLineNotificationSupportNotificationsOfChatId(final String chatId, int notificationFilterStrategy) {
+        return Arrays.stream(notificationManager.getActiveNotifications())
+                .filter(statusBarNotification -> StringUtils.equals(packageName , statusBarNotification.getPackageName()))
+                .filter(statusBarNotification -> chatId.equals(NotificationExtractor.getLineNotificationSupportChatId(statusBarNotification.getNotification()).orElse(null)))
+                .filter(statusBarNotification -> applyFilter(statusBarNotification, notificationFilterStrategy))
+                .sorted((statusBarNotification1, statusBarNotification2) ->
+                        (int) (statusBarNotification1.getNotification().when - statusBarNotification2.getNotification().when))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<StatusBarNotification> getOrderedLineNotificationSupportNotifications(final String group, int notificationFilterStrategy) {
         return Arrays.stream(notificationManager.getActiveNotifications())
                 .filter(statusBarNotification -> StringUtils.equals(packageName , statusBarNotification.getPackageName()))

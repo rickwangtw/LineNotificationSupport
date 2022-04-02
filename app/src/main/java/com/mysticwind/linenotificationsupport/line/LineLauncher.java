@@ -37,7 +37,7 @@ public class LineLauncher {
             intent.setData(Uri.parse("https://line.me/R/nv/chat"));
         }
 
-        return PendingIntent.getActivity(context, 0, intent, 0x10200000 /* what does these flags mean */);
+        return PendingIntent.getActivity(context, 0, intent, 0x10200000 | PendingIntent.FLAG_IMMUTABLE /* what does these flags mean */);
     }
 
     private static boolean isChatId(String chatId) {

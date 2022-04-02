@@ -21,6 +21,11 @@ import dagger.hilt.components.SingletonComponent;
 @InstallIn(SingletonComponent.class)
 public abstract class NotificationManagementModule {
 
+    /* Related classes using @Inject
+        NotificationGroupCreator
+        AndroidFeatureProvider
+     */
+
     @Singleton
     @Binds
     public abstract AndroidNotificationManager bindAndroidNotificationManager(DefaultAndroidNotificationManager defaultAndroidNotificationManager);

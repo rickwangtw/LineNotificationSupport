@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import timber.log.Timber;
@@ -39,14 +40,17 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
     private static final LineLauncher LINE_LAUNCHER = new LineLauncher();
 
     private final Context context;
+    private final NotificationGroupCreator notificationGroupCreator;
     private final LineNotification lineNotification;
     private final int notificationId;
 
     public BigPictureStyleImageSupportedNotificationPublisherAsyncTask(final Context context,
+                                                                       final NotificationGroupCreator notificationGroupCreator,
                                                                        final LineNotification lineNotification,
                                                                        final int notificationId) {
         super();
         this.context = context;
+        this.notificationGroupCreator = Objects.requireNonNull(notificationGroupCreator);
         this.lineNotification = lineNotification;
         this.notificationId = notificationId;
     }
@@ -160,11 +164,6 @@ public class BigPictureStyleImageSupportedNotificationPublisherAsyncTask extends
     }
 
     private Optional<String> createNotificationChannel() {
-        final NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-        final NotificationGroupCreator notificationGroupCreator = new NotificationGroupCreator(
-                notificationManager, new AndroidFeatureProvider(),
-                new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(context)));
-
         if (lineNotification.isSelfResponse()) {
             return notificationGroupCreator.createSelfResponseNotificationChannel();
         } else {

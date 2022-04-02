@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -57,16 +58,19 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
     private static final String AUTHORITY = "com.mysticwind.linenotificationsupport.donate.fileprovider";
 
     private final Context context;
+    private final NotificationGroupCreator notificationGroupCreator;
     private final LineNotification lineNotification;
     private final int notificationId;
     private final boolean useSingleNotificationConversations;
 
     public MessageStyleImageSupportedNotificationPublisherAsyncTask(final Context context,
+                                                                    final NotificationGroupCreator notificationGroupCreator,
                                                                     final LineNotification lineNotification,
                                                                     final int notificationId,
                                                                     final boolean useSingleNotificationConversations) {
         super();
         this.context = context;
+        this.notificationGroupCreator = Objects.requireNonNull(notificationGroupCreator);
         this.lineNotification = lineNotification;
         this.notificationId = notificationId;
         this.useSingleNotificationConversations = useSingleNotificationConversations;
@@ -223,11 +227,6 @@ public class MessageStyleImageSupportedNotificationPublisherAsyncTask extends As
     }
 
     private Optional<String> createNotificationChannel() {
-        final NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
-        final NotificationGroupCreator notificationGroupCreator = new NotificationGroupCreator(
-                notificationManager, new AndroidFeatureProvider(),
-                new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(context)));
-
         if (lineNotification.isSelfResponse()) {
             return notificationGroupCreator.createSelfResponseNotificationChannel();
         } else {

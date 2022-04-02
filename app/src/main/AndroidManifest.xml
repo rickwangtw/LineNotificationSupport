@@ -20,6 +20,46 @@
         android:theme="@style/Theme.LineNotificationSupport">
 
         <receiver
+            android:name=".ui.broadcastreceiver.LocaleChangeBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".reply.broadcastreceiver.ReplyActionBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="reply_message" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".chatname.broadcastreceiver.DeleteFriendNameCacheBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.mysticwind.linenotificationsupport.action.deletefriendnamecache" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".conversationstarter.broadcastreceiver.StartConversationBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="start_conversation_action" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".conversationstarter.broadcastreceiver.DisableStartConversationFeatureBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="disable_start_conversation_feature_action" />
+            </intent-filter>
+        </receiver>
+        <receiver
             android:name=".conversationstarter.broadcastreceiver.DisableStartConversationFeatureBroadcastReceiver"
             android:enabled="true"
             android:exported="false">
@@ -59,7 +99,8 @@
 
         <activity
             android:name=".HelpActivity"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -86,7 +127,8 @@
 
         <service
             android:name=".service.NotificationListenerService"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
