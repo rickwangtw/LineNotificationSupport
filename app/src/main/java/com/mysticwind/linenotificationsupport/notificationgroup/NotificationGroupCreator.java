@@ -115,6 +115,8 @@ public class NotificationGroupCreator {
     private String resolveNotificationChannelGroup(final String notificationChannelId) {
         if (isCallNotificationChannel(notificationChannelId)) {
             return CALL_NOTIFICATION_GROUP_ID;
+        } else if (SELF_RESPONSE_CHANNEL_ID.equals(notificationChannelId)) {
+            return OTHERS_NOTIFICATION_GROUP_ID;
         } else if (isMessageNotificationChannel(notificationChannelId)) {
             return MESSAGE_NOTIFICATION_GROUP_ID;
         } else {
