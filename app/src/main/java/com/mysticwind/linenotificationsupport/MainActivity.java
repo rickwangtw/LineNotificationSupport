@@ -22,6 +22,7 @@ import com.mysticwind.linenotificationsupport.notification.DismissActionInjector
 import com.mysticwind.linenotificationsupport.notification.HistoryProvidingNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.LinkActionInjectorNotificationPublisherDecorator;
 import com.mysticwind.linenotificationsupport.notification.NotificationPublisher;
+import com.mysticwind.linenotificationsupport.notification.NotificationPublisherFactory;
 import com.mysticwind.linenotificationsupport.notification.NullNotificationPublisher;
 import com.mysticwind.linenotificationsupport.notification.SimpleNotificationPublisher;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -29,21 +30,24 @@ import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
 
 import java.time.Instant;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
 
     private static final GroupIdResolver GROUP_ID_RESOLVER = new GroupIdResolver(1);
 
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
 
+    @Inject
+    NotificationPublisherFactory notificationPublisherFactory;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        notificationPublisher = new SimpleNotificationPublisher(this, getPackageName(), GROUP_ID_RESOLVER, getPreferenceProvider());
-        notificationPublisher = new DismissActionInjectorNotificationPublisherDecorator(notificationPublisher, this);
-        notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher);
-        notificationPublisher = new LinkActionInjectorNotificationPublisherDecorator(notificationPublisher, this);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -93,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                 .icon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher_round))
                 .action(buildRemoteInputAction())
                 .build();
-        notificationPublisher.publishNotification(lineNotification, notificationId);
+        notificationPublisherFactory.get().publishNotification(lineNotification, notificationId);
     }
 
     private Notification.Action buildRemoteInputAction() {
@@ -143,8 +147,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        notificationPublisher = NullNotificationPublisher.INSTANCE;
     }
 
 }

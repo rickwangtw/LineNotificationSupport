@@ -5,6 +5,8 @@ import android.service.notification.StatusBarNotification;
 
 import com.google.common.collect.ImmutableList;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
+import com.mysticwind.linenotificationsupport.module.HiltQualifiers;
+import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.BigPictureStyleImageSupportedNotificationPublisherAsyncTask;
 import com.mysticwind.linenotificationsupport.utils.GroupIdResolver;
@@ -12,51 +14,50 @@ import com.mysticwind.linenotificationsupport.utils.MessageStyleImageSupportedNo
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
+@Singleton
 public class SimpleNotificationPublisher implements NotificationPublisher {
 
     private final Context context;
     private final String packageName;
     private final GroupIdResolver groupIdResolver;
     private final PreferenceProvider preferenceProvider;
-    private final Collection<NotificationSentListener> notificationSentListeners;
+    private final NotificationGroupCreator notificationGroupCreator;
 
-    public SimpleNotificationPublisher(final Context context,
-                                       final String packageName,
-                                       final GroupIdResolver groupIdResolver,
-                                       final PreferenceProvider preferenceProvider) {
-        this(context, packageName, groupIdResolver, preferenceProvider, Collections.emptyList());
-    }
+    private Collection<NotificationSentListener> notificationSentListeners = Collections.EMPTY_LIST;
 
-    public SimpleNotificationPublisher(final Context context,
-                                       final String packageName,
+    @Inject
+    public SimpleNotificationPublisher(@ApplicationContext final Context context,
+                                       @HiltQualifiers.PackageName final String packageName,
                                        final GroupIdResolver groupIdResolver,
                                        final PreferenceProvider preferenceProvider,
-                                       final NotificationSentListener notificationSentListener) {
-        this(context, packageName, groupIdResolver, preferenceProvider, ImmutableList.of(notificationSentListener));
-    }
-
-    public SimpleNotificationPublisher(final Context context,
-                                       final String packageName,
-                                       final GroupIdResolver groupIdResolver,
-                                       final PreferenceProvider preferenceProvider,
-                                       final Collection<NotificationSentListener> notificationSentListeners) {
+                                       final NotificationGroupCreator notificationGroupCreator) {
         this.context = context;
         this.packageName = packageName;
         this.groupIdResolver = groupIdResolver;
         this.preferenceProvider = preferenceProvider;
+        this.notificationGroupCreator = Objects.requireNonNull(notificationGroupCreator);
+    }
+
+    public void setNotificationSentListeners(Collection<NotificationSentListener> notificationSentListeners) {
         this.notificationSentListeners = notificationSentListeners;
     }
 
     @Override
     public void publishNotification(final LineNotification lineNotification, final int notificationId) {
         if (preferenceProvider.shouldUseLegacyStickerLoader()) {
-            new BigPictureStyleImageSupportedNotificationPublisherAsyncTask(context, lineNotification, notificationId)
+            new BigPictureStyleImageSupportedNotificationPublisherAsyncTask(context, notificationGroupCreator, lineNotification, notificationId)
                     .execute();
         } else {
             final boolean useSingleNotificationConversations = preferenceProvider.shouldUseSingleNotificationForConversations();
             new MessageStyleImageSupportedNotificationPublisherAsyncTask(
-                    context, lineNotification, notificationId, useSingleNotificationConversations)
+                    context, notificationGroupCreator, lineNotification, notificationId, useSingleNotificationConversations)
                     .execute();
         }
         notificationSentListeners.forEach(

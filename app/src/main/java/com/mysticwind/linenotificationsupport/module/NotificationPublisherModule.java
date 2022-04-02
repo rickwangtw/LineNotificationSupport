@@ -24,6 +24,7 @@ public abstract class NotificationPublisherModule {
 
     /* Related classes using @Inject
       NotificationPublisherFactory
+      SimpleNotificationPublisher
       PreferenceProvider
       NotificationIdGenerator
       DumbNotificationCounter

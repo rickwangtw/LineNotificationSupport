@@ -26,27 +26,24 @@ public class NotificationPublisherFactory {
     private NotificationPublisher notificationPublisher = NullNotificationPublisher.INSTANCE;
 
     private final Context context;
+    private final SimpleNotificationPublisher simpleNotificationPublisher;
     private final Handler handler;
     private final PreferenceProvider preferenceProvider;
     private final SlotAvailabilityChecker slotAvailabilityChecker;
-    private final GroupIdResolver groupIdResolver;
-    private final String packageName;
 
     private ResendUnsentNotificationsNotificationSentListener resendUnsentNotificationsNotificationSentListener;
 
     @Inject
     public NotificationPublisherFactory(@ApplicationContext final Context context,
+                                        final SimpleNotificationPublisher simpleNotificationPublisher,
                                         final Handler handler,
                                         final PreferenceProvider preferenceProvider,
-                                        final SlotAvailabilityChecker slotAvailabilityChecker,
-                                        final GroupIdResolver groupIdResolver,
-                                        @HiltQualifiers.PackageName final String packageName) {
+                                        final SlotAvailabilityChecker slotAvailabilityChecker) {
         this.context = Objects.requireNonNull(context);
+        this.simpleNotificationPublisher = Objects.requireNonNull(simpleNotificationPublisher);
         this.handler = Objects.requireNonNull(handler);
         this.preferenceProvider = Objects.requireNonNull(preferenceProvider);
         this.slotAvailabilityChecker = Objects.requireNonNull(slotAvailabilityChecker);
-        this.groupIdResolver = Objects.requireNonNull(groupIdResolver);
-        this.packageName = Validate.notBlank(packageName);
     }
 
     public NotificationPublisher get() {
@@ -74,9 +71,8 @@ public class NotificationPublisherFactory {
             resendUnsentNotificationsNotificationSentListener = null;
         }
 
-        NotificationPublisher notificationPublisher =
-                new SimpleNotificationPublisher(context, packageName, groupIdResolver,
-                        preferenceProvider, notificationSentListeners);
+        NotificationPublisher notificationPublisher = simpleNotificationPublisher;
+        simpleNotificationPublisher.setNotificationSentListeners(notificationSentListeners);
 
         // this should come after HistoryProvidingNotificationPublisherDecorator as it changes the notification ID
         notificationPublisher =

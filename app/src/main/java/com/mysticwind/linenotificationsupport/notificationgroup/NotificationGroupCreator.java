@@ -21,6 +21,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class NotificationGroupCreator {
 
     protected static final String MESSAGE_NOTIFICATION_GROUP_ID = "message_notification_group";
@@ -50,6 +54,7 @@ public class NotificationGroupCreator {
     private final AndroidFeatureProvider androidFeatureProvider;
     private final PreferenceProvider preferenceProvider;
 
+    @Inject
     public NotificationGroupCreator(final NotificationManager notificationManager,
                                     final AndroidFeatureProvider androidFeatureProvider,
                                     final PreferenceProvider preferenceProvider) {
