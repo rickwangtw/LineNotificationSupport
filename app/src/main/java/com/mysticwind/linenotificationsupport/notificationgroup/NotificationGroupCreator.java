@@ -180,7 +180,15 @@ public class NotificationGroupCreator {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void createNotificationChannelWithChannelIdAndName(final String channelId, final String channelName) {
-        createNotificationChannelWithChannelIdAndName(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT, true);
+        boolean vibrate = false;
+        int importanceLevel = NotificationManager.IMPORTANCE_DEFAULT;
+        // TODO should this apply to calls and others?
+        if (preferenceProvider.shouldManageLineMessageNotifications()) {
+            vibrate = true;
+            importanceLevel = NotificationManager.IMPORTANCE_HIGH;
+        }
+
+        createNotificationChannelWithChannelIdAndName(channelId, channelName, importanceLevel, vibrate);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
