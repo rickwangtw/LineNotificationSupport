@@ -70,6 +70,15 @@
 
         <SwitchPreferenceCompat
             app:iconSpaceReserved="false"
+            app:dependency="auto_call_notifications"
+            app:key="create_new_continuous_call_notifications"
+            app:title="@string/create_new_continuous_call_notifications_title"
+            app:defaultValue="false"
+            app:summaryOff="@string/create_new_continuous_call_notifications_summary_off"
+            app:summaryOn="@string/create_new_continuous_call_notifications_summary_on" />
+
+        <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
             app:key="call_notifications_reverse_action"
             app:title="@string/call_notification_action_reverse_order_title"
             app:defaultValue="false"
