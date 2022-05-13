@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id=":app" external.linked.project.path="$MODULE_DIR$/../../../app" external.root.project.path="$MODULE_DIR$/../../.." external.system.id="GRADLE" external.system.module.group="Line Notification Support" external.system.module.version="unspecified" type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="android-gradle" name="Android-Gradle">
+      <configuration>
+        <option name="GRADLE_PROJECT_PATH" value=":app" />
+        <option name="LAST_SUCCESSFUL_SYNC_AGP_VERSION" value="7.1.2" />
+        <option name="LAST_KNOWN_AGP_VERSION" value="7.2.0" />
+      </configuration>
+    </facet>
+    <facet type="android" name="Android">
+      <configuration>
+        <option name="SELECTED_BUILD_VARIANT" value="debug" />
+        <option name="ASSEMBLE_TASK_NAME" value="assembleDebug" />
+        <option name="COMPILE_JAVA_TASK_NAME" value="compileDebugSources" />
+        <afterSyncTasks>
+          <task>generateDebugSources</task>
+        </afterSyncTasks>
+        <option name="ALLOW_USER_CONFIGURATION" value="false" />
+        <option name="MANIFEST_FILE_RELATIVE_PATH" value="/src/main/AndroidManifest.xml" />
+        <option name="RES_FOLDER_RELATIVE_PATH" value="/src/main/res" />
+        <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/../../../app/src/main/res;file://$MODULE_DIR$/../../../app/src/debug/res;file://$MODULE_DIR$/../../../app/build/generated/res/rs/debug;file://$MODULE_DIR$/../../../app/build/generated/res/resValues/debug" />
+        <option name="TEST_RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/../../../app/src/androidTest/res;file://$MODULE_DIR$/../../../app/src/androidTestDebug/res;file://$MODULE_DIR$/../../../app/build/generated/res/rs/androidTest/debug;file://$MODULE_DIR$/../../../app/build/generated/res/resValues/androidTest/debug" />
+        <option name="ASSETS_FOLDER_RELATIVE_PATH" value="/src/main/assets" />
+      </configuration>
+    </facet>
+    <facet type="kotlin-language" name="Kotlin">
+      <configuration version="4" platform="JVM 1.8" allPlatforms="JVM [1.8]" useProjectSettings="false">
+        <compilerSettings>
+          <option name="additionalArguments" value="-Xallow-no-source-files" />
+        </compilerSettings>
+        <compilerArguments>
+          <option name="destination" value="$MODULE_DIR$/../../../app/build/tmp/kotlin-classes/debug" />
+          <option name="classpath" value="$USER_HOME$/.gradle/caches/transforms-3/155d39238d4c144ca462732f3f0def76/transformed/jetified-datastore-preferences-rxjava3-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/660f178fafd79ab9c314aeb0f0618d50/transformed/jetified-datastore-preferences-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/f96dfe7d5ca449863ca15b7822254af4/transformed/jetified-datastore-rxjava3-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/ebd3910d74b4dfc4e4edcf8bd22d1efa/transformed/jetified-datastore-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/d17b1304137c9821d903563d04ae3b6a/transformed/jetified-datastore-preferences-core-1.0.0.jar:/Users/rickwangtw/.gradle/caches/transforms-3/52ea8b51f4f56ef0e0274432a76a4acd/transformed/jetified-datastore-core-1.0.0.jar:/Users/rickwangtw/.gradle/caches/transforms-3/48b832cf734965dfc92856d5a9bf95cc/transformed/jetified-kotlinx-coroutines-core-jvm-1.5.0.jar:/Users/rickwangtw/.gradle/caches/transforms-3/8ccb1a2a63ffcb2e7fb541f95e1f53f3/transformed/jetified-kotlin-stdlib-jdk8-1.6.10.jar:/Users/rickwangtw/.gradle/caches/transforms-3/0cb64f621256c8b386bb3128a81e1451/transformed/jetified-lombok-1.18.16.jar:/Users/rickwangtw/.gradle/caches/transforms-3/5c433a3aba29f5e8f414a0a3d407dbde/transformed/jetified-kotlin-stdlib-jdk7-1.6.10.jar:/Users/rickwangtw/.gradle/caches/transforms-3/0206c2bd33beb65a61e7f54c6f9e392a/transformed/jetified-kotlin-stdlib-1.6.10.jar:/Users/rickwangtw/.gradle/caches/transforms-3/4632ab73b52b82cb50c8bbc5fdfc25ee/transformed/jetified-timber-4.7.1-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/d251affd698136eb3e1ad18c0ecfecba/transformed/jetified-annotations-16.0.1.jar:/Users/rickwangtw/.gradle/caches/transforms-3/dbe40987eb48abf0f88e2a3bee465e71/transformed/jetified-kotlin-stdlib-common-1.6.10.jar:/Users/rickwangtw/.gradle/caches/transforms-3/11a26e78646e45452c459135c39e2273/transformed/jetified-hilt-android-2.38.1-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/63d05bc95a7129c1c92a201493190255/transformed/jetified-hilt-core-2.38.1.jar:/Users/rickwangtw/.gradle/caches/transforms-3/555b5e7a169abf551bc424fd4a2c5fd6/transformed/jetified-dagger-2.38.1.jar:/Users/rickwangtw/.gradle/caches/transforms-3/0752994b6bbfe4a7b0d640884f1af6bc/transformed/jetified-javax.inject-1.jar:/Users/rickwangtw/.gradle/caches/transforms-3/6f5951b965617aae5856290cbabfa638/transformed/jetified-dagger-lint-aar-2.38.1-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/924ce77e4c59f88a44cdd6a52efb5efe/transformed/jetified-re-retrying-3.0.0.jar:/Users/rickwangtw/.gradle/caches/transforms-3/d02dcaaa13ceec7ef2cf6302f0203b91/transformed/jetified-guava-30.0-android.jar:/Users/rickwangtw/.gradle/caches/transforms-3/a7ab35b70a87f2345b26607b85926b2b/transformed/jetified-jsr305-3.0.2.jar:/Users/rickwangtw/.gradle/caches/transforms-3/9f7d5565cc669fc0a2ecd04b7b86341f/transformed/navigation-ui-2.2.2-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/d40a14b51e9bd9f7e8911a258cf4bcd0/transformed/material-1.1.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/c8475ff5d3707c1e335c25b888fb7847/transformed/preference-1.1.1-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/0aa46eb182f047e07f3492a9dae66227/transformed/appcompat-1.1.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/cb228972b84cb43f21357c31b6fe24a3/transformed/navigation-fragment-2.2.2-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/0b8e9b78da1f3c129448c6307fac51a3/transformed/jetified-glide-4.12.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/49df556845b43d7c18fa98f41581cae5/transformed/jetified-viewpager2-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/2179de6c628880987688fde26da1517d/transformed/fragment-1.3.2-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/b00c03a5b7c94a291f00b6e3fb734322/transformed/navigation-runtime-2.2.2-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/1b156750c375325cc3c8f4adf74a7836/transformed/jetified-activity-1.2.2-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/64c1203f9cc50ce38a2451a2634d5ced/transformed/jetified-appcompat-resources-1.1.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/05fa2e5e7c7a4ba2f82059f3a40f810b/transformed/drawerlayout-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/3932d6e5ac7f52fd3d564cc06f71a828/transformed/coordinatorlayout-1.1.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/1163f8f2fa9a1828b9b230f07f6a57b8/transformed/recyclerview-1.1.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/861e4c0a5947e9edf667eaaa61435963/transformed/transition-1.2.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/46c7c4bcc04ea1a2cd6132d2c7ebc6c7/transformed/vectordrawable-animated-1.1.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/dece12a7116cf5d186be74cf21ad221a/transformed/vectordrawable-1.1.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/0455e72a62165f39341ef7e7feb68f79/transformed/viewpager-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/320754fc4dc2e4e3d579894a644fc94d/transformed/loader-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/24c1ac28e790eab9d69ae9fd3823a006/transformed/customview-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/d707ed1fe3c7cdcc3dee57798a8a3306/transformed/navigation-common-2.2.2-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/204d869ee76e3b992165506ee395a483/transformed/core-1.1.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/bcb14755a9025e60d970b4afd600efba/transformed/lifecycle-runtime-2.3.1-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/f2137c3bdfd230704bda0d5828b0a002/transformed/jetified-lifecycle-viewmodel-savedstate-2.3.1-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/4e777c61e957e3687988a882120544d5/transformed/lifecycle-livedata-2.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/d77bc529e1dcf4b47a6192da8dd0224c/transformed/lifecycle-livedata-core-2.3.1-api.jar:/Users/rickwangtw/.gradle/caches/modules-2/files-2.1/androidx.lifecycle/lifecycle-common/2.3.1/fc466261d52f4433863642fb40d12441ae274a98/lifecycle-common-2.3.1.jar:/Users/rickwangtw/.gradle/caches/transforms-3/687204f04d271695764283f31cc8dbf3/transformed/lifecycle-viewmodel-2.3.1-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/3b88526eda5eaf18d0cba1b7c2a24e56/transformed/jetified-savedstate-1.1.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/0efdd744d11b0d4e74a4e9f7e95881c8/transformed/cursoradapter-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/df6612209bdefabbaff7e0c94c905257/transformed/versionedparcelable-1.1.0-api.jar:/Users/rickwangtw/.gradle/caches/modules-2/files-2.1/androidx.collection/collection/1.1.0/1f27220b47669781457de0d600849a5de0e89909/collection-1.1.0.jar:/Users/rickwangtw/.gradle/caches/transforms-3/e350990ba36589598ddfb709430656ed/transformed/cardview-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/1868f06981bcb980cfa5d01b1672a9a1/transformed/room-runtime-2.2.5-api.jar:/Users/rickwangtw/.gradle/caches/modules-2/files-2.1/androidx.room/room-common/2.2.5/f5e3b73a0c2ab5e276e26868e4ce3542baede207/room-common-2.2.5.jar:/Users/rickwangtw/.gradle/caches/transforms-3/908d82e2d93b77a82aca1a3e28d535b0/transformed/sqlite-framework-2.0.1-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/8fca01689c61856bea903532abadf579/transformed/sqlite-2.0.1-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/a4ecae31d88f21fd34e6f3690f6c6a0c/transformed/core-runtime-2.1.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/5337be0a05c295f0eae03fdc5c375a20/transformed/jetified-gifdecoder-4.12.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/a35eb0962206579f74d6371fd937ed4a/transformed/exifinterface-1.2.0-api.jar:/Users/rickwangtw/.gradle/caches/modules-2/files-2.1/androidx.arch.core/core-common/2.1.0/b3152fc64428c9354344bd89848ecddc09b6f07e/core-common-2.1.0.jar:/Users/rickwangtw/.gradle/caches/transforms-3/9f7bc6d076bf9e5f1c78bb560f82f6b5/transformed/interpolator-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/modules-2/files-2.1/androidx.annotation/annotation/1.2.0/57136ff68ee784c6e19db34ed4a175338fadfde1/annotation-1.2.0.jar:/Users/rickwangtw/.gradle/caches/transforms-3/b060e6c86468ea5c04e38896bac6dd0f/transformed/jetified-annotation-experimental-1.0.0-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/d088cb4acc2d27aeaf08a459fcea347e/transformed/constraintlayout-1.1.3-api.jar:/Users/rickwangtw/.gradle/caches/modules-2/files-2.1/androidx.constraintlayout/constraintlayout-solver/1.1.3/54abe9ffb22cc9019b0b6fcc10f185cc4e67b34e/constraintlayout-solver-1.1.3.jar:/Users/rickwangtw/.gradle/caches/transforms-3/efa0dcee035de33cf2f9a9524c70a362/transformed/jetified-failureaccess-1.0.1.jar:/Users/rickwangtw/.gradle/caches/transforms-3/e921ffa7d0d9af27c82ec36a389c53bb/transformed/jetified-listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar:/Users/rickwangtw/.gradle/caches/transforms-3/076ca2575f1c691ee678bf59ab6196b6/transformed/jetified-checker-compat-qual-2.5.5.jar:/Users/rickwangtw/.gradle/caches/transforms-3/99beb009f0dbbed65839186706bdc293/transformed/jetified-error_prone_annotations-2.3.4.jar:/Users/rickwangtw/.gradle/caches/transforms-3/f9357334655bdf42c2b4b3c714444f28/transformed/jetified-j2objc-annotations-1.3.jar:/Users/rickwangtw/.gradle/caches/transforms-3/af9852025dfd511ab832f6a4389149fd/transformed/jetified-commons-lang3-3.11.jar:/Users/rickwangtw/.gradle/caches/transforms-3/96aea8bdf58bc5b265574ac91fae1f8e/transformed/jetified-commons-collections4-4.4.jar:/Users/rickwangtw/.gradle/caches/transforms-3/56238f3eda4c2b6e3659c758813d6ec1/transformed/jetified-jsoup-1.13.1.jar:/Users/rickwangtw/.gradle/caches/transforms-3/2fba2d9b5c5aa79c7209da7bd50caa9c/transformed/jetified-disklrucache-4.12.0.jar:/Users/rickwangtw/.gradle/caches/transforms-3/6a3ef5c0e94be1cc16056768003bd51f/transformed/jetified-annotations-4.12.0.jar:/Users/rickwangtw/.gradle/caches/transforms-3/cb27fef4e3906aa475ffe1fe6001fe31/transformed/jetified-historian-core-0.3.1-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/90a037fcfab41f219f25ba9c0f5d401b/transformed/jetified-historian-tree-0.3.1-api.jar:/Users/rickwangtw/.gradle/caches/transforms-3/2234b2c650c0dd1e3cb9850c0dc36d31/transformed/jetified-rxjava-3.0.2.jar:/Users/rickwangtw/.gradle/caches/transforms-3/9c55bbeae1cacac0d37549c0d00fe210/transformed/jetified-reactive-streams-1.0.3.jar:/Users/rickwangtw/Library/Android/sdk/platforms/android-31/android.jar:/Users/rickwangtw/Library/Android/sdk/build-tools/30.0.3/core-lambda-stubs.jar" />
+          <option name="noStdlib" value="true" />
+          <option name="moduleName" value="app_debug" />
+          <option name="languageVersion" value="1.6" />
+          <option name="apiVersion" value="1.6" />
+          <option name="pluginOptions">
+            <array />
+          </option>
+          <option name="pluginClasspaths">
+            <array>
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-compiler-embeddable/1.6.10/88f2073f4020cdb83132cfe940ceb9a60aba54ea/kotlin-compiler-embeddable-1.6.10.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/1.6.10/1cbe9c92c12a94eea200d23c2bbaedaf3daf5132/kotlin-reflect-1.6.10.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/1.6.10/b8af3fe6f1ca88526914929add63cf5e7c5049af/kotlin-stdlib-1.6.10.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-gradle-plugin-api/1.6.10/2c8ba59185f5857a29833856d5e03e03755731a7/kotlin-gradle-plugin-api-1.6.10.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-gradle-plugin-model/1.6.10/e90218f795c40554e4994b3b81e73fa41209e2f5/kotlin-gradle-plugin-model-1.6.10.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.6.10/c118700e3a33c8a0d9adc920e9dec0831171925/kotlin-stdlib-common-1.6.10.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-script-runtime/1.6.10/d0a7ff2e2500ef497ed0214ae40ad3c8387a6164/kotlin-script-runtime-1.6.10.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-daemon-embeddable/1.6.10/a56d79bcbea411fa6058e4ecffc2de73e742bd2a/kotlin-daemon-embeddable-1.6.10.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.intellij.deps/trove4j/1.0.20181211/216c2e14b070f334479d800987affe4054cd563f/trove4j-1.0.20181211.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.java.dev.jna/jna/5.6.0/330f2244e9030119ab3030fc3fededc86713d9cc/jna-5.6.0.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-native-utils/1.6.10/dd39b79ad4d789c066cc5a62d8dde7a21f1d3ef8/kotlin-native-utils-1.6.10.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-project-model/1.6.10/1c821660ccd0c89a669fd6cd7cda70afe388c2e5/kotlin-project-model-1.6.10.jar" />
+              <option value="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-util-io/1.6.10/e8557b2856d4fa4d49f0a5af9b5cbf85a009ca7c/kotlin-util-io-1.6.10.jar" />
+              <option value="$KOTLIN_BUNDLED$/lib/lombok-compiler-plugin.jar" />
+            </array>
+          </option>
+          <option name="errors">
+            <ArgumentParseErrors />
+          </option>
+        </compilerArguments>
+      </configuration>
+    </facet>
+  </component>
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
+    <output url="file://$MODULE_DIR$/../../../app/build/intermediates/javac/debug/classes" />
+    <output-test url="file://$MODULE_DIR$/../../../app/build/intermediates/javac/debugUnitTest/classes" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../../app">
+      <excludeFolder url="file://$MODULE_DIR$/../../../app/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/../../../app/build" />
+    </content>
+    <orderEntry type="jdk" jdkName="Android API 31 Platform" jdkType="Android SDK" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library">
+      <library name="Gradle: kaptGeneratedClasses">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../app/build/tmp/kapt3/classes/debug" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="TEST">
+      <library name="Gradle: kaptGeneratedTestClasses">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../app/build/tmp/kapt3/classes/debugAndroidTest" />
+          <root url="file://$MODULE_DIR$/../../../app/build/tmp/kapt3/classes/debugUnitTest" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+  </component>
+</module>
