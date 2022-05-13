@@ -11,6 +11,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
+import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.model.NotificationHistoryEntry;
 import com.mysticwind.linenotificationsupport.utils.LineNotificationSupportMessageExtractor;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
@@ -131,6 +132,10 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
     }
 
     private int resolveNotificationId(final String chatId, final int notificationId) {
+        final boolean createNewNotificationForIncomingCalls = true;
+        if (LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID.equals(chatId) && createNewNotificationForIncomingCalls) {
+            return notificationId;
+        }
         int hashCode = chatId.hashCode();
         final String storedChatId = notificationToChatIdMap.get(hashCode);
         if (storedChatId == null) {

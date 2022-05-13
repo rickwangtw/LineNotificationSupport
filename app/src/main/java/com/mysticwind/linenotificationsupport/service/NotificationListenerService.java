@@ -442,9 +442,15 @@ public class NotificationListenerService
                             .timestamp(Instant.now().toEpochMilli())
                             .build();
 
-            notificationPublisherFactory.get().publishNotification(
-                    lineNotificationWithUpdatedTimestamp,
-                    autoIncomingCallNotificationState.getIncomingCallNotificationIds().iterator().next());
+            final boolean createNewNotificationForIncomingCalls = true;
+            int notificationId;
+            if (createNewNotificationForIncomingCalls) {
+                notificationId = notificationIdGenerator.getNextNotificationId();
+                autoIncomingCallNotificationState.notified(notificationId);
+            } else {
+                notificationId = autoIncomingCallNotificationState.getIncomingCallNotificationIds().iterator().next();
+            }
+            notificationPublisherFactory.get().publishNotification(lineNotificationWithUpdatedTimestamp, notificationId);
         } catch (Exception e) {
             Timber.e(e, "Failed to send incoming call notifications: " + e.getMessage());
         }
