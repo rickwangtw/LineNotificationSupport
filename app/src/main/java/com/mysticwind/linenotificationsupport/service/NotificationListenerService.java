@@ -459,7 +459,8 @@ public class NotificationListenerService
     }
 
     private void cancelIncomingCallNotification(final Set<Integer> notificationIdsToCancel) {
-        if (preferenceProvider.shouldUseSingleNotificationForConversations()) {
+        final boolean createNewNotificationForIncomingCalls = true;
+        if (preferenceProvider.shouldUseSingleNotificationForConversations() && !createNewNotificationForIncomingCalls) {
             // so that we don't accidentally dismiss "call in progress" notifications
             return;
         }
