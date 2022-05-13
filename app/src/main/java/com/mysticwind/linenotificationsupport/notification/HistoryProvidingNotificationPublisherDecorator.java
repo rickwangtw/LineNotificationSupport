@@ -13,6 +13,7 @@ import com.google.common.collect.Multimaps;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.LineNotificationBuilder;
 import com.mysticwind.linenotificationsupport.model.NotificationHistoryEntry;
+import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 import com.mysticwind.linenotificationsupport.utils.LineNotificationSupportMessageExtractor;
 import com.mysticwind.linenotificationsupport.utils.NotificationExtractor;
 
@@ -37,14 +38,19 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
     private final Map<String, Integer> fallbackChatIdToNotificationIdMap = new ConcurrentHashMap<>();
 
     private final NotificationPublisher notificationPublisher;
+    private final PreferenceProvider preferenceProvider;
 
-    public HistoryProvidingNotificationPublisherDecorator(final NotificationPublisher notificationPublisher) {
+    public HistoryProvidingNotificationPublisherDecorator(final NotificationPublisher notificationPublisher,
+                                                          final PreferenceProvider preferenceProvider) {
         this.notificationPublisher = Objects.requireNonNull(notificationPublisher);
+        this.preferenceProvider = Objects.requireNonNull(preferenceProvider);
     }
 
     public HistoryProvidingNotificationPublisherDecorator(final NotificationPublisher notificationPublisher,
+                                                          final PreferenceProvider preferenceProvider,
                                                           final List<StatusBarNotification> existingNotifications) {
         this.notificationPublisher = Objects.requireNonNull(notificationPublisher);
+        this.preferenceProvider = Objects.requireNonNull(preferenceProvider);
         for (StatusBarNotification notification : existingNotifications) {
             Timber.d("Existing notification to restore: group [%s] key [%s] chat ID [%s] message ID [%s]", notification.getNotification().getGroup(),
                     notification.getKey(), NotificationExtractor.getLineNotificationSupportChatId(notification.getNotification()),
@@ -132,8 +138,8 @@ public class HistoryProvidingNotificationPublisherDecorator implements Notificat
     }
 
     private int resolveNotificationId(final String chatId, final int notificationId) {
-        final boolean createNewNotificationForIncomingCalls = true;
-        if (LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID.equals(chatId) && createNewNotificationForIncomingCalls) {
+        if (LineNotificationBuilder.CALL_VIRTUAL_CHAT_ID.equals(chatId) &&
+                preferenceProvider.shouldCreateNewContinuousCallNotifications()) {
             return notificationId;
         }
         int hashCode = chatId.hashCode();

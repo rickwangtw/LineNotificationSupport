@@ -442,9 +442,8 @@ public class NotificationListenerService
                             .timestamp(Instant.now().toEpochMilli())
                             .build();
 
-            final boolean createNewNotificationForIncomingCalls = true;
-            int notificationId;
-            if (createNewNotificationForIncomingCalls) {
+            final int notificationId;
+            if (preferenceProvider.shouldCreateNewContinuousCallNotifications()) {
                 notificationId = notificationIdGenerator.getNextNotificationId();
                 autoIncomingCallNotificationState.notified(notificationId);
             } else {
@@ -460,7 +459,8 @@ public class NotificationListenerService
 
     private void cancelIncomingCallNotification(final Set<Integer> notificationIdsToCancel) {
         final boolean createNewNotificationForIncomingCalls = true;
-        if (preferenceProvider.shouldUseSingleNotificationForConversations() && !createNewNotificationForIncomingCalls) {
+        if (preferenceProvider.shouldUseSingleNotificationForConversations() &&
+                !preferenceProvider.shouldCreateNewContinuousCallNotifications()) {
             // so that we don't accidentally dismiss "call in progress" notifications
             return;
         }
