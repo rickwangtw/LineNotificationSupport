@@ -54,6 +54,9 @@
     <string name="auto_call_notifications_summary_off">只收到一则 LINE 来电通知。</string>
     <string name="auto_call_notifications_timeout_title">何时停止连续 LINE 来电通知？</string>
     <string name="auto_call_notifications_wait_title">连续 LINE 来电通知的间隔</string>
+    <string name="create_new_continuous_call_notifications_title">[测试中]来电时使用複数通知</string>
+    <string name="create_new_continuous_call_notifications_summary_on">每次发送连续来电通知皆使用新的通知。适合智能手环使用。</string>
+    <string name="create_new_continuous_call_notifications_summary_off">使用既有的通知来发送连续来电通知。</string>
     <string name="call_notification_action_reverse_order_title">LINE来电按钮顺序</string>
     <string name="call_notification_action_reverse_summary_on">先『拒绝』再『应答』。使用这个选项如果您较常选择拒绝来电。</string>
     <string name="call_notification_action_reverse_summary_off">先『应答』再『拒绝』。使用这个选项如果您较常选择应答来电。</string>

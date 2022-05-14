@@ -82,7 +82,8 @@ public class NotificationPublisherFactory {
         if (preferenceProvider.shouldUseSingleNotificationForConversations()) {
             // do this before LinkActionInjectorNotificationPublisherDecorator
             // so that link mutations are also persisted
-            notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(notificationPublisher, existingNotifications);
+            notificationPublisher = new HistoryProvidingNotificationPublisherDecorator(
+                    notificationPublisher, preferenceProvider, existingNotifications);
         }
 
         notificationPublisher =

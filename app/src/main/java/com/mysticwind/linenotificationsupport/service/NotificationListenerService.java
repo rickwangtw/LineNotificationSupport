@@ -442,9 +442,14 @@ public class NotificationListenerService
                             .timestamp(Instant.now().toEpochMilli())
                             .build();
 
-            notificationPublisherFactory.get().publishNotification(
-                    lineNotificationWithUpdatedTimestamp,
-                    autoIncomingCallNotificationState.getIncomingCallNotificationIds().iterator().next());
+            final int notificationId;
+            if (preferenceProvider.shouldCreateNewContinuousCallNotifications()) {
+                notificationId = notificationIdGenerator.getNextNotificationId();
+                autoIncomingCallNotificationState.notified(notificationId);
+            } else {
+                notificationId = autoIncomingCallNotificationState.getIncomingCallNotificationIds().iterator().next();
+            }
+            notificationPublisherFactory.get().publishNotification(lineNotificationWithUpdatedTimestamp, notificationId);
         } catch (Exception e) {
             Timber.e(e, "Failed to send incoming call notifications: " + e.getMessage());
         }
@@ -453,10 +458,6 @@ public class NotificationListenerService
     }
 
     private void cancelIncomingCallNotification(final Set<Integer> notificationIdsToCancel) {
-        if (preferenceProvider.shouldUseSingleNotificationForConversations()) {
-            // so that we don't accidentally dismiss "call in progress" notifications
-            return;
-        }
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(NotificationListenerService.this);
         for (final int notificationId : notificationIdsToCancel) {
             try {

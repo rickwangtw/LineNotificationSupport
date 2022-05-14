@@ -20,6 +20,7 @@ public class PreferenceProvider {
     public static final String GENERATE_SELF_RESPONSE_MESSAGE_KEY = "generate_self_response_message";
     public static final String BLUETOOTH_CONTROL_ONGOING_CALL_KEY = "bluetooth_control_in_calls";
     public static final String CONVERSATION_STARTER_KEY = "conversation_starter";
+    public static final String CREATE_NEW_CONTINUOUS_CALL_NOTIFICATIONS_KEY = "create_new_continuous_call_notifications";
 
     private final SharedPreferences sharedPreferences;
 
@@ -96,6 +97,10 @@ public class PreferenceProvider {
 
     public boolean shouldShowConversationStarterNotification() {
         return sharedPreferences.getBoolean(CONVERSATION_STARTER_KEY, true);
+    }
+
+    public boolean shouldCreateNewContinuousCallNotifications() {
+        return sharedPreferences.getBoolean(CREATE_NEW_CONTINUOUS_CALL_NOTIFICATIONS_KEY, false);
     }
 
 }
