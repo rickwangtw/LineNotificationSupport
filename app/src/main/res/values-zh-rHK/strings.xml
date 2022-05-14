@@ -54,7 +54,7 @@
     <string name="auto_call_notifications_summary_off">只收到一則 LINE 通話通知。</string>
     <string name="auto_call_notifications_timeout_title">何時停止連續 LINE 通話通知？</string>
     <string name="auto_call_notifications_wait_title">連續 LINE 通話通知的間隔</string>
-    <string name="create_new_continuous_call_notifications_title">[測試中]使用新通知</string>
+    <string name="create_new_continuous_call_notifications_title">[測試中]來電時使用複數通知</string>
     <string name="create_new_continuous_call_notifications_summary_on">每次發送連續通話通知皆使用新的通知。適合智慧手環使用。</string>
     <string name="create_new_continuous_call_notifications_summary_off">使用既有的通知來發送連續通話通知。</string>
     <string name="call_notification_action_reverse_order_title">LINE 通話按鈕順序</string>

@@ -63,7 +63,7 @@
     <string name="auto_call_notifications_summary_off">Receive one notification during incoming call.</string>
     <string name="auto_call_notifications_timeout_title">When to stop auto call notifications?</string>
     <string name="auto_call_notifications_wait_title">Duration in between continuous call notifications</string>
-    <string name="create_new_continuous_call_notifications_title">[BETA] Create new notifications</string>
+    <string name="create_new_continuous_call_notifications_title">[BETA] Multiple notifications for calls</string>
     <string name="create_new_continuous_call_notifications_summary_on">Create new notifications everytime. Suitable for smart bands.</string>
     <string name="create_new_continuous_call_notifications_summary_off">Use the same notifications everytime.</string>
     <string name="call_notification_action_reverse_order_title">Incoming call action order</string>
