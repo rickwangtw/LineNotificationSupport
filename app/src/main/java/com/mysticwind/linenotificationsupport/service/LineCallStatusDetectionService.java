@@ -8,6 +8,7 @@ import android.media.AudioRecordingConfiguration;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.google.common.collect.ImmutableSet;
+import com.mysticwind.linenotificationsupport.line.Constants;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -61,10 +62,10 @@ public class LineCallStatusDetectionService extends AccessibilityService {
                     newRecordingInProgress = false;
                 }
                 if (newRecordingInProgress != recordingInProgress) {
-                    Timber.d("Detected change in recording status: [%s] probably request for app [%s]", newRecordingInProgress, currentRunningApp);
+                    Timber.i("Detected change in recording status: [%s] probably request for app [%s]", newRecordingInProgress, currentRunningApp);
                     recordingInProgress = newRecordingInProgress;
                 } else {
-                    Timber.i("Detected change in recording, but no status change: %s", newRecordingInProgress);
+                    Timber.d("Detected change in recording, but no status change: %s", newRecordingInProgress);
                 }
             }
         };
@@ -87,20 +88,30 @@ public class LineCallStatusDetectionService extends AccessibilityService {
     public void onAccessibilityEvent(AccessibilityEvent event) {
         Timber.d("Accessibility event type [%d] action [%d] package [%s] window changes [%d] content change types [%d]",
                 event.getEventType(), event.getAction(), event.getPackageName(), event.getWindowChanges(), event.getContentChangeTypes());
-        try {
-            if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED && event.getPackageName() != null) {
-                final ComponentName componentName = new ComponentName(event.getPackageName().toString(), event.getClassName().toString());
-                if (WINDOW_CHANGE_APP_NOISES.contains(componentName.getPackageName())) {
-                    Timber.d("Detected change in package [%s], ignoring", componentName.getPackageName());
-                    return;
-                }
-                if (!StringUtils.equals(currentRunningApp, componentName.getPackageName())) {
-                    currentRunningApp = componentName.getPackageName();
-                    Timber.d("Detected current running app: %s", componentName.getPackageName());
-                }
-            }
-        } catch (final Exception e) {
-            Timber.w(e, "onAccessibilityEvent:" + e.getMessage());
+
+        if (StringUtils.isBlank(event.getPackageName())) {
+            return;
+        }
+        final ComponentName componentName = new ComponentName(event.getPackageName().toString(), event.getClassName().toString());
+        if (WINDOW_CHANGE_APP_NOISES.contains(componentName.getPackageName())) {
+            Timber.d("Detected change in package [%s], ignoring", componentName.getPackageName());
+            return;
+        }
+        final String packageName = componentName.getPackageName();
+        if (StringUtils.equals(currentRunningApp, packageName)) {
+            Timber.d("Package [%s] is the same as current running app, ignoring ...", packageName);
+            return;
+        }
+        if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            currentRunningApp = packageName;
+            Timber.i("Detected current running app: %s", componentName.getPackageName());
+        }
+        // be extra more sensitive to LINE windows
+        if (StringUtils.equals(Constants.LINE_PACKAGE_NAME, packageName) &&
+                event.getEventType() == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED &&
+                ((event.getContentChangeTypes() & AccessibilityEvent.CONTENT_CHANGE_TYPE_SUBTREE) > 0)) {
+            currentRunningApp = packageName;
+            Timber.i("[Extra] Detected current running app: %s", componentName.getPackageName());
         }
     }
 
