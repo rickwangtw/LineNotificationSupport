@@ -150,6 +150,9 @@ public class NotificationListenerService
     ConversationStarterNotificationManager conversationStarterNotificationManager;
 
     @Inject
+    NotificationGroupCreator notificationGroupCreator;
+
+    @Inject
     DebugModeProvider debugModeProvider;
 
     @Override
@@ -202,10 +205,7 @@ public class NotificationListenerService
 
         notificationPublisherFactory.notifyChangeWithExistingNotifications(existingNotifications);
 
-        new NotificationGroupCreator(
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE),
-                new AndroidFeatureProvider(), preferenceProvider)
-                .createNotificationGroups();
+        notificationGroupCreator.createNotificationGroups();
 
         sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
         Timber.d("Registered onSharedPreferenceChangeListener");

@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mysticwind.linenotificationsupport.conversationstarter.activity.KeywordSettingActivity;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.line.LineAppVersionProvider;
+import com.mysticwind.linenotificationsupport.permission.AndroidPermissionRequester;
 import com.mysticwind.linenotificationsupport.provision.FeatureProvisionStateProvider;
 
 import org.apache.commons.lang3.StringUtils;
@@ -47,6 +48,9 @@ public class HelpActivity extends AppCompatActivity {
     @Inject
     LineAppVersionProvider lineAppVersionProvider;
 
+    @Inject
+    AndroidPermissionRequester androidPermissionRequester;
+
     private FeatureProvisionStateProvider featureProvisionStateProvider;
     private Dialog grantPermissionDialog;
     private Dialog disablePowerOptimizationTipDialog;
@@ -67,6 +71,8 @@ public class HelpActivity extends AppCompatActivity {
         if (disablePowerOptimizationTipDialog == null) {
             disablePowerOptimizationTipDialog = createDisablePowerOptimizationTipDialog();
         }
+
+        androidPermissionRequester.requestBluetoothPermissionIfNecessary(this);
     }
 
     private void showLineVersionWarning() {
