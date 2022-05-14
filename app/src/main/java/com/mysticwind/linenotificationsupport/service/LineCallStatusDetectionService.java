@@ -8,6 +8,7 @@ import android.media.AudioRecordingConfiguration;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.google.common.collect.ImmutableSet;
+import com.mysticwind.linenotificationsupport.call.CallStatusTrackingManager;
 import com.mysticwind.linenotificationsupport.line.Constants;
 
 import org.apache.commons.lang3.StringUtils;
@@ -15,12 +16,16 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 import java.util.Set;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
 
 /*
  * Referenced from the safe-dot-android project
  * https://github.com/kamaravichow/safe-dot-android/blob/862fb3b394255199ca96db4061692eeb55713e0d/app/src/main/java/com/aravi/dotpro/service/DotService.java#L465
  */
+@AndroidEntryPoint
 public class LineCallStatusDetectionService extends AccessibilityService {
 
     private static final Set<String> WINDOW_CHANGE_APP_NOISES =
@@ -31,6 +36,9 @@ public class LineCallStatusDetectionService extends AccessibilityService {
 
     // TODO implement log through Guava
     private String currentRunningApp;
+
+    @Inject
+    CallStatusTrackingManager callStatusTrackingManager;
 
     private AudioManager audioManager;
     private AudioManager.AudioRecordingCallback audioRecordingCallback;
@@ -64,6 +72,11 @@ public class LineCallStatusDetectionService extends AccessibilityService {
                 if (newRecordingInProgress != recordingInProgress) {
                     Timber.i("Detected change in recording status: [%s] probably request for app [%s]", newRecordingInProgress, currentRunningApp);
                     recordingInProgress = newRecordingInProgress;
+                    if (recordingInProgress && StringUtils.equals(Constants.LINE_PACKAGE_NAME, currentRunningApp)) {
+                        callStatusTrackingManager.recordCallStart();
+                    } else if (!recordingInProgress) {
+                        callStatusTrackingManager.recordCallStop();
+                    }
                 } else {
                     Timber.d("Detected change in recording, but no status change: %s", newRecordingInProgress);
                 }
