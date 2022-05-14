@@ -1,8 +1,6 @@
 package com.mysticwind.linenotificationsupport;
 
 import android.app.Dialog;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,15 +12,18 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceManager;
 
-import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.line.Constants;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
 import org.apache.commons.lang3.StringUtils;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.AndroidEntryPoint;
+
+@AndroidEntryPoint
 public class SettingsActivity extends AppCompatActivity {
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
@@ -32,15 +33,17 @@ public class SettingsActivity extends AppCompatActivity {
         private Dialog silentLineMessageNotificationSettingsDialog;
         private Dialog alertLineMessageNotificationSettingsDialog;
 
+        @Inject
+        NotificationGroupCreator notificationGroupCreator;
+
+        @Inject
+        PreferenceProvider preferenceProvider;
+
         private final SharedPreferences.OnSharedPreferenceChangeListener onPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 
             @Override
             public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String preferenceKey) {
                 if (StringUtils.equals(MERGE_NOTIFICATION_CHANNEL_PREFERENCE_KEY, preferenceKey)) {
-                    final NotificationGroupCreator notificationGroupCreator = new NotificationGroupCreator(
-                            (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE),
-                            new AndroidFeatureProvider(), getPreferenceProvider());
-
                     boolean shouldMergeNotification = sharedPreferences.getBoolean(preferenceKey, false);
                     if (shouldMergeNotification) {
                         notificationGroupCreator.migrateToSingleNotificationChannelForMessages();
@@ -49,16 +52,12 @@ public class SettingsActivity extends AppCompatActivity {
                     }
                 }
                 if (PreferenceProvider.MANAGE_LINE_MESSAGE_NOTIFICATIONS_PREFERENCE_KEY.equals(preferenceKey)) {
-                    if (getPreferenceProvider().shouldManageLineMessageNotifications()) {
+                    if (preferenceProvider.shouldManageLineMessageNotifications()) {
                         silentLineMessageNotificationSettingsDialog.show();
                     } else {
                         alertLineMessageNotificationSettingsDialog.show();
                     }
                 }
-            }
-
-            private PreferenceProvider getPreferenceProvider() {
-                return new PreferenceProvider(PreferenceManager.getDefaultSharedPreferences(getContext()));
             }
 
         };
