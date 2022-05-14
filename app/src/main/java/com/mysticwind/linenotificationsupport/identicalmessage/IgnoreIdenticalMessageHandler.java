@@ -6,6 +6,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Optional;
 
+import timber.log.Timber;
+
 public class IgnoreIdenticalMessageHandler implements IdenticalMessageHandler {
 
     private IdenticalMessageEvaluator identicalMessageEvaluator;
@@ -32,6 +34,7 @@ public class IgnoreIdenticalMessageHandler implements IdenticalMessageHandler {
         final IdenticalMessageEvaluator.EvaluationResult result =
                 identicalMessageEvaluator.evaluate(lineNotification, notificationId);
         if (result.isDuplicate()) {
+            Timber.i("Detected duplicate LINE message: " + lineNotification.getMessage());
             return Optional.empty();
         }
         return Optional.of(
