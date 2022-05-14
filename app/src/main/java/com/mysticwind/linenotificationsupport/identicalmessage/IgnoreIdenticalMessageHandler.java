@@ -18,7 +18,8 @@ public class IgnoreIdenticalMessageHandler implements IdenticalMessageHandler {
     public Optional<Pair<LineNotification, Integer>> handle(final LineNotification lineNotification,
                                                             final int notificationId) {
         // incoming calls should always be treated as new
-        if (lineNotification.getCallState() == LineNotification.CallState.INCOMING) {
+        if (lineNotification.getCallState() == LineNotification.CallState.INCOMING ||
+                lineNotification.getCallState() == LineNotification.CallState.MISSED_CALL) {
             return Optional.of(
                     Pair.of(
                             lineNotification,
