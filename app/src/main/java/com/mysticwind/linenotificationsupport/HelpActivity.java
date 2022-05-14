@@ -1,6 +1,5 @@
 package com.mysticwind.linenotificationsupport;
 
-import android.Manifest;
 import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -18,19 +17,16 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
 import com.google.common.collect.ImmutableMap;
-import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.conversationstarter.activity.KeywordSettingActivity;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
 import com.mysticwind.linenotificationsupport.line.LineAppVersionProvider;
-import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
+import com.mysticwind.linenotificationsupport.permission.AndroidPermissionRequester;
 import com.mysticwind.linenotificationsupport.provision.FeatureProvisionStateProvider;
 
 import org.apache.commons.lang3.StringUtils;
 
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -53,10 +49,7 @@ public class HelpActivity extends AppCompatActivity {
     LineAppVersionProvider lineAppVersionProvider;
 
     @Inject
-    PreferenceProvider preferenceProvider;
-
-    @Inject
-    AndroidFeatureProvider androidFeatureProvider;
+    AndroidPermissionRequester androidPermissionRequester;
 
     private FeatureProvisionStateProvider featureProvisionStateProvider;
     private Dialog grantPermissionDialog;
@@ -79,10 +72,7 @@ public class HelpActivity extends AppCompatActivity {
             disablePowerOptimizationTipDialog = createDisablePowerOptimizationTipDialog();
         }
 
-        if (noBluetoothPermissionWhileRequired()) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{ Manifest.permission.BLUETOOTH_CONNECT }, 1 /* any request code */);
-        }
+        androidPermissionRequester.requestBluetoothPermissionIfNecessary(this);
     }
 
     private void showLineVersionWarning() {
@@ -217,11 +207,6 @@ public class HelpActivity extends AppCompatActivity {
 
     private void redirectToNotificationSettingsPage() {
         startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
-    }
-
-    private boolean noBluetoothPermissionWhileRequired() {
-        return preferenceProvider.shouldControlBluetoothDuringCalls() &&
-                !androidFeatureProvider.hasBluetoothControlPermissions();
     }
 
     @Override
