@@ -7,13 +7,18 @@ import android.media.AudioManager;
 import android.media.AudioRecordingConfiguration;
 import android.view.accessibility.AccessibilityEvent;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mysticwind.linenotificationsupport.call.CallStatusTrackingManager;
+import com.mysticwind.linenotificationsupport.call.OnCallEventHandler;
+import com.mysticwind.linenotificationsupport.call.model.CallEvent;
+import com.mysticwind.linenotificationsupport.event.Intents;
 import com.mysticwind.linenotificationsupport.line.Constants;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -31,6 +36,11 @@ public class LineCallStatusDetectionService extends AccessibilityService {
     private static final Set<String> WINDOW_CHANGE_APP_NOISES =
             ImmutableSet.of("com.android.systemui");
 
+    private static final Map<CallEvent, Intents> CALL_EVENT_TO_INTENT_MAP = ImmutableMap.of(
+            CallEvent.CALL_START, Intents.LINE_CALL_START_INTENT,
+            CallEvent.CALL_END, Intents.LINE_CALL_END_INTENT
+    );
+
     // TODO implement log through Guava
     private boolean recordingInProgress = false;
 
@@ -42,6 +52,16 @@ public class LineCallStatusDetectionService extends AccessibilityService {
 
     private AudioManager audioManager;
     private AudioManager.AudioRecordingCallback audioRecordingCallback;
+    private OnCallEventHandler onCallEventHandler = new OnCallEventHandler() {
+        @Override
+        public void handle(final CallEvent callEvent) {
+            final Intents intent = CALL_EVENT_TO_INTENT_MAP.get(callEvent);
+            if (intent == null) {
+                return;
+            }
+            sendBroadcast(intent.getIntent());
+        }
+    };
 
     public LineCallStatusDetectionService() {
     }
@@ -51,6 +71,7 @@ public class LineCallStatusDetectionService extends AccessibilityService {
         Timber.d("LineCallStatusDetectionService onServiceConnected");
 
         initializeAudioRecordingCallback();
+        callStatusTrackingManager.registerOnCallEventHandler(onCallEventHandler);
     }
 
     private void initializeAudioRecordingCallback() {
@@ -88,6 +109,7 @@ public class LineCallStatusDetectionService extends AccessibilityService {
     @Override
     public void onDestroy() {
         unregisterAudioRecordingCallback();
+        callStatusTrackingManager.unregisterOnCallEventHandler(onCallEventHandler);
         super.onDestroy();
     }
 

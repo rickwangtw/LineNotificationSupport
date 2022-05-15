@@ -4,8 +4,10 @@ import static com.mysticwind.linenotificationsupport.line.Constants.LINE_PACKAGE
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
@@ -25,9 +27,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
-import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.conversationstarter.ConversationStarterNotificationManager;
 import com.mysticwind.linenotificationsupport.debug.DebugModeProvider;
+import com.mysticwind.linenotificationsupport.event.Intents;
 import com.mysticwind.linenotificationsupport.identicalmessage.AsIsIdenticalMessageHandler;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageEvaluator;
 import com.mysticwind.linenotificationsupport.identicalmessage.IdenticalMessageHandler;
@@ -108,6 +110,18 @@ public class NotificationListenerService
                     conversationStarterNotificationManager.publishNotification();
                 } else {
                     conversationStarterNotificationManager.cancelNotification();
+                }
+            }
+        }
+    };
+
+    private final BroadcastReceiver appEventBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            if (Intents.LINE_CALL_START_INTENT.getAction().equals(intent.getAction())) {
+                if (autoIncomingCallNotificationState != null) {
+                    Timber.i("Stop further incoming call notifications - received CALL_START intent");
+                    autoIncomingCallNotificationState.setAccepted();
                 }
             }
         }
@@ -209,6 +223,8 @@ public class NotificationListenerService
 
         sharedPreferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
         Timber.d("Registered onSharedPreferenceChangeListener");
+
+        registerReceiver(appEventBroadcastReceiver, new IntentFilter(Intents.LINE_CALL_START_INTENT.getAction()));
 
         scheduleNotificationCounterCheck();
 
@@ -349,8 +365,10 @@ public class NotificationListenerService
         }
 
         if (lineNotification.getCallState() == LineNotification.CallState.MISSED_CALL) {
+            Timber.i("Stop further incoming call notifications - MISSED_CALL");
             autoIncomingCallNotificationState.setMissedCall();
         } else if (lineNotification.getCallState() == LineNotification.CallState.IN_A_CALL) {
+            Timber.i("Stop further incoming call notifications - IN_A_CALL");
             autoIncomingCallNotificationState.setAccepted();
         }
     }
@@ -594,6 +612,8 @@ public class NotificationListenerService
             Timber.w(e, "Errors thrown when unregistering listener: [%s]", e.getMessage());
         }
         Timber.d("Unregistered onSharedPreferenceChangeListener");
+
+        unregisterReceiver(appEventBroadcastReceiver);
 
         isInitialized = false;
     }
