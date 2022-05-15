@@ -127,6 +127,9 @@ public class LineCallStatusDetectionService extends AccessibilityService {
         if (StringUtils.isBlank(event.getPackageName())) {
             return;
         }
+        if (event.getClassName() == null) {
+            return;
+        }
         final ComponentName componentName = new ComponentName(event.getPackageName().toString(), event.getClassName().toString());
         if (WINDOW_CHANGE_APP_NOISES.contains(componentName.getPackageName())) {
             Timber.d("Detected change in package [%s], ignoring", componentName.getPackageName());
