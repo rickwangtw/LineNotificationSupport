@@ -121,8 +121,8 @@ public class LineCallStatusDetectionService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        Timber.d("Accessibility event type [%d] action [%d] package [%s] window changes [%d] content change types [%d]",
-                event.getEventType(), event.getAction(), event.getPackageName(), event.getWindowChanges(), event.getContentChangeTypes());
+        Timber.d("Accessibility event type [%d] action [%d] package [%s] content change types [%d]",
+                event.getEventType(), event.getAction(), event.getPackageName(), event.getContentChangeTypes());
 
         if (StringUtils.isBlank(event.getPackageName())) {
             return;
