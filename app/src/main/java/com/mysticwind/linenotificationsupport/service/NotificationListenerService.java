@@ -458,6 +458,10 @@ public class NotificationListenerService
     }
 
     private void cancelIncomingCallNotification(final Set<Integer> notificationIdsToCancel) {
+        // TODO how do we clean ONLY incoming call notifications when we reuse a single notification?
+        // TODO can we clean up the missed calls when we picked them up?
+        // incoming: android.title=Wendy
+        // missed: android.title=LINE未接來電, android.text=Wendy
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(NotificationListenerService.this);
         for (final int notificationId : notificationIdsToCancel) {
             try {
