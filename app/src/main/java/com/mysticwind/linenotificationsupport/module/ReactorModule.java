@@ -11,6 +11,7 @@ import com.mysticwind.linenotificationsupport.notification.reactor.DismissedNoti
 import com.mysticwind.linenotificationsupport.notification.reactor.DumbNotificationCounterNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.IncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.LineNotificationLoggingIncomingNotificationReactor;
+import com.mysticwind.linenotificationsupport.notification.reactor.LineNotificationSupportLoggingIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.LineReplyActionPersistenceIncomingNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.LoggingDismissedNotificationReactor;
 import com.mysticwind.linenotificationsupport.notification.reactor.ManageLineNotificationIncomingNotificationReactor;
@@ -35,6 +36,7 @@ public abstract class ReactorModule {
 
     /* Related classes using @Inject
         LineNotificationLoggingIncomingNotificationReactor
+        LineNotificationSupportLoggingIncomingNotificationReactor
         CallInProgressTrackingReactor
         ChatRoomNamePersistenceIncomingNotificationReactor
         LineReplyActionPersistenceIncomingNotificationReactor
@@ -53,6 +55,7 @@ public abstract class ReactorModule {
     @Provides
     public static List<IncomingNotificationReactor> incomingNotificationReactors(DebugModeProvider debugModeProvider,
                                                                                  LineNotificationLoggingIncomingNotificationReactor lineNotificationLoggingIncomingNotificationReactor,
+                                                                                 LineNotificationSupportLoggingIncomingNotificationReactor lineNotificationSupportLoggingIncomingNotificationReactor,
                                                                                  CallInProgressTrackingReactor callInProgressTrackingReactor,
                                                                                  ChatRoomNamePersistenceIncomingNotificationReactor chatRoomNamePersistenceIncomingNotificationReactor,
                                                                                  LineReplyActionPersistenceIncomingNotificationReactor  lineReplyActionPersistenceIncomingNotificationReactor,
@@ -65,6 +68,7 @@ public abstract class ReactorModule {
         final ImmutableList.Builder<IncomingNotificationReactor> reactorListBuilder = ImmutableList.builder();
         if (debugModeProvider.isDebugMode()) {
             reactorListBuilder.add(lineNotificationLoggingIncomingNotificationReactor);
+            reactorListBuilder.add(lineNotificationSupportLoggingIncomingNotificationReactor);
         }
         reactorListBuilder.add(callInProgressTrackingReactor);
         reactorListBuilder.add(chatRoomNamePersistenceIncomingNotificationReactor);
