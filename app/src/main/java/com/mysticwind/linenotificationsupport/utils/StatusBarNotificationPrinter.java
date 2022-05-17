@@ -26,10 +26,10 @@ public class StatusBarNotificationPrinter {
     public void print(final String message, final StatusBarNotification statusBarNotification) {
         final String prefix = buildPrefix(message);
 
-        Timber.i(String.format("%sNotification (%s): %s",
+        Timber.i("%sNotification (%s): %s",
                 prefix,
                 statusBarNotification.getPackageName(),
-                stringifyNotification(statusBarNotification))
+                stringifyNotification(statusBarNotification)
         );
     }
 
@@ -74,10 +74,10 @@ public class StatusBarNotificationPrinter {
     public void printError(final String message, final StatusBarNotification statusBarNotification) {
         final String prefix = buildPrefix(message);
 
-        Timber.e(String.format("%sNotification (%s): %s",
+        Timber.e("%sNotification (%s): %s",
                 prefix,
                 statusBarNotification.getPackageName(),
-                stringifyNotification(statusBarNotification))
+                stringifyNotification(statusBarNotification)
         );
     }
 
