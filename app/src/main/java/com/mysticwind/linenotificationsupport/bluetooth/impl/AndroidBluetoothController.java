@@ -1,8 +1,12 @@
 package com.mysticwind.linenotificationsupport.bluetooth.impl;
 
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 
+import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.bluetooth.BluetoothController;
+
+import java.util.Objects;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -15,8 +19,11 @@ import timber.log.Timber;
 @Singleton
 public class AndroidBluetoothController implements BluetoothController {
 
+    private final AndroidFeatureProvider androidFeatureProvider;
+
     @Inject
-    public AndroidBluetoothController() {
+    public AndroidBluetoothController(AndroidFeatureProvider androidFeatureProvider) {
+        this.androidFeatureProvider = Objects.requireNonNull(androidFeatureProvider);
     }
 
     @Override
@@ -29,7 +36,11 @@ public class AndroidBluetoothController implements BluetoothController {
         setBluetoothState(false);
     }
 
+    @SuppressLint("MissingPermission") // this is verified in androidFeatureProvider.hasBluetoothControlPermissions()
     private void setBluetoothState(final boolean enable) {
+        if (!androidFeatureProvider.hasBluetoothControlPermissions()) {
+            return;
+        }
         final BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         final boolean isEnabled = bluetoothAdapter.isEnabled();
         if (enable && !isEnabled) {

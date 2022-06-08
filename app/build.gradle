@@ -15,8 +15,8 @@ android {
         applicationId "com.mysticwind.linenotificationsupport.donate"
         minSdkVersion 26
         targetSdkVersion 31
-        versionCode 21
-        versionName "1.12.2"
+        versionCode 22
+        versionName "1.12.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -32,6 +32,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    namespace 'com.mysticwind.linenotificationsupport'
 
 }
 
