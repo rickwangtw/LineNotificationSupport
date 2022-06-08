@@ -100,7 +100,7 @@ public class PreferenceProvider {
     }
 
     public boolean shouldCreateNewContinuousCallNotifications() {
-        return sharedPreferences.getBoolean(CREATE_NEW_CONTINUOUS_CALL_NOTIFICATIONS_KEY, false);
+        return sharedPreferences.getBoolean(CREATE_NEW_CONTINUOUS_CALL_NOTIFICATIONS_KEY, true);
     }
 
 }

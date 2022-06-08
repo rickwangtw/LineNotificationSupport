@@ -73,7 +73,7 @@
             app:dependency="auto_call_notifications"
             app:key="create_new_continuous_call_notifications"
             app:title="@string/create_new_continuous_call_notifications_title"
-            app:defaultValue="false"
+            app:defaultValue="true"
             app:summaryOff="@string/create_new_continuous_call_notifications_summary_off"
             app:summaryOn="@string/create_new_continuous_call_notifications_summary_on" />
 
