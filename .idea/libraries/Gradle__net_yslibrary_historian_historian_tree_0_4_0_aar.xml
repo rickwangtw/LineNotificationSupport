@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="Gradle: net.yslibrary.historian:historian-tree:0.4.0@aar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/3deadda452087c333b67613e447cb395/transformed/jetified-historian-tree-0.4.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/3deadda452087c333b67613e447cb395/transformed/jetified-historian-tree-0.4.0/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/3deadda452087c333b67613e447cb395/transformed/jetified-historian-tree-0.4.0/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.yslibrary.historian/historian-tree/0.4.0/17a5099b29c65e301262c819b440e341344506b9/historian-tree-0.4.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.yslibrary.historian/historian-tree/0.4.0/f7588946ec821d30ea205762fb4082db3ebf77cd/historian-tree-0.4.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

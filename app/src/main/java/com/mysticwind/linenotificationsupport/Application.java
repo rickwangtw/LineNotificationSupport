@@ -8,6 +8,8 @@ import net.yslibrary.historian.tree.HistorianTree;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+
 import javax.inject.Inject;
 
 import dagger.hilt.android.HiltAndroidApp;
@@ -36,6 +38,7 @@ public class Application extends android.app.Application {
                 }
             });
             Historian historian = Historian.builder(this)
+                    .directory(new File(this.getCacheDir(), "historian"))
                     .size(100_000)
                     .logLevel(Log.DEBUG)
                     .debug(true)
