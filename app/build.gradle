@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.mysticwind.linenotificationsupport"
@@ -17,6 +17,7 @@ android {
         targetSdkVersion 32
         versionCode 22
         versionName "1.12.3"
+        resourceConfigurations += ["en", "zh-rTW", "zh-rCN", "zh-rHK", "ja"]
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
