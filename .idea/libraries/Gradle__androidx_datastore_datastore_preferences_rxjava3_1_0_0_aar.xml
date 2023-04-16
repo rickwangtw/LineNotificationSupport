@@ -1,9 +1,9 @@
 <component name="libraryTable">
   <library name="Gradle: androidx.datastore:datastore-preferences-rxjava3:1.0.0@aar">
     <CLASSES>
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/354bb49df944c61c3017df95e899741e/transformed/jetified-datastore-preferences-rxjava3-1.0.0/res" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/354bb49df944c61c3017df95e899741e/transformed/jetified-datastore-preferences-rxjava3-1.0.0/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/354bb49df944c61c3017df95e899741e/transformed/jetified-datastore-preferences-rxjava3-1.0.0/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/2aa0b339b87d1c62eaafa8d2c3ad6f43/transformed/jetified-datastore-preferences-rxjava3-1.0.0/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/2aa0b339b87d1c62eaafa8d2c3ad6f43/transformed/jetified-datastore-preferences-rxjava3-1.0.0/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/2aa0b339b87d1c62eaafa8d2c3ad6f43/transformed/jetified-datastore-preferences-rxjava3-1.0.0/jars/classes.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

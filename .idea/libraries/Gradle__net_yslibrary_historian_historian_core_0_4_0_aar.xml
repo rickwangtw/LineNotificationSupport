@@ -1,8 +1,8 @@
 <component name="libraryTable">
   <library name="Gradle: net.yslibrary.historian:historian-core:0.4.0@aar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/e4cfc7fc53a4858fa6edcadf0e1d47b4/transformed/jetified-historian-core-0.4.0/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/e4cfc7fc53a4858fa6edcadf0e1d47b4/transformed/jetified-historian-core-0.4.0/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/9fef271c80f5da8763c7df4ee9cf7187/transformed/jetified-historian-core-0.4.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/9fef271c80f5da8763c7df4ee9cf7187/transformed/jetified-historian-core-0.4.0/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.yslibrary.historian/historian-core/0.4.0/2d060890e6812678ade646c791bf9741cd831d57/historian-core-0.4.0-javadoc.jar!/" />
