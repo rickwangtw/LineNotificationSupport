@@ -15,8 +15,8 @@ android {
         applicationId "com.mysticwind.linenotificationsupport"
         minSdkVersion 26
         targetSdkVersion 32
-        versionCode 22
-        versionName "1.12.3"
+        versionCode 23
+        versionName "1.12.4"
         resourceConfigurations += ["en", "zh-rTW", "zh-rCN", "zh-rHK", "ja"]
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
