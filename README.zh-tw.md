@@ -55,6 +55,9 @@
 * [免費版](https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport)
 * [捐贈版](https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate)
 
+## 貢獻
+* 感謝 kanji1113 提供日文翻譯
+
 ## 常見問題
 
 ### <a name="recommended-settings"></a> 1. 請問有推薦的設定嗎？

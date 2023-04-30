@@ -9,14 +9,15 @@ plugins {
 }
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.mysticwind.linenotificationsupport.donate"
         minSdkVersion 26
-        targetSdkVersion 31
-        versionCode 22
-        versionName "1.12.3"
+        targetSdkVersion 32
+        versionCode 23
+        versionName "1.12.4"
+        resourceConfigurations += ["en", "zh-rTW", "zh-rCN", "zh-rHK", "ja"]
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -42,12 +43,12 @@ dependencies {
     implementation "com.google.dagger:hilt-android:2.38.1"
     kapt "com.google.dagger:hilt-compiler:2.38.1"
 
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'com.google.android.material:material:1.1.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'androidx.navigation:navigation-fragment:2.2.2'
-    implementation 'androidx.navigation:navigation-ui:2.2.2'
-    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.appcompat:appcompat:1.5.0'
+    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.navigation:navigation-fragment:2.5.1'
+    implementation 'androidx.navigation:navigation-ui:2.5.1'
+    implementation 'androidx.preference:preference:1.2.0'
 
     implementation 'com.google.guava:guava:30.0-android'
     implementation 'tech.huffman.re-retrying:re-retrying:3.0.0'
@@ -57,12 +58,12 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:4.7.1'
     implementation 'org.jsoup:jsoup:1.13.1'
 
-    compileOnly 'org.projectlombok:lombok:1.18.16'
-    annotationProcessor 'org.projectlombok:lombok:1.18.16'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
-    def room_version = "2.2.5"
+    def room_version = "2.4.3"
 
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
@@ -70,7 +71,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
-    def historian_version = "0.3.1"
+    def historian_version = "0.4.0"
     implementation "net.yslibrary.historian:historian-core:$historian_version"
     implementation "net.yslibrary.historian:historian-tree:$historian_version"
 
@@ -80,7 +81,7 @@ dependencies {
     // Required -- JUnit 4 framework
     testImplementation 'junit:junit:4.12'
     // Optional -- Robolectric environment
-    testImplementation 'androidx.test:core:1.0.0'
+    testImplementation 'androidx.test:core:1.4.0'
     // Optional -- Mockito framework
     testImplementation 'org.mockito:mockito-core:1.10.19'
 

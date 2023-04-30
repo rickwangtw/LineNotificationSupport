@@ -55,6 +55,9 @@ LINE version tested:
 * [Free version](https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport)
 * [Donate version](https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate)
 
+## Credits
+* Thanks kanji1113 for providing JP translation
+
 ## FAQ
 
 ### <a name="recommended-settings"></a> 1. What are the recommended settings for watches?
