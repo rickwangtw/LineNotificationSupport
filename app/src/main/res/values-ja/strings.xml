@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LINE通知サポート</string>
+    <string name="app_name">LINE通知サポート (Donate)</string>
     <string name="action_settings">設定</string>
     <string name="action_debug">デバッグ</string>
     <string name="action_test_notifications">通知をテストする</string>
@@ -72,10 +72,10 @@
     <string name="delete_cached_friend_names_title">キャッシュした友だちの名前を消去する</string>
     <string name="delete_cached_friend_names_summary">友だちの名前が古いまま表示されているときにお使いください。</string>
     <string name="line_version_warning_10_19_1">お使いのLINEのバージョン（10.19.1）からはトークルーム名の取得ができないため、トークルーム内で最近発言したユーザーを並べて通知に表示しています。</string>
+    <string name="thanks_for_donate">BIG thanks for supporting this app!</string>
     <string name="author">作者: Rick Wang (linenotificationapp@gmail.com)</string>
     <string name="recommended_settings"><a href="https://github.com/rickwangtw/LineNotificationSupport/blob/main/README.md#recommended-settings">ウェブサイト上</a>で、おすすめの設定を見つけたり、投稿したりできますwebsite</string>
     <string name="contribute_to_open_source">このアプリはオープンソースプロジェクトとして開発されています！お気軽にconributeしてください！ https://github.com/rickwangtw/LineNotificationSupport</string>
-    <string name="support_donate_app">寄付バージョンの購入もご検討ください: https://play.google.com/store/apps/details?id=com.mysticwind.linenotificationsupport.donate</string>
     <string name="conversation_notification_action_button">返信</string>
     <string name="conversation_notification_action_button_message">返信するメッセージ</string>
     <string name="conversation_start_notification_title">会話を開始する</string>
