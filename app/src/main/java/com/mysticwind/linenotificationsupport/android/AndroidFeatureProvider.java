@@ -30,6 +30,12 @@ public class AndroidFeatureProvider {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
+    public boolean canControlBluetooth() {
+        // Bluetooth enable/disable are only supported before API 33
+        // https://developer.android.com/reference/android/bluetooth/BluetoothAdapter?hl=en#enable()
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU;
+    }
+
     public boolean hasBluetoothControlPermissions() {
         // Android 12 and above requires BLUETOOTH_CONNECT permission that requires additional approval
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {

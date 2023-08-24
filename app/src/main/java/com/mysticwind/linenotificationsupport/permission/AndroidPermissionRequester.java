@@ -34,6 +34,10 @@ public class AndroidPermissionRequester {
     }
 
     private boolean noBluetoothPermissionWhileRequired() {
+        // no point getting the permission if BT cannot be controlled
+        if (!androidFeatureProvider.canControlBluetooth()) {
+            return false;
+        }
         return preferenceProvider.shouldControlBluetoothDuringCalls() && !androidFeatureProvider.hasBluetoothControlPermissions();
     }
 

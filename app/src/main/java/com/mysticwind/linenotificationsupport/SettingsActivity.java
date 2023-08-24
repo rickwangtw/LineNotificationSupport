@@ -13,14 +13,18 @@ import android.view.MenuItem;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.line.Constants;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
 import com.mysticwind.linenotificationsupport.permission.AndroidPermissionRequester;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -41,15 +45,32 @@ public class SettingsActivity extends AppCompatActivity {
     @Inject
     AndroidPermissionRequester androidPermissionRequester;
 
+    @Inject
+    AndroidFeatureProvider androidFeatureProvider;
+
     private Dialog silentLineMessageNotificationSettingsDialog;
     private Dialog alertLineMessageNotificationSettingsDialog;
     private SharedPreferences.OnSharedPreferenceChangeListener onPreferenceChangeListener;
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
 
+        private static final String BLUETOOTH_CONTROL_PREFERENCE_KEY = "bluetooth_control_in_calls";
+
+        private final AndroidFeatureProvider androidFeatureProvider;
+        public SettingsFragment(AndroidFeatureProvider androidFeatureProvider) {
+            this.androidFeatureProvider = Objects.requireNonNull(androidFeatureProvider);
+        }
+
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
+
+            if (!androidFeatureProvider.canControlBluetooth()) {
+                final Preference preference = findPreference(BLUETOOTH_CONTROL_PREFERENCE_KEY);
+                if (preference != null) {
+                    preference.setVisible(false);
+                }
+            }
         }
 
         @Override
@@ -97,7 +118,7 @@ public class SettingsActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.settings, new SettingsFragment())
+                    .replace(R.id.settings, new SettingsFragment(androidFeatureProvider))
                     .commit();
         }
         ActionBar actionBar = getSupportActionBar();
