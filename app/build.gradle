@@ -14,7 +14,7 @@ android {
     defaultConfig {
         applicationId "com.mysticwind.linenotificationsupport"
         minSdkVersion 26
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 23
         versionName "1.12.4"
         resourceConfigurations += ["en", "zh-rTW", "zh-rCN", "zh-rHK", "ja"]

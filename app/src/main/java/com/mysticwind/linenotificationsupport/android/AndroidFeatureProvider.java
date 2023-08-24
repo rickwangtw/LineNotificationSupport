@@ -41,7 +41,15 @@ public class AndroidFeatureProvider {
         } else {
             return true;
         }
+    }
 
+    public boolean hasPublishNotificationPermission() {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            Timber.w("No permissions to publish Notifications!!!");
+            return false;
+        } else {
+            return true;
+        }
     }
 
 }

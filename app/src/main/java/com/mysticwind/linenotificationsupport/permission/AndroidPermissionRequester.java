@@ -37,4 +37,12 @@ public class AndroidPermissionRequester {
         return preferenceProvider.shouldControlBluetoothDuringCalls() && !androidFeatureProvider.hasBluetoothControlPermissions();
     }
 
+    public void requestPublishNotificationPermissionIfNecessary(final Activity activity) {
+        if (androidFeatureProvider.hasPublishNotificationPermission()) {
+            return;
+        }
+        ActivityCompat.requestPermissions(activity,
+                new String[]{Manifest.permission.POST_NOTIFICATIONS}, 2 /* any request code */);
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.mysticwind.linenotificationsupport;
 
 import android.app.Dialog;
+import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -51,6 +52,9 @@ public class HelpActivity extends AppCompatActivity {
     @Inject
     AndroidPermissionRequester androidPermissionRequester;
 
+    @Inject
+    NotificationManager notificationManager;
+
     private FeatureProvisionStateProvider featureProvisionStateProvider;
     private Dialog grantPermissionDialog;
     private Dialog disablePowerOptimizationTipDialog;
@@ -95,6 +99,10 @@ public class HelpActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        if (!hasPublishNotificationAccess()) {
+            androidPermissionRequester.requestPublishNotificationPermissionIfNecessary(this);
+        }
 
         if (hasNotificationAccess()) {
             if (grantPermissionDialog.isShowing()) {
@@ -203,6 +211,10 @@ public class HelpActivity extends AppCompatActivity {
                 .filter(enabledNotificationListener -> enabledNotificationListener.startsWith(packageName + "/"))
                 .findAny()
                 .isPresent();
+    }
+
+    private boolean hasPublishNotificationAccess() {
+        return notificationManager.areNotificationsEnabled();
     }
 
     private void redirectToNotificationSettingsPage() {
