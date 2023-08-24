@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.service.notification.StatusBarNotification;
 
 import com.google.common.collect.ImmutableSet;
+import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.bluetooth.BluetoothController;
 import com.mysticwind.linenotificationsupport.line.Constants;
 import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
@@ -24,13 +25,16 @@ public class CallInProgressTrackingReactor implements IncomingNotificationReacto
 
     private final PreferenceProvider preferenceProvider;
     private final BluetoothController bluetoothController;
+    private final AndroidFeatureProvider androidFeatureProvider;
     private final Set<String> callNotificationKeys = new HashSet<>();
 
     @Inject
     public CallInProgressTrackingReactor(final PreferenceProvider preferenceProvider,
-                                         final BluetoothController bluetoothController) {
+                                         final BluetoothController bluetoothController,
+                                         final AndroidFeatureProvider androidFeatureProvider) {
         this.preferenceProvider = Objects.requireNonNull(preferenceProvider);
         this.bluetoothController = Objects.requireNonNull(bluetoothController);
+        this.androidFeatureProvider = Objects.requireNonNull(androidFeatureProvider);
     }
 
     @Override
@@ -64,7 +68,7 @@ public class CallInProgressTrackingReactor implements IncomingNotificationReacto
         }
         callNotificationKeys.add(notificationKey);
 
-        if (preferenceProvider.shouldControlBluetoothDuringCalls()) {
+        if (shouldControlBluetooth()) {
             // TODO we probably should do a Toast here
             Timber.i("Disabling bluetooth");
             bluetoothController.disableBluetooth();
@@ -80,7 +84,7 @@ public class CallInProgressTrackingReactor implements IncomingNotificationReacto
             Timber.i("Notification [%s] IS for an in progress call and dismissed", notificationKey);
             callNotificationKeys.remove(notificationKey);
 
-            if (preferenceProvider.shouldControlBluetoothDuringCalls()) {
+            if (shouldControlBluetooth()) {
                 // TODO 1. we probably should do a Toast here
                 // TODO 2. we probably want to revert to the original bluetooth status
                 Timber.i("Re-enabling bluetooth");
@@ -100,5 +104,9 @@ public class CallInProgressTrackingReactor implements IncomingNotificationReacto
                 ((statusBarNotification.getNotification().flags & Notification.FLAG_ONGOING_EVENT) > 0) &&
                 ((statusBarNotification.getNotification().flags & Notification.FLAG_NO_CLEAR) > 0);
     }
+
+    private boolean shouldControlBluetooth() {
+            return preferenceProvider.shouldControlBluetoothDuringCalls() && androidFeatureProvider.canControlBluetooth();
+        }
 
 }
