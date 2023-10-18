@@ -69,7 +69,7 @@ public class SummaryNotificationPublisher {
                 .setStyle(style)
                 .setContentTitle(NotificationExtractor.getTitle(lastNotification))
                 .setContentText(lastNotification.tickerText)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_new_message)
                 .setGroup(lastNotification.getGroup())
                 .setGroupSummary(true)
                 .setChannelId(lastNotification.getChannelId())
