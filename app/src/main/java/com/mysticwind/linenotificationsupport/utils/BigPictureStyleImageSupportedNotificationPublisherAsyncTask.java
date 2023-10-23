@@ -1,7 +1,6 @@
 package com.mysticwind.linenotificationsupport.utils;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,17 +9,14 @@ import android.os.AsyncTask;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.preference.PreferenceManager;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mysticwind.linenotificationsupport.R;
-import com.mysticwind.linenotificationsupport.android.AndroidFeatureProvider;
 import com.mysticwind.linenotificationsupport.line.LineLauncher;
 import com.mysticwind.linenotificationsupport.model.LineNotification;
 import com.mysticwind.linenotificationsupport.model.NotificationExtraConstants;
 import com.mysticwind.linenotificationsupport.notificationgroup.NotificationGroupCreator;
-import com.mysticwind.linenotificationsupport.preference.PreferenceProvider;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
