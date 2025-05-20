@@ -8,6 +8,7 @@ Do you complain about your Samsung smart watch not showing the LINE messages the
 
 * Only the last messages are being shown?
 * You're not being notified when there is a LINE call?
+* You can only reply to a message but cannot start a conversation?
 
 This is the app for you!
 
